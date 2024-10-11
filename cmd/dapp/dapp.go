@@ -33,8 +33,8 @@ func NewDApp() *router.Router {
 
 	app.HandleAdvance("createBid", ah.BidAdvanceHandlers.CreateBidHandler)
 
-	app.HandleAdvance("createAuction", ms.RBAC.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler, "admin"))
-	app.HandleAdvance("finishAuction", ms.RBAC.Middleware(ah.AuctionAdvanceHandlers.FinishAuctionHandler, "admin"))
+	app.HandleAdvance("createAuction", ms.TLSN.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler))
+	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
 
 	// app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
@@ -89,11 +89,11 @@ func NewDAppMemory() *router.Router {
 
 	app.HandleAdvance("createBid", ah.BidAdvanceHandlers.CreateBidHandler)
 
-	app.HandleAdvance("createAuction", ms.RBAC.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler, "admin"))
-	app.HandleAdvance("finishAuction", ms.RBAC.Middleware(ah.AuctionAdvanceHandlers.FinishAuctionHandler, "admin"))
+	app.HandleAdvance("createAuction", ms.TLSN.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler))
+	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
 
 	// app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
-	app.HandleAdvance("withdrawStablecoin", ah.UserAdvanceHandlers.WithdrawHandler)
+	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
 
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
 	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))

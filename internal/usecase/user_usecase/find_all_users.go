@@ -26,6 +26,7 @@ func (u *FindAllUsersUseCase) Execute() (*FindAllUsersOutputDTO, error) {
 		output[i] = &FindUserOutputDTO{
 			Id:        user.Id,
 			Role:      user.Role,
+			Username:  user.Username,
 			Address:   user.Address,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,

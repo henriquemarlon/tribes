@@ -23,14 +23,16 @@ type UserRepository interface {
 type User struct {
 	Id        uint                `json:"id" gorm:"primaryKey"`
 	Role      string              `json:"role,omitempty" gorm:"not null"`
+	Username  string              `json:"username,omitempty" gorm:"uniqueIndex;not null"`
 	Address   custom_type.Address `json:"address,omitempty" gorm:"type:text;uniqueIndex;not null"`
 	CreatedAt int64               `json:"created_at,omitempty" gorm:"not null"`
 	UpdatedAt int64               `json:"updated_at,omitempty" gorm:"default:0"`
 }
 
-func NewUser(role string, address custom_type.Address, created_at int64) (*User, error) {
+func NewUser(role string, username string, address custom_type.Address, created_at int64) (*User, error) {
 	user := &User{
 		Role:      role,
+		Username:  username,
 		Address:   address,
 		CreatedAt: created_at,
 	}
@@ -41,7 +43,7 @@ func NewUser(role string, address custom_type.Address, created_at int64) (*User,
 }
 
 func (u *User) Validate() error {
-	if u.Role == "" || u.Address.Address == (common.Address{}) {
+	if u.Role == "" || u.Username == "" || u.Address.Address == (common.Address{}) {
 		return ErrInvalidUser
 	}
 	return nil

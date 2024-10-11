@@ -8,12 +8,14 @@ import (
 
 type CreateUserInputDTO struct {
 	Role    string              `json:"role"`
+	Username string              `json:"username"`
 	Address custom_type.Address `json:"address"`
 }
 
 type CreateUserOutputDTO struct {
 	Id        uint                `json:"id"`
 	Role      string              `json:"role"`
+	Username  string              `json:"username"`
 	Address   custom_type.Address `json:"address"`
 	CreatedAt int64               `json:"created_at"`
 }
@@ -29,7 +31,7 @@ func NewCreateUserUseCase(userRepository entity.UserRepository) *CreateUserUseCa
 }
 
 func (u *CreateUserUseCase) Execute(input *CreateUserInputDTO, metadata rollmelette.Metadata) (*CreateUserOutputDTO, error) {
-	user, err := entity.NewUser(input.Role, input.Address, metadata.BlockTimestamp)
+	user, err := entity.NewUser(input.Role, input.Username, input.Address, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
@@ -40,6 +42,7 @@ func (u *CreateUserUseCase) Execute(input *CreateUserInputDTO, metadata rollmele
 	return &CreateUserOutputDTO{
 		Id:        res.Id,
 		Role:      res.Role,
+		Username:  res.Username,
 		Address:   res.Address,
 		CreatedAt: res.CreatedAt,
 	}, nil

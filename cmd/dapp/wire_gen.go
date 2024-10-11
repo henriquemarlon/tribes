@@ -7,13 +7,13 @@
 package main
 
 import (
+	"github.com/google/wire"
 	"github.com/tribeshq/tribes/configs"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/handler/advance_handler"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/handler/inspect_handler"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/middleware"
 	"github.com/tribeshq/tribes/internal/infra/repository"
-	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
@@ -24,8 +24,10 @@ func NewMiddlewares() (*Middlewares, error) {
 		return nil, err
 	}
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
+	tlsnMiddleware := middleware.NewTLSNMiddleware(userRepositorySqlite)
 	rbacMiddleware := middleware.NewRBACMiddleware(userRepositorySqlite)
 	middlewares := &Middlewares{
+		TLSN: tlsnMiddleware,
 		RBAC: rbacMiddleware,
 	}
 	return middlewares, nil
@@ -37,8 +39,10 @@ func NewMiddlewaresMemory() (*Middlewares, error) {
 		return nil, err
 	}
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
+	tlsnMiddleware := middleware.NewTLSNMiddleware(userRepositorySqlite)
 	rbacMiddleware := middleware.NewRBACMiddleware(userRepositorySqlite)
 	middlewares := &Middlewares{
+		TLSN: tlsnMiddleware,
 		RBAC: rbacMiddleware,
 	}
 	return middlewares, nil
@@ -146,9 +150,10 @@ var setAdvanceHandlers = wire.NewSet(advance_handler.NewBidAdvanceHandlers, adva
 
 var setInspectHandlers = wire.NewSet(inspect_handler.NewBidInspectHandlers, inspect_handler.NewUserInspectHandlers, inspect_handler.NewAuctionInspectHandlers, inspect_handler.NewContractInspectHandlers)
 
-var setMiddleware = wire.NewSet(middleware.NewRBACMiddleware)
+var setMiddleware = wire.NewSet(middleware.NewTLSNMiddleware, middleware.NewRBACMiddleware)
 
 type Middlewares struct {
+	TLSN *middleware.TLSNMiddleware
 	RBAC *middleware.RBACMiddleware
 }
 

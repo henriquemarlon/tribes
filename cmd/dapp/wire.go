@@ -48,6 +48,7 @@ var setInspectHandlers = wire.NewSet(
 )
 
 var setMiddleware = wire.NewSet(
+	middleware.NewTLSNMiddleware,
 	middleware.NewRBACMiddleware,
 )
 
@@ -124,6 +125,7 @@ func NewInspectHandlersMemory() (*InspectHandlers, error) {
 }
 
 type Middlewares struct {
+	TLSN *middleware.TLSNMiddleware
 	RBAC *middleware.RBACMiddleware
 }
 
