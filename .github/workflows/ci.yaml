@@ -1,0 +1,88 @@
+name: Build Workflow
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths-ignore:
+      - 'docs/**'
+      - 'website/**'
+      - 'contracts/**'
+    tags:
+      - 'v*'   
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    env:
+      NODE_VERSION: 18
+      CARTESI_CLI_VERSION: 0.15.0
+      CARTESI_MACHINE_IMAGE_NAME: devolt-machine
+      CARTESI_NODE_IMAGE_NAME: devolt-node
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        id: setup_buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Run tests
+        run: make test
+        env:
+          BUILDX_BUILDER: ${{ steps.setup_buildx.outputs.name }}
+
+      - name: Extract metadata from Git refs and GitHub events
+        id: extract_metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.CARTESI_MACHINE_IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=ref,event=branch
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install Cartesi CLI
+        run: npm i -g @cartesi/cli@${{ env.CARTESI_CLI_VERSION }}
+        
+      - name: Build Cartesi Machine Image
+        id: build_machine
+        run: make machine
+
+      - name: Build Cartesi Node Image
+        id: build_node
+        run: |
+          docker build \
+          -t validator:latest \
+          -f ./build/Dockerfile.validator . 
+
+      - name: Push Cartesi Machine image
+        run: |
+          docker image tag machine:latest "${{ env.REGISTRY }}/${{ env.CARTESI_MACHINE_IMAGE_NAME }}"
+          docker image push --all-tags "${{ env.REGISTRY }}/${{ env.CARTESI_MACHINE_IMAGE_NAME }}"
+
+      - name: Push Cartesi Node image
+        run: |
+          docker image tag validator:latest "${{ env.REGISTRY }}/${{ env.CARTESI_NODE_IMAGE_NAME }}"
+          docker image push --all-tags "${{ env.REGISTRY }}/${{ env.CARTESI_NODE_IMAGE_NAME }}"
