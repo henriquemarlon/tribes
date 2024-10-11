@@ -50,17 +50,33 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 	}
 
 	if len(bids) == 0 {
-		return nil, fmt.Errorf("no bids placed for this auction")
+		activeAuction.State = entity.AuctionState("canceled")
+		activeAuction.UpdatedAt = metadata.BlockTimestamp
+		res, err := u.AuctionRepository.UpdateAuction(activeAuction)
+		if err != nil {
+			return nil, err
+		}
+		return &FinishAuctionOutputDTO{
+			Id:           res.Id,
+			Creator:      res.Creator,
+			DebtIssued:   res.DebtIssued,
+			InterestRate: res.InterestRate,
+			State:        string(res.State),
+			Bids:         bids,
+			ExpiresAt:    res.ExpiresAt,
+			CreatedAt:    res.CreatedAt,
+			UpdatedAt:    res.UpdatedAt,
+		}, nil
 	}
 
 	sort.Slice(bids, func(i, j int) bool {
 		return bids[i].InterestRate.Cmp(bids[j].InterestRate.Int) < 0
 	})
 
-	debt_issuedRemaining := new(big.Int).Set(activeAuction.DebtIssued.Int)
+	debtIssuedRemaining := new(big.Int).Set(activeAuction.DebtIssued.Int)
 
 	for _, bid := range bids {
-		if debt_issuedRemaining.Sign() == 0 {
+		if debtIssuedRemaining.Sign() == 0 {
 			bid.State = "rejected"
 			bid.UpdatedAt = metadata.BlockTimestamp
 			_, err := u.BidRepository.UpdateBid(bid)
@@ -70,17 +86,17 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 			continue
 		}
 
-		if debt_issuedRemaining.Cmp(bid.Amount.Int) >= 0 {
+		if debtIssuedRemaining.Cmp(bid.Amount.Int) >= 0 {
 			bid.State = "accepted"
 			bid.UpdatedAt = metadata.BlockTimestamp
 			_, err := u.BidRepository.UpdateBid(bid)
 			if err != nil {
 				return nil, err
 			}
-			debt_issuedRemaining.Sub(debt_issuedRemaining, bid.Amount.Int)
+			debtIssuedRemaining.Sub(debtIssuedRemaining, bid.Amount.Int)
 		} else {
 			// Partially accept the bid
-			partiallyAcceptedAmount := new(big.Int).Set(debt_issuedRemaining)
+			partiallyAcceptedAmount := new(big.Int).Set(debtIssuedRemaining)
 			_, err := u.BidRepository.CreateBid(&entity.Bid{
 				AuctionId:    bid.AuctionId,
 				Bidder:       bid.Bidder,
@@ -113,7 +129,7 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 				return nil, err
 			}
 
-			debt_issuedRemaining.SetInt64(0)
+			debtIssuedRemaining.SetInt64(0)
 		}
 	}
 
@@ -126,6 +142,7 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 
 	return &FinishAuctionOutputDTO{
 		Id:           res.Id,
+		Creator:      res.Creator,
 		DebtIssued:   res.DebtIssued,
 		InterestRate: res.InterestRate,
 		State:        string(res.State),

@@ -46,7 +46,6 @@ func NewDApp() *router.Router {
 
 	app.HandleInspect("auction", ih.AuctionInspectHandlers.FindAllAuctionsHandler)
 	app.HandleInspect("auction/{id}", ih.AuctionInspectHandlers.FindAuctionByIdHandler)
-	app.HandleInspect("auction/active", ih.AuctionInspectHandlers.FindActiveAuctionHandler)
 
 	app.HandleInspect("bid", ih.BidInspectHandlers.FindAllBidsHandler)
 	app.HandleInspect("bid/{id}", ih.BidInspectHandlers.FindBidByIdHandler)
@@ -101,7 +100,6 @@ func NewDAppMemory() *router.Router {
 	//////////////////////// Inspect //////////////////////////
 	app.HandleInspect("auction", ih.AuctionInspectHandlers.FindAllAuctionsHandler)
 	app.HandleInspect("auction/{id}", ih.AuctionInspectHandlers.FindAuctionByIdHandler)
-	app.HandleInspect("auction/active", ih.AuctionInspectHandlers.FindActiveAuctionHandler)
 
 	app.HandleInspect("bid", ih.BidInspectHandlers.FindAllBidsHandler)
 	app.HandleInspect("bid/{id}", ih.BidInspectHandlers.FindBidByIdHandler)

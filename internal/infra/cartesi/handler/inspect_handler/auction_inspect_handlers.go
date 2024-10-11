@@ -22,20 +22,6 @@ func NewAuctionInspectHandlers(auctionRepository entity.AuctionRepository) *Auct
 	}
 }
 
-func (h *AuctionInspectHandlers) FindActiveAuctionHandler(env rollmelette.EnvInspector, ctx context.Context) error {
-	findActiveAuction := auction_usecase.NewFindActiveAuctionUseCase(h.AuctionRepository)
-	res, err := findActiveAuction.Execute()
-	if err != nil {
-		return fmt.Errorf("failed to find active auction: %w", err)
-	}
-	activeAuction, err := json.Marshal(res)
-	if err != nil {
-		return fmt.Errorf("failed to marshal active auction: %w", err)
-	}
-	env.Report(activeAuction)
-	return nil
-}
-
 func (h *AuctionInspectHandlers) FindAuctionByIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
 	id, err := strconv.Atoi(router.PathValue(ctx, "id"))
 	if err != nil {
