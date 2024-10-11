@@ -38,12 +38,6 @@ bidings:
 test:
 	@go test -p 1 ./... -coverprofile=./coverage.md -v
 
-.PHONY: deploy_token
-deploy_token:
-	$(START_LOG)
-	@cd contracts && forge script script/DeployVoltToken.s.sol --rpc-url $(RPC_URL) --broadcast --verify --etherscan-api-key $(API_KEY) -vvv
-	$(END_LOG)
-
 .PHONY: coverage
 coverage: test
 	@go tool cover -html=./coverage.md
