@@ -1,27 +1,27 @@
 package auction_usecase
 
 import (
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
-	"github.com/Mugen-Builders/devolt/pkg/custom_type"
 	"github.com/rollmelette/rollmelette"
+	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type CreateAuctionInputDTO struct {
 	Creator      custom_type.Address `json:"creator,omitempty"`
-	DebtIssued   custom_type.BigInt `json:"debt_issued"`
-	InterestRate custom_type.BigInt `json:"interest_rate"`
-	ExpiresAt    int64              `json:"expires_at"`
-	CreatedAt    int64              `json:"created_at"`
+	DebtIssued   custom_type.BigInt  `json:"debt_issued"`
+	InterestRate custom_type.BigInt  `json:"interest_rate"`
+	ExpiresAt    int64               `json:"expires_at"`
+	CreatedAt    int64               `json:"created_at"`
 }
 
 type CreateAuctionOutputDTO struct {
-	Id           uint               `json:"id"`
+	Id           uint                `json:"id"`
 	Creator      custom_type.Address `json:"creator,omitempty"`
-	DebtIssued   custom_type.BigInt `json:"debt_issued"`
-	InterestRate custom_type.BigInt `json:"interest_rate"`
-	State        string             `json:"state"`
-	ExpiresAt    int64              `json:"expires_at"`
-	CreatedAt    int64              `json:"created_at"`
+	DebtIssued   custom_type.BigInt  `json:"debt_issued"`
+	InterestRate custom_type.BigInt  `json:"interest_rate"`
+	State        string              `json:"state"`
+	ExpiresAt    int64               `json:"expires_at"`
+	CreatedAt    int64               `json:"created_at"`
 }
 
 type CreateAuctionUseCase struct {

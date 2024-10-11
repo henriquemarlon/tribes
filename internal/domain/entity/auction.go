@@ -3,7 +3,7 @@ package entity
 import (
 	"errors"
 
-	"github.com/Mugen-Builders/devolt/pkg/custom_type"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 var (
@@ -30,15 +30,15 @@ const (
 )
 
 type Auction struct {
-	Id           uint               `json:"id" gorm:"primaryKey"`
+	Id           uint                `json:"id" gorm:"primaryKey"`
 	Creator      custom_type.Address `json:"creator,omitempty" gorm:"type:text;not null"`
-	DebtIssued   custom_type.BigInt `json:"debt_issued,omitempty" gorm:"type:bigint;not null"`
-	InterestRate custom_type.BigInt `json:"interest_rate,omitempty" gorm:"type:bigint;not null"`
-	State        AuctionState       `json:"state,omitempty" gorm:"type:text;not null"`
-	Bids         []*Bid             `json:"bids,omitempty" gorm:"foreignKey:AuctionId;constraint:OnDelete:CASCADE"`
-	ExpiresAt    int64              `json:"expires_at,omitempty" gorm:"not null"`
-	CreatedAt    int64              `json:"created_at,omitempty" gorm:"not null"`
-	UpdatedAt    int64              `json:"updated_at,omitempty" gorm:"default:0"`
+	DebtIssued   custom_type.BigInt  `json:"debt_issued,omitempty" gorm:"type:bigint;not null"`
+	InterestRate custom_type.BigInt  `json:"interest_rate,omitempty" gorm:"type:bigint;not null"`
+	State        AuctionState        `json:"state,omitempty" gorm:"type:text;not null"`
+	Bids         []*Bid              `json:"bids,omitempty" gorm:"foreignKey:AuctionId;constraint:OnDelete:CASCADE"`
+	ExpiresAt    int64               `json:"expires_at,omitempty" gorm:"not null"`
+	CreatedAt    int64               `json:"created_at,omitempty" gorm:"not null"`
+	UpdatedAt    int64               `json:"updated_at,omitempty" gorm:"default:0"`
 }
 
 func NewAuction(creator custom_type.Address, debt_issued custom_type.BigInt, interestRate custom_type.BigInt, expiresAt int64, createdAt int64) (*Auction, error) {

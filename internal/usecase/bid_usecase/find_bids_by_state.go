@@ -1,7 +1,7 @@
 package bid_usecase
 
 import (
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
+	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
 type FindBidsByStateInputDTO struct {

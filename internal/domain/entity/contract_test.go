@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Mugen-Builders/devolt/pkg/custom_type"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 func TestNewContract(t *testing.T) {

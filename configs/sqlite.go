@@ -6,20 +6,23 @@ import (
 	"os"
 	"sync"
 	"time"
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
-	"github.com/Mugen-Builders/devolt/pkg/custom_type"
+
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 var setupDbOnce = sync.OnceValues(setupSQlite)
+
 func SetupSQlite() (*gorm.DB, error) {
 	return setupDbOnce()
 }
 
 var setupOnceMemory = sync.OnceValues(setupSQliteMemory)
+
 func SetupSQliteMemory() (*gorm.DB, error) {
 	return setupOnceMemory()
 }

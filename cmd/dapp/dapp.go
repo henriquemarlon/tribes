@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/Mugen-Builders/devolt/pkg/router"
 	"log"
+
+	"github.com/tribeshq/tribes/pkg/router"
 )
 
 func NewDApp() *router.Router {
@@ -37,7 +38,7 @@ func NewDApp() *router.Router {
 
 	// app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
-	
+
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
 	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))
 
@@ -93,7 +94,7 @@ func NewDAppMemory() *router.Router {
 
 	// app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 	app.HandleAdvance("withdrawStablecoin", ah.UserAdvanceHandlers.WithdrawHandler)
-	
+
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
 	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))
 

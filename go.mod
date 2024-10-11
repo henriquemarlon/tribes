@@ -1,4 +1,4 @@
-module github.com/Mugen-Builders/devolt
+module github.com/tribeshq/tribes
 
 go 1.22.1
 

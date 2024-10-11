@@ -1,10 +1,10 @@
 package contract_usecase
 
 import (
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
-	"github.com/Mugen-Builders/devolt/pkg/custom_type"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
+	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type UpdateContractInputDTO struct {

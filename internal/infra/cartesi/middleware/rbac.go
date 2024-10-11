@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
-	"github.com/Mugen-Builders/devolt/internal/usecase/user_usecase"
-	"github.com/Mugen-Builders/devolt/pkg/custom_type"
-	"github.com/Mugen-Builders/devolt/pkg/router"
 	"github.com/rollmelette/rollmelette"
+	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
+	"github.com/tribeshq/tribes/pkg/custom_type"
+	"github.com/tribeshq/tribes/pkg/router"
 )
 
 type RBACMiddleware struct {

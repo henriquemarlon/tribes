@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
-	"github.com/Mugen-Builders/devolt/internal/usecase/bid_usecase"
-	"github.com/Mugen-Builders/devolt/internal/usecase/contract_usecase"
-	"github.com/Mugen-Builders/devolt/internal/usecase/user_usecase"
 	"github.com/rollmelette/rollmelette"
+	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/internal/usecase/bid_usecase"
+	"github.com/tribeshq/tribes/internal/usecase/contract_usecase"
+	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
 )
 
 type BidAdvanceHandlers struct {

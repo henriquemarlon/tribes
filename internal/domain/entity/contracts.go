@@ -3,8 +3,8 @@ package entity
 import (
 	"errors"
 
-	"github.com/Mugen-Builders/devolt/pkg/custom_type"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 var (

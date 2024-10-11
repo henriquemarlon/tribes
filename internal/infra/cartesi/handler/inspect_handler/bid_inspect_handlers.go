@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
-	"github.com/Mugen-Builders/devolt/internal/usecase/bid_usecase"
-	"github.com/Mugen-Builders/devolt/pkg/router"
 	"github.com/rollmelette/rollmelette"
+	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/internal/usecase/bid_usecase"
+	"github.com/tribeshq/tribes/pkg/router"
 )
 
 type BidInspectHandlers struct {

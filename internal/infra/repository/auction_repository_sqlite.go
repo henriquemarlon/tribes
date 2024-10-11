@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/Mugen-Builders/devolt/internal/domain/entity"
+	"github.com/tribeshq/tribes/internal/domain/entity"
 	"gorm.io/gorm"
 )
 

@@ -1,6 +1,6 @@
 package contract_usecase
 
-import "github.com/Mugen-Builders/devolt/internal/domain/entity"
+import "github.com/tribeshq/tribes/internal/domain/entity"
 
 type FindAllContractsOutputDTO []*FindContractOutputDTO
 

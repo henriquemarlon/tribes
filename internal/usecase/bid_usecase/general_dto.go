@@ -1,6 +1,6 @@
 package bid_usecase
 
-import "github.com/Mugen-Builders/devolt/pkg/custom_type"
+import "github.com/tribeshq/tribes/pkg/custom_type"
 
 type FindBidOutputDTO struct {
 	Id           uint                `json:"id"`
