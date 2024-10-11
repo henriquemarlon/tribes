@@ -21,8 +21,8 @@ jobs:
     env:
       NODE_VERSION: 18
       CARTESI_CLI_VERSION: 0.15.0
-      CARTESI_MACHINE_IMAGE_NAME: devolt-machine
-      CARTESI_NODE_IMAGE_NAME: devolt-node
+      CARTESI_MACHINE_IMAGE_NAME: tribes-machine
+      CARTESI_NODE_IMAGE_NAME: tribes-node
       REGISTRY: ghcr.io/${{ github.repository_owner }}
     steps:
       - name: Check out repository
