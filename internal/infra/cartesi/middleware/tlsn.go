@@ -1,7 +1,7 @@
 package middleware
 
 /*
-#cgo LDFLAGS: -L./ -lverifier
+#cgo LDFLAGS: -L../../../../cmd/dapp/lib/target/release -lverifier -lpthread -ldl -lm -lstdc++
 #include <stdint.h>
 
 int32_t add_numbers(int32_t a, int32_t b);
@@ -46,7 +46,7 @@ func (m *TLSNMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc) route
 		if user.Role != "creator" {
 			return fmt.Errorf("user with address: %v don't have necessary permission", user.Address)
 		}
-		
+
 		// TODO: call tlsn verifier here
 		// a := C.int32_t(3)
 		// b := C.int32_t(4)
