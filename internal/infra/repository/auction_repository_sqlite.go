@@ -63,7 +63,7 @@ func (r *AuctionRepositorySqlite) UpdateAuction(input *entity.Auction) (*entity.
 		return nil, err
 	}
 
-	auction.InterestRate = input.InterestRate
+	auction.MaxInterestRate = input.MaxInterestRate
 	auction.State = input.State
 	auction.ExpiresAt = input.ExpiresAt
 	auction.UpdatedAt = input.UpdatedAt

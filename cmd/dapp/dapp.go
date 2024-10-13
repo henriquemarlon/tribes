@@ -1,24 +1,39 @@
 package main
 
-import (
-	"log"
+/*
+#cgo LDFLAGS: -L./ -lverifier
+#cgo CFLAGS: -I./include
 
+#include <stdint.h>
+
+int32_t add_numbers(int32_t a, int32_t b);
+*/
+import (
+	"C"
+	"log"
+	"github.com/tribeshq/tribes/configs"
 	"github.com/tribeshq/tribes/pkg/router"
 )
 
 func NewDApp() *router.Router {
+	//////////////////////// Setup Database //////////////////////////
+	db, err := configs.SetupSQlite()
+	if err != nil {
+		log.Fatalf("Failed to setup sqlite database: %v", err)
+	}
+
 	//////////////////////// Setup Handlers //////////////////////////
-	ah, err := NewAdvanceHandlers()
+	ah, err := NewAdvanceHandlers(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize advance handlers from wire: %v", err)
 	}
 
-	ih, err := NewInspectHandlers()
+	ih, err := NewInspectHandlers(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize inspect handlers from wire: %v", err)
 	}
 
-	ms, err := NewMiddlewares()
+	ms, err := NewMiddlewares(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize middlewares from wire: %v", err)
 	}
@@ -36,14 +51,12 @@ func NewDApp() *router.Router {
 	app.HandleAdvance("createAuction", ms.TLSN.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler))
 	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
 
-	// app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
 
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
 	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))
 
 	//////////////////////// Inspect //////////////////////////
-
 	app.HandleInspect("auction", ih.AuctionInspectHandlers.FindAllAuctionsHandler)
 	app.HandleInspect("auction/{id}", ih.AuctionInspectHandlers.FindAuctionByIdHandler)
 
@@ -62,18 +75,24 @@ func NewDApp() *router.Router {
 }
 
 func NewDAppMemory() *router.Router {
+	//////////////////////// Setup Database //////////////////////////
+	db, err := configs.SetupSQliteMemory()
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+
 	//////////////////////// Setup Handlers //////////////////////////
-	ah, err := NewAdvanceHandlersMemory()
+	ah, err := NewAdvanceHandlersMemory(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize advance handlers from wire: %v", err)
 	}
 
-	ih, err := NewInspectHandlersMemory()
+	ih, err := NewInspectHandlersMemory(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize inspect handlers from wire: %v", err)
 	}
 
-	ms, err := NewMiddlewaresMemory()
+	ms, err := NewMiddlewaresMemory(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize middlewares from wire: %v", err)
 	}
@@ -91,7 +110,6 @@ func NewDAppMemory() *router.Router {
 	app.HandleAdvance("createAuction", ms.TLSN.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler))
 	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
 
-	// app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
 
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))

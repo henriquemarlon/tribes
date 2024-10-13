@@ -11,15 +11,15 @@ import (
 )
 
 type FinishAuctionOutputDTO struct {
-	Id           uint                `json:"id"`
-	Creator      custom_type.Address `json:"creator,omitempty"`
-	DebtIssued   custom_type.BigInt  `json:"debt_issued,omitempty"`
-	InterestRate custom_type.BigInt  `json:"interest_rate,omitempty"`
-	State        string              `json:"state,omitempty"`
-	Bids         []*entity.Bid       `json:"bids,omitempty"`
-	ExpiresAt    int64               `json:"expires_at,omitempty"`
-	CreatedAt    int64               `json:"created_at,omitempty"`
-	UpdatedAt    int64               `json:"updated_at,omitempty"`
+	Id              uint                `json:"id"`
+	Creator         custom_type.Address `json:"creator,omitempty"`
+	DebtIssued      custom_type.BigInt  `json:"debt_issued,omitempty"`
+	MaxInterestRate custom_type.BigInt  `json:"max_interest_rate,omitempty"`
+	State           string              `json:"state,omitempty"`
+	Bids            []*entity.Bid       `json:"bids,omitempty"`
+	ExpiresAt       int64               `json:"expires_at,omitempty"`
+	CreatedAt       int64               `json:"created_at,omitempty"`
+	UpdatedAt       int64               `json:"updated_at,omitempty"`
 }
 
 type FinishAuctionUseCase struct {
@@ -57,15 +57,15 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 			return nil, err
 		}
 		return &FinishAuctionOutputDTO{
-			Id:           res.Id,
-			Creator:      res.Creator,
-			DebtIssued:   res.DebtIssued,
-			InterestRate: res.InterestRate,
-			State:        string(res.State),
-			Bids:         bids,
-			ExpiresAt:    res.ExpiresAt,
-			CreatedAt:    res.CreatedAt,
-			UpdatedAt:    res.UpdatedAt,
+			Id:              res.Id,
+			Creator:         res.Creator,
+			DebtIssued:      res.DebtIssued,
+			MaxInterestRate: res.MaxInterestRate,
+			State:           string(res.State),
+			Bids:            bids,
+			ExpiresAt:       res.ExpiresAt,
+			CreatedAt:       res.CreatedAt,
+			UpdatedAt:       res.UpdatedAt,
 		}, nil
 	}
 
@@ -141,14 +141,14 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 	}
 
 	return &FinishAuctionOutputDTO{
-		Id:           res.Id,
-		Creator:      res.Creator,
-		DebtIssued:   res.DebtIssued,
-		InterestRate: res.InterestRate,
-		State:        string(res.State),
-		Bids:         bids,
-		ExpiresAt:    res.ExpiresAt,
-		CreatedAt:    res.CreatedAt,
-		UpdatedAt:    res.UpdatedAt,
+		Id:              res.Id,
+		Creator:         res.Creator,
+		DebtIssued:      res.DebtIssued,
+		MaxInterestRate: res.MaxInterestRate,
+		State:           string(res.State),
+		Bids:            bids,
+		ExpiresAt:       res.ExpiresAt,
+		CreatedAt:       res.CreatedAt,
+		UpdatedAt:       res.UpdatedAt,
 	}, nil
 }

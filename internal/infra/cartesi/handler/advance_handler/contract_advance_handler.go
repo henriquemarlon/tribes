@@ -32,7 +32,7 @@ func (h *ContractAdvanceHandlers) CreateContractHandler(env rollmelette.Env, met
 	if err != nil {
 		return err
 	}
-	env.Notice(append([]byte("created contract - "), contract...))
+	env.Notice(append([]byte("contract created - "), contract...))
 	return nil
 }
 

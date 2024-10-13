@@ -36,7 +36,7 @@ func (h *UserAdvanceHandlers) CreateUserHandler(env rollmelette.Env, metadata ro
 	if err != nil {
 		return err
 	}
-	env.Notice(append([]byte("created user - "), user...))
+	env.Notice(append([]byte("user created - "), user...))
 	return nil
 }
 
@@ -54,7 +54,7 @@ func (h *UserAdvanceHandlers) DeleteUserByAddressHandler(env rollmelette.Env, me
 	if err != nil {
 		return err
 	}
-	env.Notice(append([]byte("deleted user with - "), user...))
+	env.Notice(append([]byte("user deleted - "), user...))
 	return nil
 }
 

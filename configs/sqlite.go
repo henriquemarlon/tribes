@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -15,19 +14,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var setupDbOnce = sync.OnceValues(setupSQlite)
-
 func SetupSQlite() (*gorm.DB, error) {
-	return setupDbOnce()
-}
-
-var setupOnceMemory = sync.OnceValues(setupSQliteMemory)
-
-func SetupSQliteMemory() (*gorm.DB, error) {
-	return setupOnceMemory()
-}
-
-func setupSQlite() (*gorm.DB, error) {
 	logger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -52,12 +39,14 @@ func setupSQlite() (*gorm.DB, error) {
 
 	db.Create(&entity.User{
 		Role:      "admin",
+		Username:  "admin",
 		Address:   custom_type.NewAddress(common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")),
 		CreatedAt: 0,
 	})
 
 	db.Create(&entity.User{
 		Role:      "auctioneer",
+		Username:  "auctioneer",
 		Address:   custom_type.NewAddress(common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4")),
 		CreatedAt: 0,
 	})
@@ -68,7 +57,7 @@ func setupSQlite() (*gorm.DB, error) {
 	return db, nil
 }
 
-func setupSQliteMemory() (*gorm.DB, error) {
+func SetupSQliteMemory() (*gorm.DB, error) {
 	logger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -93,12 +82,14 @@ func setupSQliteMemory() (*gorm.DB, error) {
 
 	db.Create(&entity.User{
 		Role:      "admin",
+		Username:  "admin",
 		Address:   custom_type.NewAddress(common.HexToAddress("0x0142f501EE21f4446009C3505c51d0043feC5c68")),
 		CreatedAt: 0,
 	})
 
 	db.Create(&entity.User{
 		Role:      "auctioneer",
+		Username:  "auctioneer",
 		Address:   custom_type.NewAddress(common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4")),
 		CreatedAt: 0,
 	})

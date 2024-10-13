@@ -21,7 +21,7 @@ func TestNewAuction(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, auction)
 	assert.Equal(t, debt_issued, auction.DebtIssued)
-	assert.Equal(t, interestRate, auction.InterestRate)
+	assert.Equal(t, interestRate, auction.MaxInterestRate)
 	assert.Equal(t, AuctionOngoing, auction.State)
 	assert.Equal(t, expiresAt, auction.ExpiresAt)
 	assert.Equal(t, createdAt, auction.CreatedAt)

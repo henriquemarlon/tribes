@@ -58,7 +58,7 @@ func (h *BidAdvanceHandlers) CreateBidHandler(env rollmelette.Env, metadata roll
 		if err != nil {
 			return err
 		}
-		env.Notice(append([]byte("created bid - "), bid...))
+		env.Notice(append([]byte("bid created - "), bid...))
 		return nil
 	default:
 		return fmt.Errorf("unsupported deposit type")

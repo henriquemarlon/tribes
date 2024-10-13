@@ -35,14 +35,14 @@ func (f *FindAllAuctionsUseCase) Execute() (*FindAllAuctionsOutputDTO, error) {
 			}
 		}
 		output[i] = &FindAuctionOutputDTO{
-			Id:           auction.Id,
-			DebtIssued:   auction.DebtIssued,
-			InterestRate: auction.InterestRate,
-			State:        string(auction.State),
-			Bids:         bids,
-			ExpiresAt:    auction.ExpiresAt,
-			CreatedAt:    auction.CreatedAt,
-			UpdatedAt:    auction.UpdatedAt,
+			Id:              auction.Id,
+			DebtIssued:      auction.DebtIssued,
+			MaxInterestRate: auction.MaxInterestRate,
+			State:           string(auction.State),
+			Bids:            bids,
+			ExpiresAt:       auction.ExpiresAt,
+			CreatedAt:       auction.CreatedAt,
+			UpdatedAt:       auction.UpdatedAt,
 		}
 	}
 	return &output, nil

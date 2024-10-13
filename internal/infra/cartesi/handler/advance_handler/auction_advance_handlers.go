@@ -120,6 +120,6 @@ func (h *AuctionAdvanceHandlers) FinishAuctionHandler(env rollmelette.Env, metad
 		env.Report([]byte(err.Error()))
 	}
 
-	env.Notice([]byte(fmt.Sprintf("finished auction with - id: %v, required amount: %v and price limit per credit: %v", finishedAuction.Id, finishedAuction.DebtIssued.Int, finishedAuction.InterestRate.Int)))
+	env.Notice([]byte(fmt.Sprintf("finished auction with - id: %v, required amount: %v and max interest rate: %v", finishedAuction.Id, finishedAuction.DebtIssued.Int, finishedAuction.MaxInterestRate.Int)))
 	return nil
 }

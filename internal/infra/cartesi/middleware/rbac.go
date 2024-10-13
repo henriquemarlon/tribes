@@ -34,7 +34,7 @@ func (m *RBACMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc, role 
 			}
 			return err
 		}
-		if user.Role != role {
+		if user.Role != role && user.Role != "admin" {
 			return fmt.Errorf("user with address: %v don't have necessary permission: %v", user.Address, role)
 		}
 		return handlerFunc(env, metadata, deposit, payload)

@@ -1,10 +1,6 @@
 package middleware
 
 import (
-	"database/sql"
-	"errors"
-	"fmt"
-
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
@@ -25,18 +21,18 @@ func NewTLSNMiddleware(userRepository entity.UserRepository) *TLSNMiddleware {
 func (m *TLSNMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc) router.AdvanceHandlerFunc {
 	return func(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
 		findUserByAddress := user_usecase.NewFindUserByAddressUseCase(m.UserRepository)
-		user, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
+		_, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
 			Address: custom_type.NewAddress(metadata.MsgSender),
 		})
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("user not found during RBAC middleware check")
-			}
+			// if errors.Is(err, sql.ErrNoRows) {
+			// 	return fmt.Errorf("user not found during RBAC middleware check")
+			// }
 			return err
 		}
-		if user.Role != "creator" {
-			return fmt.Errorf("user with address: %v don't have necessary permission", user.Address)
-		}
+		// if user.Role != "creator" {
+		// 	return fmt.Errorf("user with address: %v don't have necessary permission", user.Address)
+		// }
 		// TODO: call tlsn verifier here
 		return handlerFunc(env, metadata, deposit, payload)
 	}

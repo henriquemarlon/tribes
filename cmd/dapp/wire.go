@@ -5,12 +5,12 @@ package main
 
 import (
 	"github.com/google/wire"
-	"github.com/tribeshq/tribes/configs"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/handler/advance_handler"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/handler/inspect_handler"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/middleware"
 	db "github.com/tribeshq/tribes/internal/infra/repository"
+	"gorm.io/gorm"
 )
 
 var setBidRepositoryDependency = wire.NewSet(
@@ -52,9 +52,8 @@ var setMiddleware = wire.NewSet(
 	middleware.NewRBACMiddleware,
 )
 
-func NewMiddlewares() (*Middlewares, error) {
+func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
 	wire.Build(
-		configs.SetupSQlite,
 		setUserRepositoryDependency,
 		setMiddleware,
 		wire.Struct(new(Middlewares), "*"),
@@ -62,9 +61,8 @@ func NewMiddlewares() (*Middlewares, error) {
 	return nil, nil
 }
 
-func NewMiddlewaresMemory() (*Middlewares, error) {
+func NewMiddlewaresMemory(gormDB *gorm.DB) (*Middlewares, error) {
 	wire.Build(
-		configs.SetupSQliteMemory,
 		setUserRepositoryDependency,
 		setMiddleware,
 		wire.Struct(new(Middlewares), "*"),
@@ -72,9 +70,8 @@ func NewMiddlewaresMemory() (*Middlewares, error) {
 	return nil, nil
 }
 
-func NewAdvanceHandlers() (*AdvanceHandlers, error) {
+func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	wire.Build(
-		configs.SetupSQlite,
 		setBidRepositoryDependency,
 		setUserRepositoryDependency,
 		setAuctionRepositoryDependency,
@@ -85,9 +82,8 @@ func NewAdvanceHandlers() (*AdvanceHandlers, error) {
 	return nil, nil
 }
 
-func NewAdvanceHandlersMemory() (*AdvanceHandlers, error) {
+func NewAdvanceHandlersMemory(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	wire.Build(
-		configs.SetupSQliteMemory,
 		setBidRepositoryDependency,
 		setUserRepositoryDependency,
 		setAuctionRepositoryDependency,
@@ -98,9 +94,8 @@ func NewAdvanceHandlersMemory() (*AdvanceHandlers, error) {
 	return nil, nil
 }
 
-func NewInspectHandlers() (*InspectHandlers, error) {
+func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
 	wire.Build(
-		configs.SetupSQlite,
 		setBidRepositoryDependency,
 		setUserRepositoryDependency,
 		setAuctionRepositoryDependency,
@@ -111,9 +106,8 @@ func NewInspectHandlers() (*InspectHandlers, error) {
 	return nil, nil
 }
 
-func NewInspectHandlersMemory() (*InspectHandlers, error) {
+func NewInspectHandlersMemory(gormDB *gorm.DB) (*InspectHandlers, error) {
 	wire.Build(
-		configs.SetupSQliteMemory,
 		setBidRepositoryDependency,
 		setUserRepositoryDependency,
 		setAuctionRepositoryDependency,

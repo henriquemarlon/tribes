@@ -29,6 +29,7 @@ const (
 	BidStateAccepted BidState = "accepted"
 	BidStateExpired  BidState = "partially_accepted"
 	BidStateRejected BidState = "rejected"
+	BidStatePaid     BidState = "paid"
 )
 
 type Bid struct {

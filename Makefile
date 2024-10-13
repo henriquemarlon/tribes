@@ -36,7 +36,7 @@ bidings:
 
 .PHONY: test
 test:
-	@go test -p 1 ./... -coverprofile=./coverage.md -v
+	@go test ./... -coverprofile=./coverage.md -v
 
 .PHONY: coverage
 coverage: test

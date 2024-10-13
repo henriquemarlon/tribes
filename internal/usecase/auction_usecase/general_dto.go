@@ -5,15 +5,15 @@ import (
 )
 
 type FindAuctionOutputDTO struct {
-	Id           uint                       `json:"id"`
-	Creator      custom_type.Address        `json:"creator"`
-	DebtIssued   custom_type.BigInt         `json:"debt_issued"`
-	InterestRate custom_type.BigInt         `json:"interest_rate"`
-	State        string                     `json:"state"`
-	Bids         []*FindAuctionOutputSubDTO `json:"bids"`
-	ExpiresAt    int64                      `json:"expires_at"`
-	CreatedAt    int64                      `json:"created_at"`
-	UpdatedAt    int64                      `json:"updated_at"`
+	Id              uint                       `json:"id"`
+	Creator         custom_type.Address        `json:"creator"`
+	DebtIssued      custom_type.BigInt         `json:"debt_issued"`
+	MaxInterestRate custom_type.BigInt         `json:"max_interest_rate"`
+	State           string                     `json:"state"`
+	Bids            []*FindAuctionOutputSubDTO `json:"bids"`
+	ExpiresAt       int64                      `json:"expires_at"`
+	CreatedAt       int64                      `json:"created_at"`
+	UpdatedAt       int64                      `json:"updated_at"`
 }
 
 type FindAuctionOutputSubDTO struct {

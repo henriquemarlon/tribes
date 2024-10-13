@@ -48,16 +48,16 @@ func (c *CreateBidUseCase) Execute(input *CreateBidInputDTO, deposit rollmelette
 	if metadata.BlockTimestamp > activeAuction.ExpiresAt {
 		return nil, fmt.Errorf("active auction expired, cannot create bid")
 	}
-	volt, err := c.ContractRepository.FindContractBySymbol("VOLT")
+	stablecoin, err := c.ContractRepository.FindContractBySymbol("STABLECOIN")
 	if err != nil {
 		return nil, err
 	}
-	if deposit.(*rollmelette.ERC20Deposit).Token != volt.Address.Address {
+	if deposit.(*rollmelette.ERC20Deposit).Token != stablecoin.Address.Address {
 		return nil, fmt.Errorf("invalid contract address provided for bid creation: %v", deposit.(*rollmelette.ERC20Deposit).Token)
 	}
 
-	if input.Price.Cmp(activeAuction.InterestRate.Int) == 1 {
-		return nil, fmt.Errorf("bid price exceeds active auction price limit")
+	if input.Price.Cmp(activeAuction.MaxInterestRate.Int) == 1 {
+		return nil, fmt.Errorf("bid price exceeds active auction max interest rate")
 	}
 
 	bid, err := entity.NewBid(activeAuction.Id, custom_type.NewAddress(deposit.(*rollmelette.ERC20Deposit).Sender), custom_type.NewBigInt(deposit.(*rollmelette.ERC20Deposit).Amount), input.Price, metadata.BlockTimestamp)
