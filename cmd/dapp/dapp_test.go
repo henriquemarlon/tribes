@@ -25,19 +25,6 @@ func (s *AppSuite) SetupTest() {
 	s.tester = rollmelette.NewTester(app)
 }
 
-// ////////////// User ///////////////////
-
-func (s *AppSuite) TestItCreateUser() {
-	admin := common.HexToAddress("0x0142f501EE21f4446009C3505c51d0043feC5c68")
-	input := []byte(`{"path":"createUser","payload":{"address":"0x70997970C51812dc3A010C7d01b50e0d17dc79C8","role":"admin","username":"vitalik"}}`)
-	expectedOutput := fmt.Sprintf(`user created - {"id":3,"role":"admin","username":"vitalik","address":"0x70997970C51812dc3A010C7d01b50e0d17dc79C8","created_at":%d}`, time.Now().Unix())
-	result := s.tester.Advance(admin, input)
-	s.Len(result.Notices, 1)
-	s.Equal(expectedOutput, string(result.Notices[0].Payload))
-}
-
-////////////// Auction //////////////////
-
 func (s *AppSuite) TestItCreateAuctionAndFinishAuctionWithoutPartialSellingAndPayingAllBidder() {
 	admin := common.HexToAddress("0x0142f501EE21f4446009C3505c51d0043feC5c68")
 	creator := common.HexToAddress("0x0000000000000000000000000000000000000007")
@@ -64,7 +51,7 @@ func (s *AppSuite) TestItCreateAuctionAndFinishAuctionWithoutPartialSellingAndPa
 
 	createAuctionInput := []byte(fmt.Sprintf(`{"path":"createAuction","payload":{"max_interest_rate":"10","expires_at":%d,"debt_issued":%d}}`, time.Now().Add(5*time.Second).Unix(), 2020))
 	result = s.tester.Advance(creator, createAuctionInput)
-	expectedOutput = fmt.Sprintf(`created auction - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"2020","max_interest_rate":"10","state":"ongoing","expires_at":%d,"created_at":%d}`, time.Now().Add(5*time.Second).Unix(), time.Now().Unix())
+	expectedOutput = fmt.Sprintf(`auction created - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"2020","max_interest_rate":"10","state":"ongoing","expires_at":%d,"created_at":%d}`, time.Now().Add(5*time.Second).Unix(), time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
@@ -102,8 +89,35 @@ func (s *AppSuite) TestItCreateAuctionAndFinishAuctionWithoutPartialSellingAndPa
 
 	finishAuctionInput := []byte(`{"path":"finishAuction"}`)
 	result = s.tester.Advance(admin, finishAuctionInput)
-	expectedOutput = `finished auction with - id: 1, required amount: 2020 and max interest rate: 10`
+	expectedOutput = fmt.Sprintf(`auction finished - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"2020","max_interest_rate":"10","state":"finished","bids":[{"id":3,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000003","amount":"200","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":5,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":4,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000004","amount":"300","interest_rate":"6","state":"accepted","created_at":%d,"updated_at":%d},{"id":2,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000002","amount":"520","interest_rate":"8","state":"accepted","created_at":%d,"updated_at":%d},{"id":1,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000001","amount":"600","interest_rate":"9","state":"accepted","created_at":%d,"updated_at":%d}],"expires_at":%d,"created_at":%d,"updated_at":%d}`, time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(),time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(),time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
+	creatorWithdrawInput := []byte(`{"path":"withdraw"}`)
+	expectedNoticePayload := `withdrawn STABLECOIN of 1919 from 0x0000000000000000000000000000000000000007 with voucher index: 1`
+	expectedWithdrawVoucherPayload := make([]byte, 0, 4+32+32)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, 0xa9, 0x05, 0x9c, 0xbb)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, make([]byte, 12)...)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, creator[:]...)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, big.NewInt(1919).FillBytes(make([]byte, 32))...)
+	withdrawResult := s.tester.Advance(creator, creatorWithdrawInput)
+	s.Len(withdrawResult.Notices, 1)
+	s.Len(withdrawResult.Vouchers, 1)
+	s.Equal(expectedWithdrawVoucherPayload, withdrawResult.Vouchers[0].Payload)
+	s.Equal(common.HexToAddress("0x0000000000000000000000000000000000000009"), withdrawResult.Vouchers[0].Destination)
+	s.Equal(expectedNoticePayload, string(withdrawResult.Notices[0].Payload))
+
+	tribesProfitWithdrawInput := []byte(`{"path":"withdrawApp"}`)
+	expectedNoticePayload = `withdrawn STABLECOIN of 101 from 0x0142f501EE21f4446009C3505c51d0043feC5c68 with voucher index: 1`
+	expectedWithdrawVoucherPayload = make([]byte, 0, 4+32+32)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, 0xa9, 0x05, 0x9c, 0xbb)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, make([]byte, 12)...)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, admin[:]...)
+	expectedWithdrawVoucherPayload = append(expectedWithdrawVoucherPayload, big.NewInt(101).FillBytes(make([]byte, 32))...)
+	withdrawResult = s.tester.Advance(admin, tribesProfitWithdrawInput)
+	s.Len(withdrawResult.Notices, 1)
+	s.Len(withdrawResult.Vouchers, 1)
+	s.Equal(expectedWithdrawVoucherPayload, withdrawResult.Vouchers[0].Payload)
+	s.Equal(common.HexToAddress("0x0000000000000000000000000000000000000009"), withdrawResult.Vouchers[0].Destination)
+	s.Equal(expectedNoticePayload, string(withdrawResult.Notices[0].Payload))
 }

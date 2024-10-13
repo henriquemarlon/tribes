@@ -3,11 +3,11 @@ package advance_handler
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/auction_usecase"
-	"github.com/tribeshq/tribes/internal/usecase/bid_usecase"
 	"github.com/tribeshq/tribes/internal/usecase/contract_usecase"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
 )
@@ -47,13 +47,13 @@ func (h *AuctionAdvanceHandlers) CreateAuctionHandler(env rollmelette.Env, metad
 	if err != nil {
 		return err
 	}
-	env.Notice(append([]byte("created auction - "), auction...))
+	env.Notice(append([]byte("auction created - "), auction...))
 	return nil
 }
 
 func (h *AuctionAdvanceHandlers) FinishAuctionHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
 	finishAuction := auction_usecase.NewFinishAuctionUseCase(h.AuctionRepository, h.BidRepository)
-	finishedAuction, err := finishAuction.Execute(metadata)
+	res, err := finishAuction.Execute(metadata)
 	if err != nil {
 		return err
 	}
@@ -75,51 +75,32 @@ func (h *AuctionAdvanceHandlers) FinishAuctionHandler(env rollmelette.Env, metad
 		return err
 	}
 
-	findBidsByState := bid_usecase.NewFindBidsByStateUseCase(h.BidRepository)
-	acceptedBids, err := findBidsByState.Execute(&bid_usecase.FindBidsByStateInputDTO{
-		AuctionId: finishedAuction.Id,
-		State:     "accepted",
-	})
-	if err != nil {
-		return err
-	}
-	for _, bid := range acceptedBids {
-		if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, finishedAuction.Creator.Address, bid.InterestRate.Int); err != nil {
-			env.Report([]byte(err.Error()))
+	var amountRaised *big.Int = big.NewInt(0)
+
+	for _, bid := range res.Bids {
+		switch bid.State {
+		case "accepted", "partially_accepted":
+			if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, res.Creator.Address, bid.Amount.Int); err != nil {
+				env.Report([]byte(err.Error()))
+			}
+			amountRaised.Add(amountRaised, bid.Amount.Int)
+		case "rejected":
+			if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, bid.Bidder.Address, bid.Amount.Int); err != nil {
+				env.Report([]byte(err.Error()))
+			}
 		}
 	}
 
-	partialAcceptedBids, err := findBidsByState.Execute(&bid_usecase.FindBidsByStateInputDTO{
-		AuctionId: finishedAuction.Id,
-		State:     "partially_accepted",
-	})
-	if err != nil {
-		return err
-	}
-	for _, bid := range partialAcceptedBids {
-		if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, finishedAuction.Creator.Address, bid.InterestRate.Int); err != nil {
-			env.Report([]byte(err.Error()))
-		}
-	}
-
-	rejectedBids, err := findBidsByState.Execute(&bid_usecase.FindBidsByStateInputDTO{
-		AuctionId: finishedAuction.Id,
-		State:     "rejected",
-	})
-	if err != nil {
-		return err
-	}
-	for _, bid := range rejectedBids {
-		if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, bid.Bidder.Address, bid.Amount.Int); err != nil {
-			env.Report([]byte(err.Error()))
-		}
-	}
-
-	profit := env.ERC20BalanceOf(stablecoin.Address.Address, auctioneer.Address.Address)
-	if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, application, profit); err != nil {
+	tribesProfit := new(big.Int).Div(new(big.Int).Mul(amountRaised, big.NewInt(5)), big.NewInt(100))
+	if err := env.ERC20Transfer(stablecoin.Address.Address, res.Creator.Address, application, tribesProfit); err != nil {
 		env.Report([]byte(err.Error()))
 	}
 
-	env.Notice([]byte(fmt.Sprintf("finished auction with - id: %v, required amount: %v and max interest rate: %v", finishedAuction.Id, finishedAuction.DebtIssued.Int, finishedAuction.MaxInterestRate.Int)))
+	finishedAuction, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+
+	env.Notice(append([]byte("auction finished - "), finishedAuction...))
 	return nil
 }

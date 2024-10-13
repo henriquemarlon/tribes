@@ -1,16 +1,8 @@
 package main
 
-/*
-#cgo LDFLAGS: -L./ -lverifier
-#cgo CFLAGS: -I./include
-
-#include <stdint.h>
-
-int32_t add_numbers(int32_t a, int32_t b);
-*/
 import (
-	"C"
 	"log"
+
 	"github.com/tribeshq/tribes/configs"
 	"github.com/tribeshq/tribes/pkg/router"
 )
@@ -52,6 +44,7 @@ func NewDApp() *router.Router {
 	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
 
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
+	app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
 	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))
@@ -111,6 +104,7 @@ func NewDAppMemory() *router.Router {
 	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
 
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
+	app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
 	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))

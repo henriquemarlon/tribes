@@ -104,6 +104,7 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 				InterestRate: bid.InterestRate,
 				State:        "partially_accepted",
 				CreatedAt:    metadata.BlockTimestamp,
+				UpdatedAt:    metadata.BlockTimestamp,
 			})
 			if err != nil {
 				return nil, err
@@ -118,6 +119,7 @@ func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAu
 				InterestRate: bid.InterestRate,
 				State:        "rejected",
 				CreatedAt:    metadata.BlockTimestamp,
+				UpdatedAt:    metadata.BlockTimestamp,
 			})
 			if err != nil {
 				return nil, err

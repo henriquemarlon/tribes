@@ -17,7 +17,7 @@ ARG APP_NAME
 WORKDIR /app
 
 # Install host build dependencies.
-RUN apk add --no-cache clang lld musl-dev libressl-dev pkgconfig git
+RUN apk add --no-cache clang lld libressl-dev pkgconfig
 
 RUN rustup target add riscv64gc-unknown-linux-gnu
 
@@ -44,7 +44,7 @@ ARG APP_NAME
 WORKDIR /src
 
 # Install Go dependencies
-RUN apt-get update && apt-get install -y gcc musl-dev libstdc++6 g++-riscv64-linux-gnu
+RUN apt-get update && apt-get install -y gcc g++-riscv64-linux-gnu
 
 COPY --from=rust_build /usr/lib/lib${APP_NAME}.a /usr/lib/
 
