@@ -38,7 +38,7 @@ func (h *AuctionAdvanceHandlers) CreateAuctionHandler(env rollmelette.Env, metad
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
-	createAuction := auction_usecase.NewCreateAuctionUseCase(h.AuctionRepository)
+	createAuction := auction_usecase.NewCreateAuctionUseCase(h.UserRepository, h.AuctionRepository)
 	res, err := createAuction.Execute(input, metadata)
 	if err != nil {
 		return err
@@ -52,8 +52,12 @@ func (h *AuctionAdvanceHandlers) CreateAuctionHandler(env rollmelette.Env, metad
 }
 
 func (h *AuctionAdvanceHandlers) FinishAuctionHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
-	finishAuction := auction_usecase.NewFinishAuctionUseCase(h.AuctionRepository, h.BidRepository)
-	res, err := finishAuction.Execute(metadata)
+	var input *auction_usecase.FinishAuctionInputDTO
+	if err := json.Unmarshal(payload, &input); err != nil {
+		return err
+	}
+	finishAuction := auction_usecase.NewFinishAuctionUseCase(h.AuctionRepository, h.UserRepository, h.BidRepository)
+	res, err := finishAuction.Execute(input, metadata)
 	if err != nil {
 		return err
 	}
@@ -69,6 +73,12 @@ func (h *AuctionAdvanceHandlers) FinishAuctionHandler(env rollmelette.Env, metad
 		return err
 	}
 
+	findUserByUsername := user_usecase.NewFindUserByUsernameUseCase(h.UserRepository)
+	user, err := findUserByUsername.Execute(&user_usecase.FindUserByUsernameInputDTO{Username: res.Creator})
+	if err != nil {
+		return err
+	}
+
 	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
 	stablecoin, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{Symbol: "STABLECOIN"})
 	if err != nil {
@@ -80,7 +90,7 @@ func (h *AuctionAdvanceHandlers) FinishAuctionHandler(env rollmelette.Env, metad
 	for _, bid := range res.Bids {
 		switch bid.State {
 		case "accepted", "partially_accepted":
-			if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, res.Creator.Address, bid.Amount.Int); err != nil {
+			if err := env.ERC20Transfer(stablecoin.Address.Address, auctioneer.Address.Address, user.Address.Address, bid.Amount.Int); err != nil {
 				env.Report([]byte(err.Error()))
 			}
 			amountRaised.Add(amountRaised, bid.Amount.Int)
@@ -92,7 +102,7 @@ func (h *AuctionAdvanceHandlers) FinishAuctionHandler(env rollmelette.Env, metad
 	}
 
 	tribesProfit := new(big.Int).Div(new(big.Int).Mul(amountRaised, big.NewInt(5)), big.NewInt(100))
-	if err := env.ERC20Transfer(stablecoin.Address.Address, res.Creator.Address, application, tribesProfit); err != nil {
+	if err := env.ERC20Transfer(stablecoin.Address.Address, user.Address.Address, application, tribesProfit); err != nil {
 		env.Report([]byte(err.Error()))
 	}
 

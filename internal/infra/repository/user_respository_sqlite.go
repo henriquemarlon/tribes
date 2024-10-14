@@ -26,6 +26,15 @@ func (r *UserRepositorySqlite) CreateUser(input *entity.User) (*entity.User, err
 	return input, nil
 }
 
+func (r *UserRepositorySqlite) FindUserByUsername(username string) (*entity.User, error) {
+	var user entity.User
+	err := r.Db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *UserRepositorySqlite) FindUserByRole(role string) (*entity.User, error) {
 	var user entity.User
 	err := r.Db.Where("role = ?", role).First(&user).Error

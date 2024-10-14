@@ -23,22 +23,49 @@ func (r *AuctionRepositorySqlite) CreateAuction(input *entity.Auction) (*entity.
 	return input, nil
 }
 
-func (r *AuctionRepositorySqlite) FindActiveAuction() (*entity.Auction, error) {
-	var auction entity.Auction
-	err := r.Db.Preload("Bids").Where("state = ?", "ongoing").First(&auction).Error
+func (r *AuctionRepositorySqlite) FindAuctionsByCreator(creator string) ([]*entity.Auction, error) {
+	var auctions []*entity.Auction
+	err := r.Db.Preload("Bids").Where("creator = ?", creator).Find(&auctions).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, entity.ErrAuctionNotFound
 		}
 		return nil, err
 	}
-	return &auction, nil
+	return auctions, nil
+}
+
+func (r *AuctionRepositorySqlite) FindAuctionByStateFromCreator(creator string, state string) ([]*entity.Auction, error) {
+	var auctions []*entity.Auction
+	err := r.Db.Preload("Bids").Where("creator = ? AND state = ?", creator, state).Find(&auctions).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrAuctionNotFound
+		}
+		return nil, err
+	}
+	return auctions, nil
+}
+
+func (r *AuctionRepositorySqlite) FindAuctionsByState(state string) ([]*entity.Auction, error) {
+	var auctions []*entity.Auction
+	err := r.Db.Preload("Bids").Where("state = ?", state).Find(&auctions).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrAuctionNotFound
+		}
+		return nil, err
+	}
+	return auctions, nil
 }
 
 func (r *AuctionRepositorySqlite) FindAuctionById(id uint) (*entity.Auction, error) {
 	var auction entity.Auction
 	err := r.Db.Preload("Bids").First(&auction, id).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrAuctionNotFound
+		}
 		return nil, err
 	}
 	return &auction, nil

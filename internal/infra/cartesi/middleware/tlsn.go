@@ -1,11 +1,5 @@
 package middleware
 
-/*
-#cgo LDFLAGS: -L../../../../cmd/dapp/lib/target/release -lverifier -lpthread -ldl -lm -lstdc++
-#include <stdint.h>
-
-int32_t add_numbers(int32_t a, int32_t b);
-*/
 import "C"
 
 import (

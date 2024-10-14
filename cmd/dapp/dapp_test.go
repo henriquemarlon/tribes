@@ -51,35 +51,35 @@ func (s *AppSuite) TestItCreateAuctionAndFinishAuctionWithoutPartialSellingAndPa
 
 	createAuctionInput := []byte(fmt.Sprintf(`{"path":"createAuction","payload":{"max_interest_rate":"10","expires_at":%d,"debt_issued":%d}}`, time.Now().Add(5*time.Second).Unix(), 2020))
 	result = s.tester.Advance(creator, createAuctionInput)
-	expectedOutput = fmt.Sprintf(`auction created - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"2020","max_interest_rate":"10","state":"ongoing","expires_at":%d,"created_at":%d}`, time.Now().Add(5*time.Second).Unix(), time.Now().Unix())
+	expectedOutput = fmt.Sprintf(`auction created - {"id":1,"creator":"vitalik","debt_issued":"2020","max_interest_rate":"10","state":"ongoing","expires_at":%d,"created_at":%d}`, time.Now().Add(5*time.Second).Unix(), time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	createBidInput := []byte(`{"path": "createBid", "payload": {"interest_rate":"9"}}`)
+	createBidInput := []byte(`{"path": "createBid", "payload": {"creator": "vitalik","interest_rate":"9"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), bidder01, big.NewInt(600), createBidInput)
 	expectedOutput = fmt.Sprintf(`bid created - {"id":1,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000001","amount":"600","interest_rate":"9","state":"pending","created_at":%d}`, time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	createBidInput = []byte(`{"path": "createBid", "payload": {"interest_rate":"8"}}`)
+	createBidInput = []byte(`{"path": "createBid", "payload": {"creator": "vitalik","interest_rate":"8"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), bidder02, big.NewInt(520), createBidInput)
 	expectedOutput = fmt.Sprintf(`bid created - {"id":2,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000002","amount":"520","interest_rate":"8","state":"pending","created_at":%d}`, time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	createBidInput = []byte(`{"path": "createBid", "payload": {"interest_rate":"4"}}`)
+	createBidInput = []byte(`{"path": "createBid", "payload": {"creator": "vitalik","interest_rate":"4"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), bidder03, big.NewInt(200), createBidInput)
 	expectedOutput = fmt.Sprintf(`bid created - {"id":3,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000003","amount":"200","interest_rate":"4","state":"pending","created_at":%d}`, time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	createBidInput = []byte(`{"path": "createBid", "payload": {"interest_rate":"6"}}`)
+	createBidInput = []byte(`{"path": "createBid", "payload": {"creator": "vitalik","interest_rate":"6"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), bidder04, big.NewInt(300), createBidInput)
 	expectedOutput = fmt.Sprintf(`bid created - {"id":4,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000004","amount":"300","interest_rate":"6","state":"pending","created_at":%d}`, time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	createBidInput = []byte(`{"path": "createBid", "payload": {"interest_rate":"4"}}`)
+	createBidInput = []byte(`{"path": "createBid", "payload": {"creator": "vitalik","interest_rate":"4"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), bidder05, big.NewInt(400), createBidInput)
 	expectedOutput = fmt.Sprintf(`bid created - {"id":5,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"pending","created_at":%d}`, time.Now().Unix())
 	s.Len(result.Notices, 1)
@@ -87,9 +87,9 @@ func (s *AppSuite) TestItCreateAuctionAndFinishAuctionWithoutPartialSellingAndPa
 
 	time.Sleep(5 * time.Second)
 
-	finishAuctionInput := []byte(`{"path":"finishAuction"}`)
+	finishAuctionInput := []byte(`{"path":"finishAuction", "payload":{"creator":"vitalik"}}`)
 	result = s.tester.Advance(admin, finishAuctionInput)
-	expectedOutput = fmt.Sprintf(`auction finished - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"2020","max_interest_rate":"10","state":"finished","bids":[{"id":3,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000003","amount":"200","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":5,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":4,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000004","amount":"300","interest_rate":"6","state":"accepted","created_at":%d,"updated_at":%d},{"id":2,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000002","amount":"520","interest_rate":"8","state":"accepted","created_at":%d,"updated_at":%d},{"id":1,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000001","amount":"600","interest_rate":"9","state":"accepted","created_at":%d,"updated_at":%d}],"expires_at":%d,"created_at":%d,"updated_at":%d}`, time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(),time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(),time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix())
+	expectedOutput = fmt.Sprintf(`auction finished - {"id":1,"creator":"vitalik","debt_issued":"2020","max_interest_rate":"10","state":"finished","bids":[{"id":3,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000003","amount":"200","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":5,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":4,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000004","amount":"300","interest_rate":"6","state":"accepted","created_at":%d,"updated_at":%d},{"id":2,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000002","amount":"520","interest_rate":"8","state":"accepted","created_at":%d,"updated_at":%d},{"id":1,"auction_id":1,"bidder":"0x0000000000000000000000000000000000000001","amount":"600","interest_rate":"9","state":"accepted","created_at":%d,"updated_at":%d}],"expires_at":%d,"created_at":%d,"updated_at":%d}`, time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(),time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(),time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix(), time.Now().Unix(), time.Now().Add(-5 * time.Second).Unix(), time.Now().Unix())
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 

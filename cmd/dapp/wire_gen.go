@@ -16,10 +16,6 @@ import (
 	"gorm.io/gorm"
 )
 
-import (
-	_ "unsafe"
-)
-
 // Injectors from wire.go:
 
 func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {

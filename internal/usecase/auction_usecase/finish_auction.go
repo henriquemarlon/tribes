@@ -10,35 +10,45 @@ import (
 	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
+type FinishAuctionInputDTO struct {
+	Creator string `json:"creator"`
+}
+
 type FinishAuctionOutputDTO struct {
-	Id              uint                `json:"id"`
-	Creator         custom_type.Address `json:"creator,omitempty"`
-	DebtIssued      custom_type.BigInt  `json:"debt_issued,omitempty"`
-	MaxInterestRate custom_type.BigInt  `json:"max_interest_rate,omitempty"`
-	State           string              `json:"state,omitempty"`
-	Bids            []*entity.Bid       `json:"bids,omitempty"`
-	ExpiresAt       int64               `json:"expires_at,omitempty"`
-	CreatedAt       int64               `json:"created_at,omitempty"`
-	UpdatedAt       int64               `json:"updated_at,omitempty"`
+	Id              uint               `json:"id"`
+	Creator         string             `json:"creator,omitempty"`
+	DebtIssued      custom_type.BigInt `json:"debt_issued,omitempty"`
+	MaxInterestRate custom_type.BigInt `json:"max_interest_rate,omitempty"`
+	State           string             `json:"state,omitempty"`
+	Bids            []*entity.Bid      `json:"bids,omitempty"`
+	ExpiresAt       int64              `json:"expires_at,omitempty"`
+	CreatedAt       int64              `json:"created_at,omitempty"`
+	UpdatedAt       int64              `json:"updated_at,omitempty"`
 }
 
 type FinishAuctionUseCase struct {
 	BidRepository     entity.BidRepository
+	UserRepository    entity.UserRepository
 	AuctionRepository entity.AuctionRepository
 }
 
-func NewFinishAuctionUseCase(auctionRepository entity.AuctionRepository, bidRepository entity.BidRepository) *FinishAuctionUseCase {
+func NewFinishAuctionUseCase(auctionRepository entity.AuctionRepository, userRepository entity.UserRepository, bidRepository entity.BidRepository) *FinishAuctionUseCase {
 	return &FinishAuctionUseCase{
-		AuctionRepository: auctionRepository,
 		BidRepository:     bidRepository,
+		UserRepository:    userRepository,
+		AuctionRepository: auctionRepository,
 	}
 }
 
-func (u *FinishAuctionUseCase) Execute(metadata rollmelette.Metadata) (*FinishAuctionOutputDTO, error) {
-	activeAuction, err := u.AuctionRepository.FindActiveAuction()
+func (u *FinishAuctionUseCase) Execute(input *FinishAuctionInputDTO, metadata rollmelette.Metadata) (*FinishAuctionOutputDTO, error) {
+	auctions, err := u.AuctionRepository.FindAuctionByStateFromCreator(input.Creator, string(entity.AuctionState("ongoing")))
 	if err != nil {
 		return nil, err
 	}
+	if len(auctions) == 0 {
+		return nil, fmt.Errorf("no active auction found, cannot finish auction")
+	}
+	activeAuction := auctions[0]
 
 	if metadata.BlockTimestamp < activeAuction.ExpiresAt {
 		return nil, fmt.Errorf("active auction not expired, you can't finish it yet")

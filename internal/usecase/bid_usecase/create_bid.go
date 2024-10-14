@@ -9,7 +9,8 @@ import (
 )
 
 type CreateBidInputDTO struct {
-	Price custom_type.BigInt `json:"interest_rate"`
+	Creator string             `json:"creator"`
+	Price   custom_type.BigInt `json:"interest_rate"`
 }
 
 type CreateBidOutputDTO struct {
@@ -37,12 +38,18 @@ func NewCreateBidUseCase(bidRepository entity.BidRepository, contractRepository 
 }
 
 func (c *CreateBidUseCase) Execute(input *CreateBidInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*CreateBidOutputDTO, error) {
-	activeAuction, err := c.AuctionRepository.FindActiveAuction()
+	auctions, err := c.AuctionRepository.FindAuctionByStateFromCreator(input.Creator, string(entity.AuctionState("ongoing")))
 	if err != nil {
 		return nil, err
 	}
+	var activeAuction *entity.Auction
+	for _, auction := range auctions {
+		if auction.State == entity.AuctionOngoing {
+			activeAuction = auction
+		}
+	}
 	if activeAuction == nil {
-		return nil, fmt.Errorf("no active auction found, cannot create bid")
+		return nil, fmt.Errorf("no active auction found, cannot create bid for creator: %v", input.Creator)
 	}
 
 	if metadata.BlockTimestamp > activeAuction.ExpiresAt {
@@ -68,7 +75,6 @@ func (c *CreateBidUseCase) Execute(input *CreateBidInputDTO, deposit rollmelette
 	if err != nil {
 		return nil, err
 	}
-
 	return &CreateBidOutputDTO{
 		Id:           res.Id,
 		AuctionId:    res.AuctionId,

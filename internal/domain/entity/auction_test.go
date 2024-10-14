@@ -5,13 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 func TestNewAuction(t *testing.T) {
-	creator := custom_type.Address{Address: common.HexToAddress("0x123")}
+	creator := "matt"
 	debt_issued := custom_type.BigInt{Int: big.NewInt(100)}
 	interestRate := custom_type.BigInt{Int: big.NewInt(50)}
 	createdAt := time.Now().Unix()
@@ -28,7 +27,7 @@ func TestNewAuction(t *testing.T) {
 }
 
 func TestNewAuction_Fail_InvalidAuction(t *testing.T) {
-	creator := custom_type.Address{Address: common.HexToAddress("0x123")}
+	creator := "matt"
 	debt_issued := custom_type.BigInt{Int: big.NewInt(0)}
 	interestRate := custom_type.BigInt{Int: big.NewInt(50)}
 	createdAt := time.Now().Unix()

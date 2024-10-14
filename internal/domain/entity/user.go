@@ -2,7 +2,6 @@ package entity
 
 import (
 	"errors"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/pkg/custom_type"
 )
@@ -14,6 +13,7 @@ var (
 
 type UserRepository interface {
 	CreateUser(User *User) (*User, error)
+	FindUserByUsername(username string) (*User, error)
 	FindUserByRole(role string) (*User, error)
 	FindUserByAddress(address custom_type.Address) (*User, error)
 	FindAllUsers() ([]*User, error)
