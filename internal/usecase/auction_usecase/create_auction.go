@@ -43,6 +43,9 @@ func (c *CreateAuctionUseCase) Execute(input *CreateAuctionInputDTO, metadata ro
 		return nil, err
 	}
 	auctions, err := c.AuctionRepository.FindAuctionsByCreator(creator.Username)
+	if err != nil {
+		return nil, err
+	}
 	for _, auction := range auctions {
 		if auction.State == entity.AuctionOngoing || auction.State == entity.AuctionFinished {
 			return nil, fmt.Errorf("creator already has an non paid auction")
