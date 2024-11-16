@@ -11,7 +11,6 @@ import (
 func main() {
 	//////////////////////// Setup DApp /////////////////////////
 	app := NewDApp()
-
 	ctx := context.Background()
 	opts := rollmelette.NewRunOpts()
 	if rollupUrl, isSet := os.LookupEnv("ROLLUP_HTTP_SERVER_URL"); isSet {

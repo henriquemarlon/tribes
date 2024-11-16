@@ -38,24 +38,24 @@ func NewDApp() *router.Router {
 	app.HandleAdvance("updateContract", ms.RBAC.Middleware(ah.ContractAdvanceHandlers.UpdateContractHandler, "admin"))
 	app.HandleAdvance("deleteContract", ms.RBAC.Middleware(ah.ContractAdvanceHandlers.DeleteContractHandler, "admin"))
 
-	app.HandleAdvance("createBid", ah.BidAdvanceHandlers.CreateBidHandler)
+	app.HandleAdvance("createOrder", ah.OrderAdvanceHandlers.CreateOrderHandler)
 
-	app.HandleAdvance("createAuction", ms.TLSN.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler))
-	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
+	app.HandleAdvance("createCrowdfunding", ms.TLSN.Middleware(ah.CrowdfundingAdvanceHandlers.CreateCrowdfundingHandler))
+	app.HandleAdvance("finishCrowdfunding", ah.CrowdfundingAdvanceHandlers.FinishCrowdfundingHandler)
 
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
 	app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
-	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))
+	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserHandler, "admin"))
 
 	//////////////////////// Inspect //////////////////////////
-	app.HandleInspect("auction", ih.AuctionInspectHandlers.FindAllAuctionsHandler)
-	app.HandleInspect("auction/{id}", ih.AuctionInspectHandlers.FindAuctionByIdHandler)
+	app.HandleInspect("crowdfunding", ih.CrowdfundingInspectHandlers.FindAllCrowdfundingsHandler)
+	app.HandleInspect("crowdfunding/{id}", ih.CrowdfundingInspectHandlers.FindCrowdfundingByIdHandler)
 
-	app.HandleInspect("bid", ih.BidInspectHandlers.FindAllBidsHandler)
-	app.HandleInspect("bid/{id}", ih.BidInspectHandlers.FindBidByIdHandler)
-	app.HandleInspect("bid/auction/{id}", ih.BidInspectHandlers.FindBisdByAuctionIdHandler)
+	app.HandleInspect("order", ih.OrderInspectHandlers.FindAllOrdersHandler)
+	app.HandleInspect("order/{id}", ih.OrderInspectHandlers.FindOrderByIdHandler)
+	app.HandleInspect("order/crowdfunding/{id}", ih.OrderInspectHandlers.FindBisdByCrowdfundingIdHandler)
 
 	app.HandleInspect("contract", ih.ContractInspectHandlers.FindAllContractsHandler)
 	app.HandleInspect("contract/{symbol}", ih.ContractInspectHandlers.FindContractBySymbolHandler)
@@ -98,24 +98,24 @@ func NewDAppMemory() *router.Router {
 	app.HandleAdvance("updateContract", ms.RBAC.Middleware(ah.ContractAdvanceHandlers.UpdateContractHandler, "admin"))
 	app.HandleAdvance("deleteContract", ms.RBAC.Middleware(ah.ContractAdvanceHandlers.DeleteContractHandler, "admin"))
 
-	app.HandleAdvance("createBid", ah.BidAdvanceHandlers.CreateBidHandler)
+	app.HandleAdvance("createOrder", ah.OrderAdvanceHandlers.CreateOrderHandler)
 
-	app.HandleAdvance("createAuction", ms.TLSN.Middleware(ah.AuctionAdvanceHandlers.CreateAuctionHandler))
-	app.HandleAdvance("finishAuction", ah.AuctionAdvanceHandlers.FinishAuctionHandler)
+	app.HandleAdvance("createCrowdfunding", ms.TLSN.Middleware(ah.CrowdfundingAdvanceHandlers.CreateCrowdfundingHandler))
+	app.HandleAdvance("finishCrowdfunding", ah.CrowdfundingAdvanceHandlers.FinishCrowdfundingHandler)
 
 	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
 	app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
 
 	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
-	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserByAddressHandler, "admin"))
+	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserHandler, "admin"))
 
 	//////////////////////// Inspect //////////////////////////
-	app.HandleInspect("auction", ih.AuctionInspectHandlers.FindAllAuctionsHandler)
-	app.HandleInspect("auction/{id}", ih.AuctionInspectHandlers.FindAuctionByIdHandler)
+	app.HandleInspect("crowdfunding", ih.CrowdfundingInspectHandlers.FindAllCrowdfundingsHandler)
+	app.HandleInspect("crowdfunding/{id}", ih.CrowdfundingInspectHandlers.FindCrowdfundingByIdHandler)
 
-	app.HandleInspect("bid", ih.BidInspectHandlers.FindAllBidsHandler)
-	app.HandleInspect("bid/{id}", ih.BidInspectHandlers.FindBidByIdHandler)
-	app.HandleInspect("bid/auction/{id}", ih.BidInspectHandlers.FindBisdByAuctionIdHandler)
+	app.HandleInspect("order", ih.OrderInspectHandlers.FindAllOrdersHandler)
+	app.HandleInspect("order/{id}", ih.OrderInspectHandlers.FindOrderByIdHandler)
+	app.HandleInspect("order/crowdfunding/{id}", ih.OrderInspectHandlers.FindBisdByCrowdfundingIdHandler)
 
 	app.HandleInspect("contract", ih.ContractInspectHandlers.FindAllContractsHandler)
 	app.HandleInspect("contract/{symbol}", ih.ContractInspectHandlers.FindContractBySymbolHandler)

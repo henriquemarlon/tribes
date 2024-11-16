@@ -13,14 +13,14 @@ import (
 	"gorm.io/gorm"
 )
 
-var setBidRepositoryDependency = wire.NewSet(
-	db.NewBidRepositorySqlite,
-	wire.Bind(new(entity.BidRepository), new(*db.BidRepositorySqlite)),
+var setOrderRepositoryDependency = wire.NewSet(
+	db.NewOrderRepositorySqlite,
+	wire.Bind(new(entity.OrderRepository), new(*db.OrderRepositorySqlite)),
 )
 
-var setAuctionRepositoryDependency = wire.NewSet(
-	db.NewAuctionRepositorySqlite,
-	wire.Bind(new(entity.AuctionRepository), new(*db.AuctionRepositorySqlite)),
+var setCrowdfundingRepositoryDependency = wire.NewSet(
+	db.NewCrowdfundingRepositorySqlite,
+	wire.Bind(new(entity.CrowdfundingRepository), new(*db.CrowdfundingRepositorySqlite)),
 )
 
 var setContractRepositoryDependency = wire.NewSet(
@@ -34,16 +34,16 @@ var setUserRepositoryDependency = wire.NewSet(
 )
 
 var setAdvanceHandlers = wire.NewSet(
-	advance_handler.NewBidAdvanceHandlers,
+	advance_handler.NewOrderAdvanceHandlers,
 	advance_handler.NewUserAdvanceHandlers,
-	advance_handler.NewAuctionAdvanceHandlers,
+	advance_handler.NewCrowdfundingAdvanceHandlers,
 	advance_handler.NewContractAdvanceHandlers,
 )
 
 var setInspectHandlers = wire.NewSet(
-	inspect_handler.NewBidInspectHandlers,
+	inspect_handler.NewOrderInspectHandlers,
 	inspect_handler.NewUserInspectHandlers,
-	inspect_handler.NewAuctionInspectHandlers,
+	inspect_handler.NewCrowdfundingInspectHandlers,
 	inspect_handler.NewContractInspectHandlers,
 )
 
@@ -72,9 +72,9 @@ func NewMiddlewaresMemory(gormDB *gorm.DB) (*Middlewares, error) {
 
 func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	wire.Build(
-		setBidRepositoryDependency,
+		setOrderRepositoryDependency,
 		setUserRepositoryDependency,
-		setAuctionRepositoryDependency,
+		setCrowdfundingRepositoryDependency,
 		setContractRepositoryDependency,
 		setAdvanceHandlers,
 		wire.Struct(new(AdvanceHandlers), "*"),
@@ -84,9 +84,9 @@ func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 
 func NewAdvanceHandlersMemory(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	wire.Build(
-		setBidRepositoryDependency,
+		setOrderRepositoryDependency,
 		setUserRepositoryDependency,
-		setAuctionRepositoryDependency,
+		setCrowdfundingRepositoryDependency,
 		setContractRepositoryDependency,
 		setAdvanceHandlers,
 		wire.Struct(new(AdvanceHandlers), "*"),
@@ -96,9 +96,9 @@ func NewAdvanceHandlersMemory(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 
 func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
 	wire.Build(
-		setBidRepositoryDependency,
+		setOrderRepositoryDependency,
 		setUserRepositoryDependency,
-		setAuctionRepositoryDependency,
+		setCrowdfundingRepositoryDependency,
 		setContractRepositoryDependency,
 		setInspectHandlers,
 		wire.Struct(new(InspectHandlers), "*"),
@@ -108,9 +108,9 @@ func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
 
 func NewInspectHandlersMemory(gormDB *gorm.DB) (*InspectHandlers, error) {
 	wire.Build(
-		setBidRepositoryDependency,
+		setOrderRepositoryDependency,
 		setUserRepositoryDependency,
-		setAuctionRepositoryDependency,
+		setCrowdfundingRepositoryDependency,
 		setContractRepositoryDependency,
 		setInspectHandlers,
 		wire.Struct(new(InspectHandlers), "*"),
@@ -124,15 +124,15 @@ type Middlewares struct {
 }
 
 type AdvanceHandlers struct {
-	BidAdvanceHandlers      *advance_handler.BidAdvanceHandlers
-	UserAdvanceHandlers     *advance_handler.UserAdvanceHandlers
-	AuctionAdvanceHandlers  *advance_handler.AuctionAdvanceHandlers
-	ContractAdvanceHandlers *advance_handler.ContractAdvanceHandlers
+	OrderAdvanceHandlers        *advance_handler.OrderAdvanceHandlers
+	UserAdvanceHandlers         *advance_handler.UserAdvanceHandlers
+	CrowdfundingAdvanceHandlers *advance_handler.CrowdfundingAdvanceHandlers
+	ContractAdvanceHandlers     *advance_handler.ContractAdvanceHandlers
 }
 
 type InspectHandlers struct {
-	BidInspectHandlers      *inspect_handler.BidInspectHandlers
-	UserInspectHandlers     *inspect_handler.UserInspectHandlers
-	AuctionInspectHandlers  *inspect_handler.AuctionInspectHandlers
-	ContractInspectHandlers *inspect_handler.ContractInspectHandlers
+	OrderInspectHandlers        *inspect_handler.OrderInspectHandlers
+	UserInspectHandlers         *inspect_handler.UserInspectHandlers
+	CrowdfundingInspectHandlers *inspect_handler.CrowdfundingInspectHandlers
+	ContractInspectHandlers     *inspect_handler.ContractInspectHandlers
 }

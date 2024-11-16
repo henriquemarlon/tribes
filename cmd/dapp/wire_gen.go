@@ -41,72 +41,72 @@ func NewMiddlewaresMemory(gormDB *gorm.DB) (*Middlewares, error) {
 }
 
 func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
-	bidRepositorySqlite := db.NewBidRepositorySqlite(gormDB)
+	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
 	contractRepositorySqlite := db.NewContractRepositorySqlite(gormDB)
-	auctionRepositorySqlite := db.NewAuctionRepositorySqlite(gormDB)
-	bidAdvanceHandlers := advance_handler.NewBidAdvanceHandlers(bidRepositorySqlite, userRepositorySqlite, contractRepositorySqlite, auctionRepositorySqlite)
+	crowdfundingRepositorySqlite := db.NewCrowdfundingRepositorySqlite(gormDB)
+	orderAdvanceHandlers := advance_handler.NewOrderAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, contractRepositorySqlite, crowdfundingRepositorySqlite)
 	userAdvanceHandlers := advance_handler.NewUserAdvanceHandlers(userRepositorySqlite, contractRepositorySqlite)
-	auctionAdvanceHandlers := advance_handler.NewAuctionAdvanceHandlers(bidRepositorySqlite, userRepositorySqlite, auctionRepositorySqlite, contractRepositorySqlite)
+	crowdfundingAdvanceHandlers := advance_handler.NewCrowdfundingAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, crowdfundingRepositorySqlite, contractRepositorySqlite)
 	contractAdvanceHandlers := advance_handler.NewContractAdvanceHandlers(contractRepositorySqlite)
 	advanceHandlers := &AdvanceHandlers{
-		BidAdvanceHandlers:      bidAdvanceHandlers,
+		OrderAdvanceHandlers:    orderAdvanceHandlers,
 		UserAdvanceHandlers:     userAdvanceHandlers,
-		AuctionAdvanceHandlers:  auctionAdvanceHandlers,
+		CrowdfundingAdvanceHandlers:     crowdfundingAdvanceHandlers,
 		ContractAdvanceHandlers: contractAdvanceHandlers,
 	}
 	return advanceHandlers, nil
 }
 
 func NewAdvanceHandlersMemory(gormDB *gorm.DB) (*AdvanceHandlers, error) {
-	bidRepositorySqlite := db.NewBidRepositorySqlite(gormDB)
+	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
 	contractRepositorySqlite := db.NewContractRepositorySqlite(gormDB)
-	auctionRepositorySqlite := db.NewAuctionRepositorySqlite(gormDB)
-	bidAdvanceHandlers := advance_handler.NewBidAdvanceHandlers(bidRepositorySqlite, userRepositorySqlite, contractRepositorySqlite, auctionRepositorySqlite)
+	crowdfundingRepositorySqlite := db.NewCrowdfundingRepositorySqlite(gormDB)
+	orderAdvanceHandlers := advance_handler.NewOrderAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, contractRepositorySqlite, crowdfundingRepositorySqlite)
 	userAdvanceHandlers := advance_handler.NewUserAdvanceHandlers(userRepositorySqlite, contractRepositorySqlite)
-	auctionAdvanceHandlers := advance_handler.NewAuctionAdvanceHandlers(bidRepositorySqlite, userRepositorySqlite, auctionRepositorySqlite, contractRepositorySqlite)
+	crowdfundingAdvanceHandlers := advance_handler.NewCrowdfundingAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, crowdfundingRepositorySqlite, contractRepositorySqlite)
 	contractAdvanceHandlers := advance_handler.NewContractAdvanceHandlers(contractRepositorySqlite)
 	advanceHandlers := &AdvanceHandlers{
-		BidAdvanceHandlers:      bidAdvanceHandlers,
+		OrderAdvanceHandlers:    orderAdvanceHandlers,
 		UserAdvanceHandlers:     userAdvanceHandlers,
-		AuctionAdvanceHandlers:  auctionAdvanceHandlers,
+		CrowdfundingAdvanceHandlers:     crowdfundingAdvanceHandlers,
 		ContractAdvanceHandlers: contractAdvanceHandlers,
 	}
 	return advanceHandlers, nil
 }
 
 func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
-	bidRepositorySqlite := db.NewBidRepositorySqlite(gormDB)
-	bidInspectHandlers := inspect_handler.NewBidInspectHandlers(bidRepositorySqlite)
+	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
+	orderInspectHandlers := inspect_handler.NewOrderInspectHandlers(orderRepositorySqlite)
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
 	contractRepositorySqlite := db.NewContractRepositorySqlite(gormDB)
 	userInspectHandlers := inspect_handler.NewUserInspectHandlers(userRepositorySqlite, contractRepositorySqlite)
-	auctionRepositorySqlite := db.NewAuctionRepositorySqlite(gormDB)
-	auctionInspectHandlers := inspect_handler.NewAuctionInspectHandlers(auctionRepositorySqlite)
+	crowdfundingRepositorySqlite := db.NewCrowdfundingRepositorySqlite(gormDB)
+	crowdfundingInspectHandlers := inspect_handler.NewCrowdfundingInspectHandlers(crowdfundingRepositorySqlite)
 	contractInspectHandlers := inspect_handler.NewContractInspectHandlers(contractRepositorySqlite)
 	inspectHandlers := &InspectHandlers{
-		BidInspectHandlers:      bidInspectHandlers,
+		OrderInspectHandlers:    orderInspectHandlers,
 		UserInspectHandlers:     userInspectHandlers,
-		AuctionInspectHandlers:  auctionInspectHandlers,
+		CrowdfundingInspectHandlers:     crowdfundingInspectHandlers,
 		ContractInspectHandlers: contractInspectHandlers,
 	}
 	return inspectHandlers, nil
 }
 
 func NewInspectHandlersMemory(gormDB *gorm.DB) (*InspectHandlers, error) {
-	bidRepositorySqlite := db.NewBidRepositorySqlite(gormDB)
-	bidInspectHandlers := inspect_handler.NewBidInspectHandlers(bidRepositorySqlite)
+	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
+	orderInspectHandlers := inspect_handler.NewOrderInspectHandlers(orderRepositorySqlite)
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
 	contractRepositorySqlite := db.NewContractRepositorySqlite(gormDB)
 	userInspectHandlers := inspect_handler.NewUserInspectHandlers(userRepositorySqlite, contractRepositorySqlite)
-	auctionRepositorySqlite := db.NewAuctionRepositorySqlite(gormDB)
-	auctionInspectHandlers := inspect_handler.NewAuctionInspectHandlers(auctionRepositorySqlite)
+	crowdfundingRepositorySqlite := db.NewCrowdfundingRepositorySqlite(gormDB)
+	crowdfundingInspectHandlers := inspect_handler.NewCrowdfundingInspectHandlers(crowdfundingRepositorySqlite)
 	contractInspectHandlers := inspect_handler.NewContractInspectHandlers(contractRepositorySqlite)
 	inspectHandlers := &InspectHandlers{
-		BidInspectHandlers:      bidInspectHandlers,
+		OrderInspectHandlers:    orderInspectHandlers,
 		UserInspectHandlers:     userInspectHandlers,
-		AuctionInspectHandlers:  auctionInspectHandlers,
+		CrowdfundingInspectHandlers:     crowdfundingInspectHandlers,
 		ContractInspectHandlers: contractInspectHandlers,
 	}
 	return inspectHandlers, nil
@@ -114,17 +114,17 @@ func NewInspectHandlersMemory(gormDB *gorm.DB) (*InspectHandlers, error) {
 
 // wire.go:
 
-var setBidRepositoryDependency = wire.NewSet(db.NewBidRepositorySqlite, wire.Bind(new(entity.BidRepository), new(*db.BidRepositorySqlite)))
+var setOrderRepositoryDependency = wire.NewSet(db.NewOrderRepositorySqlite, wire.Bind(new(entity.OrderRepository), new(*db.OrderRepositorySqlite)))
 
-var setAuctionRepositoryDependency = wire.NewSet(db.NewAuctionRepositorySqlite, wire.Bind(new(entity.AuctionRepository), new(*db.AuctionRepositorySqlite)))
+var setCrowdfundingRepositoryDependency = wire.NewSet(db.NewCrowdfundingRepositorySqlite, wire.Bind(new(entity.CrowdfundingRepository), new(*db.CrowdfundingRepositorySqlite)))
 
 var setContractRepositoryDependency = wire.NewSet(db.NewContractRepositorySqlite, wire.Bind(new(entity.ContractRepository), new(*db.ContractRepositorySqlite)))
 
 var setUserRepositoryDependency = wire.NewSet(db.NewUserRepositorySqlite, wire.Bind(new(entity.UserRepository), new(*db.UserRepositorySqlite)))
 
-var setAdvanceHandlers = wire.NewSet(advance_handler.NewBidAdvanceHandlers, advance_handler.NewUserAdvanceHandlers, advance_handler.NewAuctionAdvanceHandlers, advance_handler.NewContractAdvanceHandlers)
+var setAdvanceHandlers = wire.NewSet(advance_handler.NewOrderAdvanceHandlers, advance_handler.NewUserAdvanceHandlers, advance_handler.NewCrowdfundingAdvanceHandlers, advance_handler.NewContractAdvanceHandlers)
 
-var setInspectHandlers = wire.NewSet(inspect_handler.NewBidInspectHandlers, inspect_handler.NewUserInspectHandlers, inspect_handler.NewAuctionInspectHandlers, inspect_handler.NewContractInspectHandlers)
+var setInspectHandlers = wire.NewSet(inspect_handler.NewOrderInspectHandlers, inspect_handler.NewUserInspectHandlers, inspect_handler.NewCrowdfundingInspectHandlers, inspect_handler.NewContractInspectHandlers)
 
 var setMiddleware = wire.NewSet(middleware.NewTLSNMiddleware, middleware.NewRBACMiddleware)
 
@@ -134,15 +134,15 @@ type Middlewares struct {
 }
 
 type AdvanceHandlers struct {
-	BidAdvanceHandlers      *advance_handler.BidAdvanceHandlers
+	OrderAdvanceHandlers    *advance_handler.OrderAdvanceHandlers
 	UserAdvanceHandlers     *advance_handler.UserAdvanceHandlers
-	AuctionAdvanceHandlers  *advance_handler.AuctionAdvanceHandlers
+	CrowdfundingAdvanceHandlers     *advance_handler.CrowdfundingAdvanceHandlers
 	ContractAdvanceHandlers *advance_handler.ContractAdvanceHandlers
 }
 
 type InspectHandlers struct {
-	BidInspectHandlers      *inspect_handler.BidInspectHandlers
+	OrderInspectHandlers    *inspect_handler.OrderInspectHandlers
 	UserInspectHandlers     *inspect_handler.UserInspectHandlers
-	AuctionInspectHandlers  *inspect_handler.AuctionInspectHandlers
+	CrowdfundingInspectHandlers     *inspect_handler.CrowdfundingInspectHandlers
 	ContractInspectHandlers *inspect_handler.ContractInspectHandlers
 }
