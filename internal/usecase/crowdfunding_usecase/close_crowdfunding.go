@@ -17,8 +17,8 @@ type FinishCrowdfundingInputDTO struct {
 type FinishCrowdfundingOutputDTO struct {
 	Id              uint            `json:"id"`
 	Creator         common.Address  `json:"creator,omitempty"`
-	DebtIssued      *uint256.Int     `json:"debt_issued,omitempty"`
-	MaxInterestRate *uint256.Int     `json:"max_interest_rate,omitempty"`
+	DebtIssued      *uint256.Int    `json:"debt_issued,omitempty"`
+	MaxInterestRate *uint256.Int    `json:"max_interest_rate,omitempty"`
 	State           string          `json:"state,omitempty"`
 	Orders          []*entity.Order `json:"orders,omitempty"`
 	ExpiresAt       int64           `json:"expires_at,omitempty"`

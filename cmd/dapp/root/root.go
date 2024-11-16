@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/rollmelette/rollmelette"
+	"github.com/spf13/cobra"
 	"github.com/tribeshq/tribes/configs"
 	"github.com/tribeshq/tribes/pkg/router"
-	"github.com/spf13/cobra"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +17,8 @@ const (
 )
 
 var (
-	useMemoryDB  bool
-	Cmd          = &cobra.Command{
+	useMemoryDB bool
+	Cmd         = &cobra.Command{
 		Use:   CMD_NAME,
 		Short: "Runs Tribes DApp",
 		Long:  `Runs Tribes DApp`,

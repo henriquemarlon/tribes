@@ -11,15 +11,15 @@ import (
 
 type CreateOrderInputDTO struct {
 	Creator common.Address `json:"creator"`
-	Price   *uint256.Int    `json:"interest_rate"`
+	Price   *uint256.Int   `json:"interest_rate"`
 }
 
 type CreateOrderOutputDTO struct {
 	Id             uint           `json:"id"`
 	CrowdfundingId uint           `json:"crowdfunding_id"`
 	Investor       common.Address `json:"investor"`
-	Amount         *uint256.Int    `json:"amount"`
-	InterestRate   *uint256.Int    `json:"interest_rate"`
+	Amount         *uint256.Int   `json:"amount"`
+	InterestRate   *uint256.Int   `json:"interest_rate"`
 	State          string         `json:"state"`
 	CreatedAt      int64          `json:"created_at"`
 }
