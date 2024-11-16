@@ -45,3 +45,7 @@ coverage: test
 .PHONY: docs
 docs:
 	@cd docs && npm run dev
+
+.PHONY: generate
+generate:
+	@go run ./pkg/rollups_contracts/generate
