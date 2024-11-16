@@ -35,8 +35,8 @@ type User struct {
 	Id                uint           `json:"id" gorm:"primaryKey"`
 	Role              string         `json:"role,omitempty" gorm:"not null"`
 	Address           common.Address `json:"address,omitempty" gorm:"type:text;uniqueIndex;not null"`
-	InvestmentLimit   *uint256.Int   `json:"investment_limit,omitempty" gorm:"type:bigint;not null"`
-	DebtIssuanceLimit *uint256.Int   `json:"debt_issuance_limit,omitempty" gorm:"type:bigint;not null"`
+	InvestmentLimit   *uint256.Int   `json:"investment_limit,omitempty" gorm:"type:bigint"`
+	DebtIssuanceLimit *uint256.Int   `json:"debt_issuance_limit,omitempty" gorm:"type:bigint"`
 	CreatedAt         int64          `json:"created_at,omitempty" gorm:"not null"`
 	UpdatedAt         int64          `json:"updated_at,omitempty" gorm:"default:0"`
 }

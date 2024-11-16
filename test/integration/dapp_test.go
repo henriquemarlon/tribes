@@ -3,13 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 	"testing"
-	"time"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 )
@@ -20,63 +20,25 @@ func TestAppSuite(t *testing.T) {
 
 type AppSuite struct {
 	suite.Suite
-	dappCmd   *exec.Cmd
-	nonodoCmd *exec.Cmd
+	processes []*exec.Cmd
 }
 
 func (s *AppSuite) SetupTest() {
-	// Start the nonodo server
-	s.nonodoCmd = exec.Command("nonodo")
-	stdoutPipe, err := s.nonodoCmd.StdoutPipe()
-	s.Require().NoError(err, "Failed to create stdout pipe for nonodo")
-	s.nonodoCmd.Stderr = os.Stderr
-
-	err = s.nonodoCmd.Start()
-	s.Require().NoError(err, "Failed to start nonodo server")
-
-	ready := make(chan bool)
-	go func() {
-		scanner := bufio.NewScanner(stdoutPipe)
-		for scanner.Scan() {
-			out := scanner.Text()
-			slog.Info(out)
-			if strings.Contains(out, "INF nonodo: ready") {
-				ready <- true
-				return
-			}
-		}
-	}()
-
-	select {
-	case <-ready:
-		fmt.Println("Nonodo is ready!")
-	case <-time.After(5 * time.Second):
-		s.Require().Fail("Timed out waiting for nonodo to be ready")
-	}
-
-	s.dappCmd = exec.Command(
-		"cartesi-machine",
+	s.startProcess("nonodo", []string{}, "INF nonodo: ready", "nonodo server")
+	s.startProcess("cartesi-machine", []string{
 		"--network",
 		"--flash-drive=label:root,filename:.cartesi/image.ext2",
 		"--env=ROLLUP_HTTP_SERVER_URL=http://10.0.2.2:5004",
 		"--",
 		"/var/opt/cartesi-app/app",
-	)
-	s.dappCmd.Stdout = os.Stdout
-	s.dappCmd.Stderr = os.Stderr
-	err = s.dappCmd.Start()
-	s.Require().NoError(err, "Failed to start cartesi-machine")
+	}, "", "Cartesi machine")
 }
 
 func (s *AppSuite) TearDownTest() {
-	if s.dappCmd != nil && s.dappCmd.Process != nil {
-		err := s.dappCmd.Process.Kill()
-		s.Require().NoError(err, "Failed to kill Cartesi machine process")
+	for _, cmd := range s.processes {
+		s.terminateProcessGroup(cmd)
 	}
-	if s.nonodoCmd != nil && s.nonodoCmd.Process != nil {
-		err := s.nonodoCmd.Process.Kill()
-		s.Require().NoError(err, "Failed to kill nonodo server process")
-	}
+	s.terminateProcessesByName("anvil")
 }
 
 func (s *AppSuite) TestItCreateCrowdfundingAndFinishCrowdfundingWithoutPartialSellingAndPayingAllInvestor() {
@@ -84,4 +46,55 @@ func (s *AppSuite) TestItCreateCrowdfundingAndFinishCrowdfundingWithoutPartialSe
 	creator := common.HexToAddress("0x0000000000000000000000000000000000000007")
 	fmt.Printf("Admin Address: %s\n", admin.Hex())
 	fmt.Printf("Creator Address: %s\n", creator.Hex())
+}
+
+func (s *AppSuite) startProcess(name string, args []string, readyLog, description string) {
+	cmd := exec.Command(name, args...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.Stderr = os.Stderr
+	s.processes = append(s.processes, cmd)
+
+	var stdoutPipe io.ReadCloser
+	if readyLog != "" {
+		var err error
+		stdoutPipe, err = cmd.StdoutPipe()
+		s.Require().NoError(err, "Failed to create stdout pipe for "+description)
+		go s.waitForLog(stdoutPipe, readyLog, description)
+	} else {
+		cmd.Stdout = os.Stdout
+	}
+
+	err := cmd.Start()
+	s.Require().NoError(err, "Failed to start "+description)
+}
+
+func (s *AppSuite) waitForLog(pipe io.ReadCloser, readyLog, description string) {
+	scanner := bufio.NewScanner(pipe)
+	for scanner.Scan() {
+		log := scanner.Text()
+		slog.Info(log)
+		if strings.Contains(log, readyLog) {
+			fmt.Println(description + " is ready!")
+			return
+		}
+	}
+}
+
+func (s *AppSuite) terminateProcessGroup(cmd *exec.Cmd) {
+	if cmd != nil && cmd.Process != nil {
+		err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+		if err != nil {
+			s.Require().NoError(err, "Failed to terminate process group for "+cmd.Path)
+		}
+	}
+}
+
+func (s *AppSuite) terminateProcessesByName(name string) {
+	output, err := exec.Command("pgrep", "-f", name).Output()
+	if err == nil {
+		for _, pid := range strings.Fields(string(output)) {
+			fmt.Printf("Killing %s process with PID: %s\n", name, pid)
+			exec.Command("kill", "-9", pid).Run()
+		}
+	}
 }
