@@ -43,14 +43,14 @@ func run(cmd *cobra.Command, args []string) {
 	var db *gorm.DB
 	var err error
 	if useMemoryDB {
-		db, err = configs.SetupSQliteMemory(":memory:")
+		db, err = configs.SetupSQlite(":memory:")
 		if err != nil {
 			slog.Error("Failed to setup in-memory SQLite database", "error", err)
 			os.Exit(1)
 		}
 		slog.Info("In-memory database initialized")
 	} else {
-		db, err = configs.SetupSQlite("./tribes.db")
+		db, err = configs.SetupSQlite("tribes.db")
 		if err != nil {
 			slog.Error("Failed to setup SQLite database", "error", err)
 			os.Exit(1)
