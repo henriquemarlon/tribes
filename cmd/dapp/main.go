@@ -1,86 +1,14 @@
 package main
 
 import (
-	"context"
-	"log"
-	"log/slog"
 	"os"
 
-	"github.com/rollmelette/rollmelette"
-	"github.com/tribeshq/tribes/configs"
-	"github.com/tribeshq/tribes/pkg/router"
+	"github.com/tribeshq/tribes/cmd/dapp/root"
 )
 
-func NewDApp() *router.Router {
-	//////////////////////// Setup Database //////////////////////////
-	db, err := configs.SetupSQlite()
-	if err != nil {
-		log.Fatalf("Failed to setup sqlite database: %v", err)
-	}
-
-	//////////////////////// Setup Handlers //////////////////////////
-	ah, err := NewAdvanceHandlers(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize advance handlers from wire: %v", err)
-	}
-
-	ih, err := NewInspectHandlers(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize inspect handlers from wire: %v", err)
-	}
-
-	ms, err := NewMiddlewares(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize middlewares from wire: %v", err)
-	}
-
-	//////////////////////// Router //////////////////////////
-	app := router.NewRouter()
-
-	//////////////////////// Advance //////////////////////////
-	app.HandleAdvance("createContract", ms.RBAC.Middleware(ah.ContractAdvanceHandlers.CreateContractHandler, "admin"))
-	app.HandleAdvance("updateContract", ms.RBAC.Middleware(ah.ContractAdvanceHandlers.UpdateContractHandler, "admin"))
-	app.HandleAdvance("deleteContract", ms.RBAC.Middleware(ah.ContractAdvanceHandlers.DeleteContractHandler, "admin"))
-
-	app.HandleAdvance("createOrder", ah.OrderAdvanceHandlers.CreateOrderHandler)
-
-	app.HandleAdvance("createCrowdfunding", ms.TLSN.Middleware(ah.CrowdfundingAdvanceHandlers.CreateCrowdfundingHandler))
-	app.HandleAdvance("closeCrowdfunding", ah.CrowdfundingAdvanceHandlers.CloseCrowdfundingHandler)
-	app.HandleAdvance("settleCrowdfunding", ms.RBAC.Middleware(ah.CrowdfundingAdvanceHandlers.SettleCrowdfundingHandler, "creator"))
-
-	app.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
-	app.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, "admin"))
-
-	app.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, "admin"))
-	app.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserHandler, "admin"))
-
-	//////////////////////// Inspect //////////////////////////
-	app.HandleInspect("crowdfunding", ih.CrowdfundingInspectHandlers.FindAllCrowdfundingsHandler)
-	app.HandleInspect("crowdfunding/{id}", ih.CrowdfundingInspectHandlers.FindCrowdfundingByIdHandler)
-
-	app.HandleInspect("order", ih.OrderInspectHandlers.FindAllOrdersHandler)
-	app.HandleInspect("order/{id}", ih.OrderInspectHandlers.FindOrderByIdHandler)
-	app.HandleInspect("order/crowdfunding/{id}", ih.OrderInspectHandlers.FindBisdByCrowdfundingIdHandler)
-
-	app.HandleInspect("contract", ih.ContractInspectHandlers.FindAllContractsHandler)
-	app.HandleInspect("contract/{symbol}", ih.ContractInspectHandlers.FindContractBySymbolHandler)
-
-	app.HandleInspect("user", ih.UserInspectHandlers.FindAllUsersHandler)
-	app.HandleInspect("user/{address}", ih.UserInspectHandlers.FindUserByAddressHandler)
-	app.HandleInspect("balance/{symbol}/{address}", ih.UserInspectHandlers.BalanceHandler)
-
-	return app
-}
-
 func main() {
-	//////////////////////// Setup DApp /////////////////////////
-	app := NewDApp()
-	ctx := context.Background()
-	opts := rollmelette.NewRunOpts()
-	if rollupUrl, isSet := os.LookupEnv("ROLLUP_HTTP_SERVER_URL"); isSet {
-		opts.RollupURL = rollupUrl
-	}
-	if err := rollmelette.Run(ctx, opts, app); err != nil {
-		slog.Error("application error", "error", err)
+	err := root.Cmd.Execute()
+	if err != nil {
+		os.Exit(1)
 	}
 }

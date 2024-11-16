@@ -4,7 +4,7 @@
 //go:build !wireinject
 // +build !wireinject
 
-package main
+package root
 
 import (
 	"github.com/google/wire"
@@ -19,7 +19,7 @@ import (
 // Injectors from wire.go:
 
 func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
-	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
+	userRepositorySqlite := repository.NewUserRepositorySqlite(gormDB)
 	tlsnMiddleware := middleware.NewTLSNMiddleware(userRepositorySqlite)
 	rbacMiddleware := middleware.NewRBACMiddleware(userRepositorySqlite)
 	middlewares := &Middlewares{
@@ -30,10 +30,10 @@ func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
 }
 
 func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
-	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
-	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
-	contractRepositorySqlite := db.NewContractRepositorySqlite(gormDB)
-	crowdfundingRepositorySqlite := db.NewCrowdfundingRepositorySqlite(gormDB)
+	orderRepositorySqlite := repository.NewOrderRepositorySqlite(gormDB)
+	userRepositorySqlite := repository.NewUserRepositorySqlite(gormDB)
+	contractRepositorySqlite := repository.NewContractRepositorySqlite(gormDB)
+	crowdfundingRepositorySqlite := repository.NewCrowdfundingRepositorySqlite(gormDB)
 	orderAdvanceHandlers := advance_handler.NewOrderAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, contractRepositorySqlite, crowdfundingRepositorySqlite)
 	userAdvanceHandlers := advance_handler.NewUserAdvanceHandlers(userRepositorySqlite, contractRepositorySqlite)
 	crowdfundingAdvanceHandlers := advance_handler.NewCrowdfundingAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, crowdfundingRepositorySqlite, contractRepositorySqlite)
@@ -48,12 +48,12 @@ func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 }
 
 func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
-	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
+	orderRepositorySqlite := repository.NewOrderRepositorySqlite(gormDB)
 	orderInspectHandlers := inspect_handler.NewOrderInspectHandlers(orderRepositorySqlite)
-	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
-	contractRepositorySqlite := db.NewContractRepositorySqlite(gormDB)
+	userRepositorySqlite := repository.NewUserRepositorySqlite(gormDB)
+	contractRepositorySqlite := repository.NewContractRepositorySqlite(gormDB)
 	userInspectHandlers := inspect_handler.NewUserInspectHandlers(userRepositorySqlite, contractRepositorySqlite)
-	crowdfundingRepositorySqlite := db.NewCrowdfundingRepositorySqlite(gormDB)
+	crowdfundingRepositorySqlite := repository.NewCrowdfundingRepositorySqlite(gormDB)
 	crowdfundingInspectHandlers := inspect_handler.NewCrowdfundingInspectHandlers(crowdfundingRepositorySqlite)
 	contractInspectHandlers := inspect_handler.NewContractInspectHandlers(contractRepositorySqlite)
 	inspectHandlers := &InspectHandlers{
@@ -67,13 +67,13 @@ func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
 
 // wire.go:
 
-var setOrderRepositoryDependency = wire.NewSet(db.NewOrderRepositorySqlite, wire.Bind(new(entity.OrderRepository), new(*db.OrderRepositorySqlite)))
+var setOrderRepositoryDependency = wire.NewSet(repository.NewOrderRepositorySqlite, wire.Bind(new(entity.OrderRepository), new(*repository.OrderRepositorySqlite)))
 
-var setCrowdfundingRepositoryDependency = wire.NewSet(db.NewCrowdfundingRepositorySqlite, wire.Bind(new(entity.CrowdfundingRepository), new(*db.CrowdfundingRepositorySqlite)))
+var setCrowdfundingRepositoryDependency = wire.NewSet(repository.NewCrowdfundingRepositorySqlite, wire.Bind(new(entity.CrowdfundingRepository), new(*repository.CrowdfundingRepositorySqlite)))
 
-var setContractRepositoryDependency = wire.NewSet(db.NewContractRepositorySqlite, wire.Bind(new(entity.ContractRepository), new(*db.ContractRepositorySqlite)))
+var setContractRepositoryDependency = wire.NewSet(repository.NewContractRepositorySqlite, wire.Bind(new(entity.ContractRepository), new(*repository.ContractRepositorySqlite)))
 
-var setUserRepositoryDependency = wire.NewSet(db.NewUserRepositorySqlite, wire.Bind(new(entity.UserRepository), new(*db.UserRepositorySqlite)))
+var setUserRepositoryDependency = wire.NewSet(repository.NewUserRepositorySqlite, wire.Bind(new(entity.UserRepository), new(*repository.UserRepositorySqlite)))
 
 var setAdvanceHandlers = wire.NewSet(advance_handler.NewOrderAdvanceHandlers, advance_handler.NewUserAdvanceHandlers, advance_handler.NewCrowdfundingAdvanceHandlers, advance_handler.NewContractAdvanceHandlers)
 

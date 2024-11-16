@@ -9,28 +9,28 @@ import (
 	"github.com/tribeshq/tribes/internal/infra/cartesi/handler/advance_handler"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/handler/inspect_handler"
 	"github.com/tribeshq/tribes/internal/infra/cartesi/middleware"
-	db "github.com/tribeshq/tribes/internal/infra/repository"
+	"github.com/tribeshq/tribes/internal/infra/repository"
 	"gorm.io/gorm"
 )
 
 var setOrderRepositoryDependency = wire.NewSet(
-	db.NewOrderRepositorySqlite,
-	wire.Bind(new(entity.OrderRepository), new(*db.OrderRepositorySqlite)),
+	repository.NewOrderRepositorySqlite,
+	wire.Bind(new(entity.OrderRepository), new(*repository.OrderRepositorySqlite)),
 )
 
 var setCrowdfundingRepositoryDependency = wire.NewSet(
-	db.NewCrowdfundingRepositorySqlite,
-	wire.Bind(new(entity.CrowdfundingRepository), new(*db.CrowdfundingRepositorySqlite)),
+	repository.NewCrowdfundingRepositorySqlite,
+	wire.Bind(new(entity.CrowdfundingRepository), new(*repository.CrowdfundingRepositorySqlite)),
 )
 
 var setContractRepositoryDependency = wire.NewSet(
-	db.NewContractRepositorySqlite,
-	wire.Bind(new(entity.ContractRepository), new(*db.ContractRepositorySqlite)),
+	repository.NewContractRepositorySqlite,
+	wire.Bind(new(entity.ContractRepository), new(*repository.ContractRepositorySqlite)),
 )
 
 var setUserRepositoryDependency = wire.NewSet(
-	db.NewUserRepositorySqlite,
-	wire.Bind(new(entity.UserRepository), new(*db.UserRepositorySqlite)),
+	repository.NewUserRepositorySqlite,
+	wire.Bind(new(entity.UserRepository), new(*repository.UserRepositorySqlite)),
 )
 
 var setAdvanceHandlers = wire.NewSet(

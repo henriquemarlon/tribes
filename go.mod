@@ -7,6 +7,7 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/holiman/uint256 v1.2.4
 	github.com/rollmelette/rollmelette v0.2.0
+	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.9.0
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.10
@@ -30,6 +31,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/lmittmann/tint v1.0.3 // indirect
@@ -42,6 +44,7 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect

@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func SetupSQlite() (*gorm.DB, error) {
+func SetupSQlite(path string) (*gorm.DB, error) {
 	logger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -23,7 +23,7 @@ func SetupSQlite() (*gorm.DB, error) {
 		},
 	)
 
-	db, err := gorm.Open(sqlite.Open("tribes.db"), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{
 		Logger: logger,
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func SetupSQlite() (*gorm.DB, error) {
 			"created_at": 0,
 		},
 		{
-			"role":       "crowdfundingeer",
+			"role":       "",
 			"address":    common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4").String(),
 			"created_at": 0,
 		},
@@ -57,7 +57,7 @@ func SetupSQlite() (*gorm.DB, error) {
 	return db, nil
 }
 
-func SetupSQliteMemory() (*gorm.DB, error) {
+func SetupSQliteMemory(path string) (*gorm.DB, error) {
 	logger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -67,7 +67,7 @@ func SetupSQliteMemory() (*gorm.DB, error) {
 		},
 	)
 
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{
 		Logger: logger,
 	})
 	if err != nil {
@@ -90,7 +90,7 @@ func SetupSQliteMemory() (*gorm.DB, error) {
 			"created_at": 0,
 		},
 		{
-			"role":       "crowdfundingeer",
+			"role":       "",
 			"address":    common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4").String(),
 			"created_at": 0,
 		},

@@ -35,7 +35,7 @@ orderings:
 	$(END_LOG)
 
 .PHONY: test
-test:
+test: machine
 	@go test ./... -coverprofile=./coverage.md -v
 
 .PHONY: coverage
