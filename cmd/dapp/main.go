@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/tribeshq/tribes/cmd/dapp/root"
 	"os"
+	"github.com/tribeshq/tribes/cmd/dapp/root"
 )
 
 func main() {

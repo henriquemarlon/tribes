@@ -41,7 +41,7 @@ func (s *AppSuite) TearDownTest() {
 	s.terminateProcessesByName("anvil")
 }
 
-func (s *AppSuite) TestItCreateCrowdfundingAndFinishCrowdfundingWithoutPartialSellingAndPayingAllInvestor() {
+func (s *AppSuite) Test() {
 	admin := common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 	creator := common.HexToAddress("0x0000000000000000000000000000000000000007")
 	fmt.Printf("Admin Address: %s\n", admin.Hex())
@@ -65,7 +65,7 @@ func (s *AppSuite) startProcess(name string, args []string, readyLog, descriptio
 	}
 
 	err := cmd.Start()
-	s.Require().NoError(err, "Failed to start "+description)
+	s.Require().NoError(err, "Failed to start " + description)
 }
 
 func (s *AppSuite) waitForLog(pipe io.ReadCloser, readyLog, description string) {
