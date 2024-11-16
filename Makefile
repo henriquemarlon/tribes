@@ -28,10 +28,10 @@ local:
 		--env=ROLLUP_HTTP_SERVER_URL=http://10.0.2.2:5004 \
 		-- /var/opt/cartesi-app/app
 	
-.PHONY: bidings
-bidings:
+.PHONY: orderings
+orderings:
 	$(START_LOG)
-	@go run ./pkg/rollups_contracts/generate
+	@go run ./pkg/rollups_crowdfundings/generate
 	$(END_LOG)
 
 .PHONY: test

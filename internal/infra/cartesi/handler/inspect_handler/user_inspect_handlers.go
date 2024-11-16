@@ -11,7 +11,6 @@ import (
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/contract_usecase"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
-	"github.com/tribeshq/tribes/pkg/custom_type"
 	"github.com/tribeshq/tribes/pkg/router"
 )
 
@@ -20,10 +19,10 @@ type UserInspectHandlers struct {
 	ContractRepository entity.ContractRepository
 }
 
-func NewUserInspectHandlers(userRepository entity.UserRepository, contractRepository entity.ContractRepository) *UserInspectHandlers {
+func NewUserInspectHandlers(userRepository entity.UserRepository, crowdfundingRepository entity.ContractRepository) *UserInspectHandlers {
 	return &UserInspectHandlers{
 		UserRepository:     userRepository,
-		ContractRepository: contractRepository,
+		ContractRepository: crowdfundingRepository,
 	}
 }
 
@@ -31,7 +30,7 @@ func (h *UserInspectHandlers) FindUserByAddressHandler(env rollmelette.EnvInspec
 	address := strings.ToLower(router.PathValue(ctx, "address"))
 	findUserByAddress := user_usecase.NewFindUserByAddressUseCase(h.UserRepository)
 	res, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
-		Address: custom_type.NewAddress(common.HexToAddress(address)),
+		Address: common.HexToAddress(address),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to find User: %w", err)
@@ -60,13 +59,13 @@ func (h *UserInspectHandlers) FindAllUsersHandler(env rollmelette.EnvInspector, 
 
 func (h *UserInspectHandlers) BalanceHandler(env rollmelette.EnvInspector, ctx context.Context) error {
 	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-	contract, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
+	crowdfunding, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
 		Symbol: strings.ToUpper(router.PathValue(ctx, "symbol")),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to find contract: %w", err)
+		return fmt.Errorf("failed to find crowdfunding: %w", err)
 	}
-	balanceBytes, err := json.Marshal(env.ERC20BalanceOf(contract.Address.Address, common.HexToAddress(router.PathValue(ctx, "address"))))
+	balanceBytes, err := json.Marshal(env.ERC20BalanceOf(crowdfunding.Address, common.HexToAddress(router.PathValue(ctx, "address"))))
 	if err != nil {
 		return fmt.Errorf("failed to marshal balance: %w", err)
 	}

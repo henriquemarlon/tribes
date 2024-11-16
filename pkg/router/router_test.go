@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-var validJSONPayload = []byte(`{"path":"advance-test","payload":{"test":"true"}}`)
+var validJSONPayload = []byte(`{"path":"test","payload":{"test":"true"}}`)
 var expectedPayload = `{"test":"true"}`
 var inspectPayload = []byte("inspect/123")
 var msgSender = common.HexToAddress("0xfafafafafafafafafafafafafafafafafafafa")
@@ -26,7 +26,7 @@ func (s *RouterSuite) SetupTest() {
 }
 
 func (s *RouterSuite) TestAdvance() {
-	s.router.HandleAdvance("advance-test", func(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	s.router.HandleAdvance("test", func(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
 		env.Notice(payload)
 		return nil
 	})

@@ -8,70 +8,70 @@ import (
 
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
-	"github.com/tribeshq/tribes/internal/usecase/bid_usecase"
+	"github.com/tribeshq/tribes/internal/usecase/order_usecase"
 	"github.com/tribeshq/tribes/pkg/router"
 )
 
-type BidInspectHandlers struct {
-	BidRepository entity.BidRepository
+type OrderInspectHandlers struct {
+	OrderRepository entity.OrderRepository
 }
 
-func NewBidInspectHandlers(bidRepository entity.BidRepository) *BidInspectHandlers {
-	return &BidInspectHandlers{
-		BidRepository: bidRepository,
+func NewOrderInspectHandlers(orderRepository entity.OrderRepository) *OrderInspectHandlers {
+	return &OrderInspectHandlers{
+		OrderRepository: orderRepository,
 	}
 }
 
-func (h *BidInspectHandlers) FindBidByIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *OrderInspectHandlers) FindOrderByIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
 	id, err := strconv.Atoi(router.PathValue(ctx, "id"))
 	if err != nil {
 		return fmt.Errorf("failed to parse id into int: %v", router.PathValue(ctx, "id"))
 	}
-	findBidById := bid_usecase.NewFindBidByIdUseCase(h.BidRepository)
-	res, err := findBidById.Execute(&bid_usecase.FindBidByIdInputDTO{
+	findOrderById := order_usecase.NewFindOrderByIdUseCase(h.OrderRepository)
+	res, err := findOrderById.Execute(&order_usecase.FindOrderByIdInputDTO{
 		Id: uint(id),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to find bid: %w", err)
+		return fmt.Errorf("failed to find order: %w", err)
 	}
-	bid, err := json.Marshal(res)
+	order, err := json.Marshal(res)
 	if err != nil {
-		return fmt.Errorf("failed to marshal bid: %w", err)
+		return fmt.Errorf("failed to marshal order: %w", err)
 	}
-	env.Report(bid)
+	env.Report(order)
 	return nil
 }
 
-func (h *BidInspectHandlers) FindBisdByAuctionIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *OrderInspectHandlers) FindBisdByCrowdfundingIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
 	id, err := strconv.Atoi(router.PathValue(ctx, "id"))
 	if err != nil {
 		return fmt.Errorf("failed to parse id into int: %v", router.PathValue(ctx, "id"))
 	}
-	findBidsByAuctionId := bid_usecase.NewFindBidsByAuctionIdUseCase(h.BidRepository)
-	res, err := findBidsByAuctionId.Execute(&bid_usecase.FindBidsByAuctionIdInputDTO{
-		AuctionId: uint(id),
+	findOrdersByCrowdfundingId := order_usecase.NewFindOrdersByCrowdfundingIdUseCase(h.OrderRepository)
+	res, err := findOrdersByCrowdfundingId.Execute(&order_usecase.FindOrdersByCrowdfundingIdInputDTO{
+		CrowdfundingId: uint(id),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to find bids by auction id: %v", err)
+		return fmt.Errorf("failed to find orders by crowdfunding id: %v", err)
 	}
-	bids, err := json.Marshal(res)
+	orders, err := json.Marshal(res)
 	if err != nil {
-		return fmt.Errorf("failed to marshal bids: %w", err)
+		return fmt.Errorf("failed to marshal orders: %w", err)
 	}
-	env.Report(bids)
+	env.Report(orders)
 	return nil
 }
 
-func (h *BidInspectHandlers) FindAllBidsHandler(env rollmelette.EnvInspector, ctx context.Context) error {
-	findAllBids := bid_usecase.NewFindAllBidsUseCase(h.BidRepository)
-	res, err := findAllBids.Execute()
+func (h *OrderInspectHandlers) FindAllOrdersHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+	findAllOrders := order_usecase.NewFindAllOrdersUseCase(h.OrderRepository)
+	res, err := findAllOrders.Execute()
 	if err != nil {
-		return fmt.Errorf("failed to find all bids: %w", err)
+		return fmt.Errorf("failed to find all orders: %w", err)
 	}
-	allBids, err := json.Marshal(res)
+	allOrders, err := json.Marshal(res)
 	if err != nil {
-		return fmt.Errorf("failed to marshal all bids: %w", err)
+		return fmt.Errorf("failed to marshal all orders: %w", err)
 	}
-	env.Report(allBids)
+	env.Report(allOrders)
 	return nil
 }

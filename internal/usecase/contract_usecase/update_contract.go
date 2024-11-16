@@ -4,7 +4,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
-	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type UpdateContractInputDTO struct {
@@ -14,11 +13,11 @@ type UpdateContractInputDTO struct {
 }
 
 type UpdateContractOutputDTO struct {
-	Id        uint                `json:"id"`
-	Symbol    string              `json:"symbol"`
-	Address   custom_type.Address `json:"address"`
-	CreatedAt int64               `json:"created_at"`
-	UpdatedAt int64               `json:"updated_at"`
+	Id        uint           `json:"id"`
+	Symbol    string         `json:"symbol"`
+	Address   common.Address `json:"address"`
+	CreatedAt int64          `json:"created_at"`
+	UpdatedAt int64          `json:"updated_at"`
 }
 
 type UpdateContractUseCase struct {
@@ -34,7 +33,7 @@ func NewUpdateContractUseCase(contractRepository entity.ContractRepository) *Upd
 func (s *UpdateContractUseCase) Execute(input *UpdateContractInputDTO, metadata rollmelette.Metadata) (*UpdateContractOutputDTO, error) {
 	contract, err := s.ContractReposiotry.UpdateContract(&entity.Contract{
 		Id:        input.Id,
-		Address:   custom_type.NewAddress(input.Address),
+		Address:   input.Address,
 		Symbol:    input.Symbol,
 		UpdatedAt: metadata.BlockTimestamp,
 	})

@@ -1,8 +1,10 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"gorm.io/gorm"
 )
@@ -17,35 +19,20 @@ func NewContractRepositorySqlite(db *gorm.DB) *ContractRepositorySqlite {
 	}
 }
 
-func (r *ContractRepositorySqlite) CreateContract(contract *entity.Contract) (*entity.Contract, error) {
-	err := r.Db.Create(contract).Error
+func (r *ContractRepositorySqlite) CreateContract(input *entity.Contract) (*entity.Contract, error) {
+	err := r.Db.Model(&entity.Contract{}).Create(map[string]interface{}{
+		"symbol":     input.Symbol,
+		"address":    input.Address.String(),
+		"created_at": input.CreatedAt,
+		"updated_at": input.UpdatedAt,
+	}).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create contract: %w", err)
 	}
-	return contract, nil
-}
 
-func (r *ContractRepositorySqlite) FindAllContracts() ([]*entity.Contract, error) {
-	var contracts []*entity.Contract
-	err := r.Db.Find(&contracts).Error
-	if err != nil {
-		return nil, err
-	}
-	return contracts, nil
-}
-
-func (r *ContractRepositorySqlite) FindContractBySymbol(symbol string) (*entity.Contract, error) {
-	var contract entity.Contract
-	err := r.Db.Where("symbol = ?", symbol).First(&contract).Error
-	if err != nil {
-		return nil, err
-	}
-	return &contract, nil
-}
-
-func (r *ContractRepositorySqlite) UpdateContract(input *entity.Contract) (*entity.Contract, error) {
-	var contract entity.Contract
-	err := r.Db.Where("symbol = ?", input.Symbol).First(&contract).Error
+	var result map[string]interface{}
+	err = r.Db.Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts WHERE symbol = ? LIMIT 1", input.Symbol).
+		Scan(&result).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, entity.ErrContractNotFound
@@ -53,10 +40,81 @@ func (r *ContractRepositorySqlite) UpdateContract(input *entity.Contract) (*enti
 		return nil, err
 	}
 
-	contract.Address = input.Address
-	contract.UpdatedAt = input.UpdatedAt
+	contract := &entity.Contract{
+		Id:        uint(result["id"].(int64)),
+		Symbol:    result["symbol"].(string),
+		Address:   common.HexToAddress(result["address"].(string)),
+		CreatedAt: result["created_at"].(int64),
+		UpdatedAt: result["updated_at"].(int64),
+	}
+	return contract, nil
+}
 
-	res := r.Db.Save(&contract)
+func (r *ContractRepositorySqlite) FindAllContracts() ([]*entity.Contract, error) {
+	var results []map[string]interface{}
+	err := r.Db.Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts").Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var contracts []*entity.Contract
+	for _, result := range results {
+		contracts = append(contracts, &entity.Contract{
+			Id:        uint(result["id"].(int64)),
+			Symbol:    result["symbol"].(string),
+			Address:   common.HexToAddress(result["address"].(string)),
+			CreatedAt: result["created_at"].(int64),
+			UpdatedAt: result["updated_at"].(int64),
+		})
+	}
+	return contracts, nil
+}
+
+func (r *ContractRepositorySqlite) FindContractBySymbol(symbol string) (*entity.Contract, error) {
+	var result map[string]interface{}
+	err := r.Db.Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts WHERE symbol = ? LIMIT 1", symbol).Scan(&result).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrContractNotFound
+		}
+		return nil, err
+	}
+	return &entity.Contract{
+		Id:        uint(result["id"].(int64)),
+		Symbol:    result["symbol"].(string),
+		Address:   common.HexToAddress(result["address"].(string)),
+		CreatedAt: result["created_at"].(int64),
+		UpdatedAt: result["updated_at"].(int64),
+	}, nil
+}
+
+func (r *ContractRepositorySqlite) UpdateContract(input *entity.Contract) (*entity.Contract, error) {
+	var contractJSON map[string]interface{}
+	err := r.Db.Where("symbol = ?", input.Symbol).First(&contractJSON).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrContractNotFound
+		}
+		return nil, err
+	}
+
+	contractJSON["address"] = input.Address.String()
+	contractJSON["updated_at"] = input.UpdatedAt
+
+	contractBytes, err := json.Marshal(contractJSON)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal contract: %w", err)
+	}
+
+	var contract entity.Contract
+	if err = json.Unmarshal(contractBytes, &contract); err != nil {
+		return nil, err
+	}
+	if err = contract.Validate(); err != nil {
+		return nil, err
+	}
+
+	res := r.Db.Save(contractJSON)
 	if res.Error != nil {
 		return nil, fmt.Errorf("failed to update contract: %w", res.Error)
 	}
@@ -64,7 +122,7 @@ func (r *ContractRepositorySqlite) UpdateContract(input *entity.Contract) (*enti
 }
 
 func (r *ContractRepositorySqlite) DeleteContract(symbol string) error {
-	res := r.Db.Where("symbol = ?", symbol).Delete(&entity.Contract{})
+	res := r.Db.Delete(&entity.Contract{}, "symbol = ?", symbol)
 	if res.Error != nil {
 		return fmt.Errorf("failed to delete contract: %w", res.Error)
 	}

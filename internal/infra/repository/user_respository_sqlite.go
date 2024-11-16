@@ -3,8 +3,8 @@ package db
 import (
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
-	"github.com/tribeshq/tribes/pkg/custom_type"
 	"gorm.io/gorm"
 )
 
@@ -19,51 +19,94 @@ func NewUserRepositorySqlite(db *gorm.DB) *UserRepositorySqlite {
 }
 
 func (r *UserRepositorySqlite) CreateUser(input *entity.User) (*entity.User, error) {
-	err := r.Db.Create(input).Error
+	err := r.Db.Model(&entity.User{}).Create(map[string]interface{}{
+		"role":       input.Role,
+		"address":    input.Address.String(),
+		"created_at": input.CreatedAt,
+		"updated_at": input.UpdatedAt,
+	}).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
-	return input, nil
-}
 
-func (r *UserRepositorySqlite) FindUserByUsername(username string) (*entity.User, error) {
-	var user entity.User
-	err := r.Db.Where("username = ?", username).First(&user).Error
+	var result map[string]interface{}
+	err = r.Db.Raw("SELECT id, role, address, created_at, updated_at FROM users WHERE address = ?", input.Address.String()).
+		Scan(&result).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrCrowdfundingNotFound
+		}
 		return nil, err
 	}
-	return &user, nil
+
+	user := &entity.User{
+		Id:        uint(result["id"].(int64)),
+		Role:      result["role"].(string),
+		Address:   common.HexToAddress(result["address"].(string)),
+		CreatedAt: result["created_at"].(int64),
+		UpdatedAt: result["updated_at"].(int64),
+	}
+	return user, nil
+}
+
+func (r *UserRepositorySqlite) FindUserByAddress(address common.Address) (*entity.User, error) {
+	var result map[string]interface{}
+	err := r.Db.Raw("SELECT id, role, address, created_at, updated_at FROM users WHERE address = ? LIMIT 1", address.String()).Scan(&result).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrCrowdfundingNotFound
+		}
+		return nil, err
+	}
+	return &entity.User{
+		Id:        uint(result["id"].(int64)),
+		Role:      result["role"].(string),
+		Address:   common.HexToAddress(result["address"].(string)),
+		CreatedAt: result["created_at"].(int64),
+		UpdatedAt: result["updated_at"].(int64),
+	}, nil
 }
 
 func (r *UserRepositorySqlite) FindUserByRole(role string) (*entity.User, error) {
-	var user entity.User
-	err := r.Db.Where("role = ?", role).First(&user).Error
+	var result map[string]interface{}
+	err := r.Db.Raw("SELECT id, role, address, created_at, updated_at FROM users WHERE role = ? LIMIT 1", role).Scan(&result).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to find user by role: %w", err)
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrCrowdfundingNotFound
+		}
+		return nil, err
 	}
-	return &user, nil
-}
-
-func (r *UserRepositorySqlite) FindUserByAddress(address custom_type.Address) (*entity.User, error) {
-	var user entity.User
-	err := r.Db.Where("address = ?", address).First(&user).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user by address %v: %w", address.Address, err)
-	}
-	return &user, nil
+	return &entity.User{
+		Id:        uint(result["id"].(int64)),
+		Role:      result["role"].(string),
+		Address:   common.HexToAddress(result["address"].(string)),
+		CreatedAt: result["created_at"].(int64),
+		UpdatedAt: result["updated_at"].(int64),
+	}, nil
 }
 
 func (r *UserRepositorySqlite) FindAllUsers() ([]*entity.User, error) {
-	var users []*entity.User
-	err := r.Db.Find(&users).Error
+	var results []map[string]interface{}
+	err := r.Db.Raw("SELECT id, role, address, created_at, updated_at FROM users").Scan(&results).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to find all users: %w", err)
+		return nil, err
+	}
+
+	var users []*entity.User
+	for _, result := range results {
+		users = append(users, &entity.User{
+			Id:        uint(result["id"].(int64)),
+			Role:      result["role"].(string),
+			Address:   common.HexToAddress(result["address"].(string)),
+			CreatedAt: result["created_at"].(int64),
+			UpdatedAt: result["updated_at"].(int64),
+		})
 	}
 	return users, nil
 }
 
-func (r *UserRepositorySqlite) DeleteUserByAddress(address custom_type.Address) error {
-	res := r.Db.Delete(&entity.User{}, "address = ?", address)
+func (r *UserRepositorySqlite) DeleteUser(address common.Address) error {
+	res := r.Db.Delete(&entity.User{}, "address = ?", address.String())
 	if res.Error != nil {
 		return fmt.Errorf("failed to delete user: %w", res.Error)
 	}

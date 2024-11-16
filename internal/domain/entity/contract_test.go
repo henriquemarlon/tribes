@@ -6,12 +6,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
-	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 func TestNewContract(t *testing.T) {
 	symbol := "ETH"
-	address := custom_type.NewAddress(common.HexToAddress("0x123"))
+	address := common.HexToAddress("0x123")
 	createdAt := time.Now().Unix()
 
 	contract, err := NewContract(symbol, address, createdAt)
@@ -28,7 +27,7 @@ func TestContract_Validate(t *testing.T) {
 	// Invalid symbol
 	contract := &Contract{
 		Symbol:    "",
-		Address:   custom_type.NewAddress(common.HexToAddress("0x123")),
+		Address:   common.HexToAddress("0x123"),
 		CreatedAt: createdAt,
 	}
 	err := contract.Validate()
@@ -37,13 +36,13 @@ func TestContract_Validate(t *testing.T) {
 
 	// Invalid address
 	contract.Symbol = "ETH"
-	contract.Address = custom_type.NewAddress(common.Address{})
+	contract.Address = common.Address{}
 	err = contract.Validate()
 	assert.NotNil(t, err)
 	assert.Equal(t, ErrInvalidContract, err)
 
 	// Valid contract
-	contract.Address = custom_type.NewAddress(common.HexToAddress("0x123"))
+	contract.Address = common.HexToAddress("0x123")
 	err = contract.Validate()
 	assert.Nil(t, err)
 }

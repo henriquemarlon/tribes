@@ -11,13 +11,13 @@ import (
 )
 
 type UserAdvanceHandlers struct {
-	UserRepository     entity.UserRepository
+	UserRepository entity.UserRepository
 	ContractRepository entity.ContractRepository
 }
 
 func NewUserAdvanceHandlers(userRepository entity.UserRepository, contractRepository entity.ContractRepository) *UserAdvanceHandlers {
 	return &UserAdvanceHandlers{
-		UserRepository:     userRepository,
+		UserRepository: userRepository,
 		ContractRepository: contractRepository,
 	}
 }
@@ -40,12 +40,12 @@ func (h *UserAdvanceHandlers) CreateUserHandler(env rollmelette.Env, metadata ro
 	return nil
 }
 
-func (h *UserAdvanceHandlers) DeleteUserByAddressHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
-	var input user_usecase.DeleteUserByAddressInputDTO
+func (h *UserAdvanceHandlers) DeleteUserHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	var input user_usecase.DeleteUserInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return fmt.Errorf("failed to unmarshal input: %w", err)
 	}
-	deleteUserByAddress := user_usecase.NewDeleteUserByAddressUseCase(h.UserRepository)
+	deleteUserByAddress := user_usecase.NewDeleteUserUseCase(h.UserRepository)
 	err := deleteUserByAddress.Execute(&input)
 	if err != nil {
 		return err
@@ -64,11 +64,11 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 	if err != nil {
 		return err
 	}
-	stablecoinBalance := env.ERC20BalanceOf(stablecoin.Address.Address, metadata.MsgSender)
+	stablecoinBalance := env.ERC20BalanceOf(stablecoin.Address, metadata.MsgSender)
 	if stablecoinBalance.Sign() == 0 {
 		return fmt.Errorf("no balance of %v to withdraw", stablecoin.Symbol)
 	}
-	stablecoinVoucherIndex, err := env.ERC20Withdraw(stablecoin.Address.Address, metadata.MsgSender, stablecoinBalance)
+	stablecoinVoucherIndex, err := env.ERC20Withdraw(stablecoin.Address, metadata.MsgSender, stablecoinBalance)
 	if err != nil {
 		return err
 	}
@@ -86,14 +86,14 @@ func (h *UserAdvanceHandlers) WithdrawAppHandler(env rollmelette.Env, metadata r
 	if !isDefined {
 		return fmt.Errorf("no application address defined yet, contact the Tribes support")
 	}
-	stablecoinBalance := env.ERC20BalanceOf(stablecoin.Address.Address, application)
+	stablecoinBalance := env.ERC20BalanceOf(stablecoin.Address, application)
 	if stablecoinBalance.Sign() == 0 {
 		return fmt.Errorf("no balance of %v to withdraw", stablecoin.Symbol)
 	}
-	if err := env.ERC20Transfer(stablecoin.Address.Address, application, metadata.MsgSender, stablecoinBalance); err != nil {
+	if err := env.ERC20Transfer(stablecoin.Address, application, metadata.MsgSender, stablecoinBalance); err != nil {
 		return err
 	}
-	stablecoinVoucherIndex, err := env.ERC20Withdraw(stablecoin.Address.Address, metadata.MsgSender, stablecoinBalance)
+	stablecoinVoucherIndex, err := env.ERC20Withdraw(stablecoin.Address, metadata.MsgSender, stablecoinBalance)
 	if err != nil {
 		return err
 	}

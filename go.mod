@@ -5,7 +5,8 @@ go 1.22.5
 require (
 	github.com/ethereum/go-ethereum v1.13.14
 	github.com/google/wire v0.6.0
-	github.com/rollmelette/rollmelette v0.1.1
+	github.com/holiman/uint256 v1.2.4
+	github.com/rollmelette/rollmelette v0.2.0
 	github.com/stretchr/testify v1.9.0
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.10
@@ -29,7 +30,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/holiman/uint256 v1.2.4 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/lmittmann/tint v1.0.3 // indirect

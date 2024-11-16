@@ -8,7 +8,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
-	"github.com/tribeshq/tribes/pkg/custom_type"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -31,28 +30,29 @@ func SetupSQlite() (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
 	err = db.AutoMigrate(
-		&entity.Bid{},
-		&entity.User{},
-		&entity.Auction{},
-		&entity.Contract{},
+		entity.Order{},
+		entity.User{},
+		entity.Crowdfunding{},
+		entity.Crowdfunding{},
 	)
-
-	db.Create(&entity.User{
-		Role:      "admin",
-		Username:  "admin",
-		Address:   custom_type.NewAddress(common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")),
-		CreatedAt: 0,
-	})
-
-	db.Create(&entity.User{
-		Role:      "auctioneer",
-		Username:  "auctioneer",
-		Address:   custom_type.NewAddress(common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4")),
-		CreatedAt: 0,
-	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %v", err)
+	}
+
+	err = db.Table("users").Create([]map[string]interface{}{
+		{
+			"role":       "admin",
+			"address":    common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
+			"created_at": 0,
+		},
+		{
+			"role":       "crowdfundingeer",
+			"address":    common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4").String(),
+			"created_at": 0,
+		},
+	}).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to create users: %w", err)
 	}
 	return db, nil
 }
@@ -74,28 +74,29 @@ func SetupSQliteMemory() (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
 	err = db.AutoMigrate(
-		&entity.Bid{},
-		&entity.User{},
-		&entity.Auction{},
-		&entity.Contract{},
+		entity.Order{},
+		entity.User{},
+		entity.Crowdfunding{},
+		entity.Crowdfunding{},
 	)
-
-	db.Create(&entity.User{
-		Role:      "admin",
-		Username:  "admin",
-		Address:   custom_type.NewAddress(common.HexToAddress("0x0142f501EE21f4446009C3505c51d0043feC5c68")),
-		CreatedAt: 0,
-	})
-
-	db.Create(&entity.User{
-		Role:      "auctioneer",
-		Username:  "auctioneer",
-		Address:   custom_type.NewAddress(common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4")),
-		CreatedAt: 0,
-	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %v", err)
+	}
+
+	err = db.Table("users").Create([]map[string]interface{}{
+		{
+			"role":       "admin",
+			"address":    common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
+			"created_at": 0,
+		},
+		{
+			"role":       "crowdfundingeer",
+			"address":    common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4").String(),
+			"created_at": 0,
+		},
+	}).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to create users: %w", err)
 	}
 	return db, nil
 }

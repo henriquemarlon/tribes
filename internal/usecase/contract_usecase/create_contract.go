@@ -1,21 +1,21 @@
 package contract_usecase
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
-	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type CreateContractInputDTO struct {
-	Symbol  string              `json:"symbol"`
-	Address custom_type.Address `json:"address"`
+	Symbol  string         `json:"symbol"`
+	Address common.Address `json:"address"`
 }
 
 type CreateContractOutputDTO struct {
-	Id        uint                `json:"id"`
-	Symbol    string              `json:"symbol"`
-	Address   custom_type.Address `json:"address"`
-	CreatedAt int64               `json:"created_at"`
+	Id        uint           `json:"id"`
+	Symbol    string         `json:"symbol"`
+	Address   common.Address `json:"address"`
+	CreatedAt int64          `json:"created_at"`
 }
 
 type CreateContractUseCase struct {
