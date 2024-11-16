@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
@@ -11,16 +12,6 @@ var (
 	ErrInvalidOrder  = errors.New("invalid order")
 	ErrOrderNotFound = errors.New("order not found")
 )
-
-type OrderRepository interface {
-	CreateOrder(order *Order) (*Order, error)
-	FindOrdersByState(crowdfundingId uint, state string) ([]*Order, error)
-	FindOrderById(id uint) (*Order, error)
-	FindOrdersByCrowdfundingId(id uint) ([]*Order, error)
-	FindAllOrders() ([]*Order, error)
-	UpdateOrder(order *Order) (*Order, error)
-	DeleteOrder(id uint) error
-}
 
 type OrderState string
 
@@ -32,18 +23,29 @@ const (
 	OrderStatePaid     OrderState = "paid"
 )
 
+type OrderRepository interface {
+	CreateOrder(order *Order) (*Order, error)
+	FindOrderById(id uint) (*Order, error)
+	FindOrdersByCrowdfundingId(id uint) ([]*Order, error)
+	FindOrdersByState(crowdfundingId uint, state string) ([]*Order, error)
+	FindOrdersByInvestor(investor common.Address) ([]*Order, error)
+	FindAllOrders() ([]*Order, error)
+	UpdateOrder(order *Order) (*Order, error)
+	DeleteOrder(id uint) error
+}
+
 type Order struct {
 	Id             uint           `json:"id" gorm:"primaryKey"`
 	CrowdfundingId uint           `json:"crowdfunding_id" gorm:"not null;index"`
 	Investor       common.Address `json:"investor,omitempty" gorm:"not null"`
-	Amount         uint256.Int    `json:"amount,omitempty" gorm:"type:bigint;not null"`
-	InterestRate   uint256.Int    `json:"interest_rate,omitempty" gorm:"type:bigint;not null"`
+	Amount         *uint256.Int   `json:"amount,omitempty" gorm:"type:bigint;not null"`
+	InterestRate   *uint256.Int   `json:"interest_rate,omitempty" gorm:"type:bigint;not null"`
 	State          OrderState     `json:"state,omitempty" gorm:"type:text;not null"`
 	CreatedAt      int64          `json:"created_at,omitempty" gorm:"not null"`
 	UpdatedAt      int64          `json:"updated_at,omitempty" gorm:"default:0"`
 }
 
-func NewOrder(crowdfundingId uint, investor common.Address, amount uint256.Int, interestRate uint256.Int, createdAt int64) (*Order, error) {
+func NewOrder(crowdfundingId uint, investor common.Address, amount *uint256.Int, interestRate *uint256.Int, createdAt int64) (*Order, error) {
 	order := &Order{
 		CrowdfundingId: crowdfundingId,
 		Investor:       investor,
@@ -59,8 +61,20 @@ func NewOrder(crowdfundingId uint, investor common.Address, amount uint256.Int, 
 }
 
 func (b *Order) Validate() error {
-	if b.CrowdfundingId == 0 || b.Investor == (common.Address{}) || b.Amount.Sign() == 0 || b.InterestRate.Sign() == 0 {
-		return ErrInvalidOrder
+	if b.CrowdfundingId == 0 {
+		return fmt.Errorf("%w: crowdfunding ID cannot be zero", ErrInvalidOrder)
+	}
+	if b.Investor == (common.Address{}) {
+		return fmt.Errorf("%w: investor address cannot be empty", ErrInvalidOrder)
+	}
+	if b.Amount.Sign() == 0 {
+		return fmt.Errorf("%w: amount cannot be zero", ErrInvalidOrder)
+	}
+	if b.InterestRate.Sign() == 0 {
+		return fmt.Errorf("%w: interest rate cannot be zero", ErrInvalidOrder)
+	}
+	if b.CreatedAt == 0 {
+		return fmt.Errorf("%w: creation date is missing", ErrInvalidCrowdfunding)
 	}
 	return nil
 }

@@ -75,3 +75,7 @@ func (h *OrderInspectHandlers) FindAllOrdersHandler(env rollmelette.EnvInspector
 	env.Report(allOrders)
 	return nil
 }
+
+func (h *OrderInspectHandlers) FindOrdersByInvestorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+	return nil
+}

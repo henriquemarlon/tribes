@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"gorm.io/gorm"
 )
@@ -33,6 +34,10 @@ func (r *OrderRepositorySqlite) FindOrdersByState(crowdfundingId uint, state str
 		return nil, fmt.Errorf("failed to find orders by state: %w", err)
 	}
 	return orders, nil
+}
+
+func (r *OrderRepositorySqlite) FindOrdersByInvestor(investor common.Address) ([]*entity.Order, error) {
+	return nil, nil
 }
 
 func (r *OrderRepositorySqlite) FindOrderById(id uint) (*entity.Order, error) {

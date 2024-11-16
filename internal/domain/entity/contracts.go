@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -20,11 +21,11 @@ type ContractRepository interface {
 }
 
 type Contract struct {
-	Id        uint                `json:"id" gorm:"primaryKey"`
-	Symbol    string              `json:"symbol,omitempty" gorm:"uniqueIndex;not null"`
+	Id        uint           `json:"id" gorm:"primaryKey"`
+	Symbol    string         `json:"symbol,omitempty" gorm:"uniqueIndex;not null"`
 	Address   common.Address `json:"address,omitempty" gorm:"type:text;not null"`
-	CreatedAt int64               `json:"created_at,omitempty" gorm:"not null"`
-	UpdatedAt int64               `json:"updated_at,omitempty" gorm:"default:0"`
+	CreatedAt int64          `json:"created_at,omitempty" gorm:"not null"`
+	UpdatedAt int64          `json:"updated_at,omitempty" gorm:"default:0"`
 }
 
 func NewContract(symbol string, address common.Address, createdAt int64) (*Contract, error) {
@@ -40,8 +41,11 @@ func NewContract(symbol string, address common.Address, createdAt int64) (*Contr
 }
 
 func (c *Contract) Validate() error {
-	if c.Symbol == "" || c.Address == (common.Address{}) {
-		return ErrInvalidContract
+	if c.Symbol == "" {
+		return fmt.Errorf("%w: symbol cannot be empty", ErrInvalidContract)
+	}
+	if c.Address == (common.Address{}) {
+		return fmt.Errorf("%w: address cannot be empty", ErrInvalidContract)
 	}
 	return nil
 }

@@ -40,6 +40,10 @@ func (h *UserAdvanceHandlers) CreateUserHandler(env rollmelette.Env, metadata ro
 	return nil
 }
 
+func (h *UserAdvanceHandlers) UpdateUserHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	return nil
+}
+
 func (h *UserAdvanceHandlers) DeleteUserHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
 	var input user_usecase.DeleteUserInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {

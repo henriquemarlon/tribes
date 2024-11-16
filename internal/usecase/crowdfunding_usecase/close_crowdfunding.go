@@ -17,8 +17,8 @@ type FinishCrowdfundingInputDTO struct {
 type FinishCrowdfundingOutputDTO struct {
 	Id              uint            `json:"id"`
 	Creator         common.Address  `json:"creator,omitempty"`
-	DebtIssued      uint256.Int     `json:"debt_issued,omitempty"`
-	MaxInterestRate uint256.Int     `json:"max_interest_rate,omitempty"`
+	DebtIssued      *uint256.Int     `json:"debt_issued,omitempty"`
+	MaxInterestRate *uint256.Int     `json:"max_interest_rate,omitempty"`
 	State           string          `json:"state,omitempty"`
 	Orders          []*entity.Order `json:"orders,omitempty"`
 	ExpiresAt       int64           `json:"expires_at,omitempty"`
@@ -80,10 +80,10 @@ func (u *FinishCrowdfundingUseCase) Execute(input *FinishCrowdfundingInputDTO, m
 	}
 
 	sort.Slice(orders, func(i, j int) bool {
-		return orders[i].InterestRate.Cmp(&orders[j].InterestRate) < 0
+		return orders[i].InterestRate.Cmp(orders[j].InterestRate) < 0
 	})
 
-	debtIssuedRemaining := new(uint256.Int).Set(&activeCrowdfunding.DebtIssued)
+	debtIssuedRemaining := new(uint256.Int).Set(activeCrowdfunding.DebtIssued)
 
 	for _, order := range orders {
 		if debtIssuedRemaining.IsZero() {
@@ -96,20 +96,20 @@ func (u *FinishCrowdfundingUseCase) Execute(input *FinishCrowdfundingInputDTO, m
 			continue
 		}
 
-		if debtIssuedRemaining.Gt(&order.Amount) {
+		if debtIssuedRemaining.Gt(order.Amount) {
 			order.State = "accepted"
 			order.UpdatedAt = metadata.BlockTimestamp
 			_, err := u.OrderRepository.UpdateOrder(order)
 			if err != nil {
 				return nil, err
 			}
-			debtIssuedRemaining.Sub(debtIssuedRemaining, &order.Amount)
+			debtIssuedRemaining.Sub(debtIssuedRemaining, order.Amount)
 		} else {
 			partiallyAcceptedAmount := new(uint256.Int).Set(debtIssuedRemaining)
 			_, err := u.OrderRepository.CreateOrder(&entity.Order{
 				CrowdfundingId: order.CrowdfundingId,
 				Investor:       order.Investor,
-				Amount:         *partiallyAcceptedAmount,
+				Amount:         partiallyAcceptedAmount,
 				InterestRate:   order.InterestRate,
 				State:          "partially_accepted",
 				CreatedAt:      metadata.BlockTimestamp,
@@ -119,11 +119,11 @@ func (u *FinishCrowdfundingUseCase) Execute(input *FinishCrowdfundingInputDTO, m
 				return nil, err
 			}
 
-			rejectedAmount := new(uint256.Int).Sub(&order.Amount, partiallyAcceptedAmount)
+			rejectedAmount := new(uint256.Int).Sub(order.Amount, partiallyAcceptedAmount)
 			_, err = u.OrderRepository.CreateOrder(&entity.Order{
 				CrowdfundingId: order.CrowdfundingId,
 				Investor:       order.Investor,
-				Amount:         *rejectedAmount,
+				Amount:         rejectedAmount,
 				InterestRate:   order.InterestRate,
 				State:          "rejected",
 				CreatedAt:      metadata.BlockTimestamp,

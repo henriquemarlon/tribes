@@ -16,7 +16,7 @@ func TestNewCrowdfunding(t *testing.T) {
 	createdAt := time.Now().Unix()
 	expiresAt := createdAt + 3600
 
-	crowdfunding, err := NewCrowdfunding(creator, *debt_issued, *interestRate, expiresAt, createdAt)
+	crowdfunding, err := NewCrowdfunding(creator, debt_issued, interestRate, expiresAt, createdAt)
 	assert.NoError(t, err)
 	assert.NotNil(t, crowdfunding)
 	assert.Equal(t, *debt_issued, crowdfunding.DebtIssued)
@@ -33,7 +33,7 @@ func TestNewCrowdfunding_Fail_InvalidCrowdfunding(t *testing.T) {
 	createdAt := time.Now().Unix()
 	expiresAt := createdAt + 3600
 
-	crowdfunding, err := NewCrowdfunding(creator, *debt_issued, *interestRate, expiresAt, createdAt)
+	crowdfunding, err := NewCrowdfunding(creator, debt_issued, interestRate, expiresAt, createdAt)
 	assert.Error(t, err)
 	assert.Nil(t, crowdfunding)
 	assert.Equal(t, ErrInvalidCrowdfunding, err)
@@ -41,7 +41,7 @@ func TestNewCrowdfunding_Fail_InvalidCrowdfunding(t *testing.T) {
 	debt_issued = uint256.NewInt(100)
 	interestRate = uint256.NewInt(0)
 
-	crowdfunding, err = NewCrowdfunding(creator, *debt_issued, *interestRate, expiresAt, createdAt)
+	crowdfunding, err = NewCrowdfunding(creator, debt_issued, interestRate, expiresAt, createdAt)
 	assert.Error(t, err)
 	assert.Nil(t, crowdfunding)
 	assert.Equal(t, ErrInvalidCrowdfunding, err)
@@ -50,7 +50,7 @@ func TestNewCrowdfunding_Fail_InvalidCrowdfunding(t *testing.T) {
 	interestRate = uint256.NewInt(50)
 	expiresAt = createdAt
 
-	crowdfunding, err = NewCrowdfunding(creator, *debt_issued, *interestRate, expiresAt, createdAt)
+	crowdfunding, err = NewCrowdfunding(creator, debt_issued, interestRate, expiresAt, createdAt)
 	assert.Error(t, err)
 	assert.Nil(t, crowdfunding)
 	assert.Equal(t, ErrInvalidCrowdfunding, err)

@@ -11,15 +11,15 @@ import (
 
 type CreateOrderInputDTO struct {
 	Creator common.Address `json:"creator"`
-	Price   uint256.Int    `json:"interest_rate"`
+	Price   *uint256.Int    `json:"interest_rate"`
 }
 
 type CreateOrderOutputDTO struct {
 	Id             uint           `json:"id"`
 	CrowdfundingId uint           `json:"crowdfunding_id"`
 	Investor       common.Address `json:"investor"`
-	Amount         uint256.Int    `json:"amount"`
-	InterestRate   uint256.Int    `json:"interest_rate"`
+	Amount         *uint256.Int    `json:"amount"`
+	InterestRate   *uint256.Int    `json:"interest_rate"`
 	State          string         `json:"state"`
 	CreatedAt      int64          `json:"created_at"`
 }
@@ -64,11 +64,11 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 		return nil, fmt.Errorf("invalid contract address provided for order creation: %v", deposit.(*rollmelette.ERC20Deposit).Token)
 	}
 
-	if input.Price.Gt(&activeCrowdfunding.MaxInterestRate) {
+	if input.Price.Gt(activeCrowdfunding.MaxInterestRate) {
 		return nil, fmt.Errorf("order price exceeds active crowdfunding max interest rate")
 	}
 
-	order, err := entity.NewOrder(activeCrowdfunding.Id, deposit.(*rollmelette.ERC20Deposit).Sender, *uint256.MustFromBig(deposit.(*rollmelette.ERC20Deposit).Amount), input.Price, metadata.BlockTimestamp)
+	order, err := entity.NewOrder(activeCrowdfunding.Id, deposit.(*rollmelette.ERC20Deposit).Sender, uint256.MustFromBig(deposit.(*rollmelette.ERC20Deposit).Amount), input.Price, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, err
 	}

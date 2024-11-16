@@ -18,16 +18,17 @@ func NewFindUserByRoleUseCase(userRepository entity.UserRepository) *FindUserByR
 	}
 }
 
-func (u *FindUserByRoleUseCase) Execute(input *FindUserByRoleInputDTO) (*FindUserOutputDTO, error) {
-	res, err := u.userRepository.FindUserByRole(input.Role)
+func (u *FindUserByRoleUseCase) Execute(input *FindUserByRoleInputDTO) ([]*FindUserOutputDTO, error) {
+	_, err := u.userRepository.FindUsersByRole(input.Role)
 	if err != nil {
 		return nil, err
 	}
-	return &FindUserOutputDTO{
-		Id:        res.Id,
-		Role:      res.Role,
-		Address:   res.Address,
-		CreatedAt: res.CreatedAt,
-		UpdatedAt: res.UpdatedAt,
-	}, nil
+	// return &FindUserOutputDTO{
+	// 	Id:        res.Id,
+	// 	Role:      res.Role,
+	// 	Address:   res.Address,
+	// 	CreatedAt: res.CreatedAt,
+	// 	UpdatedAt: res.UpdatedAt,
+	// }, nil
+	return nil, nil
 }

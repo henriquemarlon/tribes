@@ -67,22 +67,23 @@ func (r *UserRepositorySqlite) FindUserByAddress(address common.Address) (*entit
 	}, nil
 }
 
-func (r *UserRepositorySqlite) FindUserByRole(role string) (*entity.User, error) {
-	var result map[string]interface{}
-	err := r.Db.Raw("SELECT id, role, address, created_at, updated_at FROM users WHERE role = ? LIMIT 1", role).Scan(&result).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, entity.ErrCrowdfundingNotFound
-		}
-		return nil, err
-	}
-	return &entity.User{
-		Id:        uint(result["id"].(int64)),
-		Role:      result["role"].(string),
-		Address:   common.HexToAddress(result["address"].(string)),
-		CreatedAt: result["created_at"].(int64),
-		UpdatedAt: result["updated_at"].(int64),
-	}, nil
+func (r *UserRepositorySqlite) FindUsersByRole(role string) ([]*entity.User, error) {
+	// var result map[string]interface{}
+	// err := r.Db.Raw("SELECT id, role, address, created_at, updated_at FROM users WHERE role = ? LIMIT 1", role).Scan(&result).Error
+	// if err != nil {
+	// 	if err == gorm.ErrRecordNotFound {
+	// 		return nil, entity.ErrCrowdfundingNotFound
+	// 	}
+	// 	return nil, err
+	// }
+	// return &entity.User{
+	// 	Id:        uint(result["id"].(int64)),
+	// 	Role:      result["role"].(string),
+	// 	Address:   common.HexToAddress(result["address"].(string)),
+	// 	CreatedAt: result["created_at"].(int64),
+	// 	UpdatedAt: result["updated_at"].(int64),
+	// }, nil
+	return nil, nil
 }
 
 func (r *UserRepositorySqlite) FindAllUsers() ([]*entity.User, error) {
@@ -103,6 +104,10 @@ func (r *UserRepositorySqlite) FindAllUsers() ([]*entity.User, error) {
 		})
 	}
 	return users, nil
+}
+
+func (r *UserRepositorySqlite) UpdateUser(input *entity.User) (*entity.User, error) {
+	return nil, nil
 }
 
 func (r *UserRepositorySqlite) DeleteUser(address common.Address) error {

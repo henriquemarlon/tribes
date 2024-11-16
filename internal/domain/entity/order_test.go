@@ -16,7 +16,7 @@ func TestNewOrder_Success(t *testing.T) {
 	interestRate := uint256.NewInt(50)
 	createdAt := time.Now().Unix()
 
-	order, err := NewOrder(crowdfundingId, investor, *amount, *interestRate, createdAt)
+	order, err := NewOrder(crowdfundingId, investor, amount, interestRate, createdAt)
 	assert.NoError(t, err)
 	assert.NotNil(t, order)
 	assert.Equal(t, crowdfundingId, order.CrowdfundingId)
@@ -34,7 +34,7 @@ func TestNewOrder_Fail_InvalidOrder(t *testing.T) {
 	interestRate := uint256.NewInt(50)
 	createdAt := time.Now().Unix()
 
-	order, err := NewOrder(crowdfundingId, investor, *amount, *interestRate, createdAt)
+	order, err := NewOrder(crowdfundingId, investor, amount, interestRate, createdAt)
 	assert.Error(t, err)
 	assert.Nil(t, order)
 	assert.Equal(t, ErrInvalidOrder, err)
@@ -42,7 +42,7 @@ func TestNewOrder_Fail_InvalidOrder(t *testing.T) {
 	crowdfundingId = uint(1)
 	investor = common.Address{}
 
-	order, err = NewOrder(crowdfundingId, investor, *amount, *interestRate, createdAt)
+	order, err = NewOrder(crowdfundingId, investor, amount, interestRate, createdAt)
 	assert.Error(t, err)
 	assert.Nil(t, order)
 	assert.Equal(t, ErrInvalidOrder, err)
@@ -50,7 +50,7 @@ func TestNewOrder_Fail_InvalidOrder(t *testing.T) {
 	investor = common.HexToAddress("0x123")
 	amount = uint256.NewInt(0)
 
-	order, err = NewOrder(crowdfundingId, investor, *amount, *interestRate, createdAt)
+	order, err = NewOrder(crowdfundingId, investor, amount, interestRate, createdAt)
 	assert.Error(t, err)
 	assert.Nil(t, order)
 	assert.Equal(t, ErrInvalidOrder, err)
@@ -58,7 +58,7 @@ func TestNewOrder_Fail_InvalidOrder(t *testing.T) {
 	amount = uint256.NewInt(100)
 	interestRate = uint256.NewInt(0)
 
-	order, err = NewOrder(crowdfundingId, investor, *amount, *interestRate, createdAt)
+	order, err = NewOrder(crowdfundingId, investor, amount, interestRate, createdAt)
 	assert.Error(t, err)
 	assert.Nil(t, order)
 	assert.Equal(t, ErrInvalidOrder, err)

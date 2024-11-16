@@ -55,3 +55,7 @@ func (h *CrowdfundingInspectHandlers) FindAllCrowdfundingsHandler(env rollmelett
 	env.Report(allCrowdfundings)
 	return nil
 }
+
+func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByInvestorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+	return nil
+}

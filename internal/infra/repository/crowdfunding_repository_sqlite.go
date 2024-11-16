@@ -39,6 +39,10 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(creator common
 	return crowdfundings, nil
 }
 
+func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor common.Address) ([]*entity.Crowdfunding, error) {
+	return nil, nil
+}
+
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(id uint) (*entity.Crowdfunding, error) {
 	var crowdfunding entity.Crowdfunding
 	err := r.Db.Preload("Orders").First(&crowdfunding, id).Error
