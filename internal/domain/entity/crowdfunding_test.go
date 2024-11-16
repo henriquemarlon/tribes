@@ -21,7 +21,7 @@ func TestNewCrowdfunding(t *testing.T) {
 	assert.NotNil(t, crowdfunding)
 	assert.Equal(t, *debt_issued, crowdfunding.DebtIssued)
 	assert.Equal(t, *interestRate, crowdfunding.MaxInterestRate)
-	assert.Equal(t, CrowdfundingOngoing, crowdfunding.State)
+	assert.Equal(t, CrowdfundingStateOngoing, crowdfunding.State)
 	assert.Equal(t, expiresAt, crowdfunding.ExpiresAt)
 	assert.Equal(t, createdAt, crowdfunding.CreatedAt)
 }

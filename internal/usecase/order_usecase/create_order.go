@@ -45,7 +45,7 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 	}
 	var activeCrowdfunding *entity.Crowdfunding
 	for _, crowdfunding := range crowdfundings {
-		if crowdfunding.State == entity.CrowdfundingOngoing {
+		if crowdfunding.State == entity.CrowdfundingStateOngoing {
 			activeCrowdfunding = crowdfunding
 		}
 	}

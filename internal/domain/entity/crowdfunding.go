@@ -25,11 +25,11 @@ type CrowdfundingRepository interface {
 }
 
 type CrowdfundingState string
+
 const (
-	CrowdfundingOngoing   CrowdfundingState = "ongoing"
-	CrowdfundingFinished  CrowdfundingState = "finished"
-	CrowdfundingCancelled CrowdfundingState = "cancelled"
-	CrowdfundingPaid      CrowdfundingState = "paid"
+	CrowdfundingStateOngoing CrowdfundingState = "ongoing"
+	CrowdfundingStateClosed  CrowdfundingState = "closed"
+	CrowdfundingStateSettled CrowdfundingState = "settled"
 )
 
 type Crowdfunding struct {
@@ -49,7 +49,7 @@ func NewCrowdfunding(creator common.Address, debt_issued uint256.Int, maxInteres
 		Creator:         creator,
 		DebtIssued:      debt_issued,
 		MaxInterestRate: maxInterestRate,
-		State:           CrowdfundingOngoing,
+		State:           CrowdfundingStateOngoing,
 		ExpiresAt:       expiresAt,
 		CreatedAt:       createdAt,
 	}

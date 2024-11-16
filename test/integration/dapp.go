@@ -1,35 +1,31 @@
 package main
 
 import (
-	"context"
 	"log"
-	"log/slog"
-	"os"
 
-	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/configs"
 	"github.com/tribeshq/tribes/pkg/router"
 )
 
-func NewDApp() *router.Router {
+func NewDAppMemory() *router.Router {
 	//////////////////////// Setup Database //////////////////////////
-	db, err := configs.SetupSQlite()
+	db, err := configs.SetupSQliteMemory()
 	if err != nil {
-		log.Fatalf("Failed to setup sqlite database: %v", err)
+		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
 	//////////////////////// Setup Handlers //////////////////////////
-	ah, err := NewAdvanceHandlers(db)
+	ah, err := NewAdvanceHandlersMemory(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize advance handlers from wire: %v", err)
 	}
 
-	ih, err := NewInspectHandlers(db)
+	ih, err := NewInspectHandlersMemory(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize inspect handlers from wire: %v", err)
 	}
 
-	ms, err := NewMiddlewares(db)
+	ms, err := NewMiddlewaresMemory(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize middlewares from wire: %v", err)
 	}
@@ -70,17 +66,4 @@ func NewDApp() *router.Router {
 	app.HandleInspect("balance/{symbol}/{address}", ih.UserInspectHandlers.BalanceHandler)
 
 	return app
-}
-
-func main() {
-	//////////////////////// Setup DApp /////////////////////////
-	app := NewDApp()
-	ctx := context.Background()
-	opts := rollmelette.NewRunOpts()
-	if rollupUrl, isSet := os.LookupEnv("ROLLUP_HTTP_SERVER_URL"); isSet {
-		opts.RollupURL = rollupUrl
-	}
-	if err := rollmelette.Run(ctx, opts, app); err != nil {
-		slog.Error("application error", "error", err)
-	}
 }

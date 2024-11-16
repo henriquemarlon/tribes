@@ -52,7 +52,7 @@ var setMiddleware = wire.NewSet(
 	middleware.NewRBACMiddleware,
 )
 
-func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
+func NewMiddlewaresMemory(gormDB *gorm.DB) (*Middlewares, error) {
 	wire.Build(
 		setUserRepositoryDependency,
 		setMiddleware,
@@ -61,7 +61,7 @@ func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
 	return nil, nil
 }
 
-func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
+func NewAdvanceHandlersMemory(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	wire.Build(
 		setOrderRepositoryDependency,
 		setUserRepositoryDependency,
@@ -73,7 +73,7 @@ func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	return nil, nil
 }
 
-func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
+func NewInspectHandlersMemory(gormDB *gorm.DB) (*InspectHandlers, error) {
 	wire.Build(
 		setOrderRepositoryDependency,
 		setUserRepositoryDependency,

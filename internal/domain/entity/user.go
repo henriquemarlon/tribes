@@ -11,6 +11,15 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
+type UserRole string
+
+const (
+	UserRoleAdmin                UserRole = "admin"
+	UserRoleCreator              UserRole = "creator"
+	UserRoleNonQualifiedInvestor UserRole = "non_qualified_investor"
+	UserRoleQualifiedInvestor    UserRole = "qualified_investor"
+)
+
 type UserRepository interface {
 	CreateUser(User *User) (*User, error)
 	FindUserByRole(role string) (*User, error)

@@ -60,6 +60,14 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings() ([]*entity.Crowdfu
 	return crowdfundings, nil
 }
 
+func (r *CrowdfundingRepositorySqlite) CloseCrowdfunding(crowdfundingId uint) ([]*entity.Order, error) {
+	return nil, nil
+}
+
+func (r *CrowdfundingRepositorySqlite) SettleCrowdfunding(crowdfundingId uint) ([]*entity.Order, error) {
+	return nil, nil
+}
+
 func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(input *entity.Crowdfunding) (*entity.Crowdfunding, error) {
 	var crowdfundingJSON map[string]interface{}
 	err := r.Db.Where("id = ?", input.Id).First(&crowdfundingJSON).Error

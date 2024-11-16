@@ -18,7 +18,7 @@ import (
 
 // Injectors from wire.go:
 
-func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
+func NewMiddlewaresMemory(gormDB *gorm.DB) (*Middlewares, error) {
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
 	tlsnMiddleware := middleware.NewTLSNMiddleware(userRepositorySqlite)
 	rbacMiddleware := middleware.NewRBACMiddleware(userRepositorySqlite)
@@ -29,7 +29,7 @@ func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
 	return middlewares, nil
 }
 
-func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
+func NewAdvanceHandlersMemory(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
 	contractRepositorySqlite := db.NewContractRepositorySqlite(gormDB)
@@ -47,7 +47,7 @@ func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	return advanceHandlers, nil
 }
 
-func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
+func NewInspectHandlersMemory(gormDB *gorm.DB) (*InspectHandlers, error) {
 	orderRepositorySqlite := db.NewOrderRepositorySqlite(gormDB)
 	orderInspectHandlers := inspect_handler.NewOrderInspectHandlers(orderRepositorySqlite)
 	userRepositorySqlite := db.NewUserRepositorySqlite(gormDB)
