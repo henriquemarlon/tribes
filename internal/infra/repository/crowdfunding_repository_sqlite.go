@@ -226,11 +226,11 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor comm
 	return crowdfundings, nil
 }
 
-func (r *CrowdfundingRepositorySqlite) CloseCrowdfunding(crowdfundingId uint) ([]*entity.Order, error) {
+func (r *CrowdfundingRepositorySqlite) CloseCrowdfunding(crowdfundingId uint) ([]*entity.Crowdfunding, error) {
 	return nil, nil
 }
 
-func (r *CrowdfundingRepositorySqlite) SettleCrowdfunding(crowdfundingId uint) ([]*entity.Order, error) {
+func (r *CrowdfundingRepositorySqlite) SettleCrowdfunding(crowdfundingId uint) ([]*entity.Crowdfunding, error) {
 	return nil, nil
 }
 

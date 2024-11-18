@@ -25,10 +25,12 @@ func (u *FindUserByAddressUseCase) Execute(input *FindUserByAddressInputDTO) (*F
 		return nil, err
 	}
 	return &FindUserOutputDTO{
-		Id:        res.Id,
-		Role:      res.Role,
-		Address:   res.Address,
-		CreatedAt: res.CreatedAt,
-		UpdatedAt: res.UpdatedAt,
+		Id:                res.Id,
+		Role:              res.Role,
+		Address:           res.Address,
+		InvestmentLimit:   res.InvestmentLimit,
+		DebtIssuanceLimit: res.DebtIssuanceLimit,
+		CreatedAt:         res.CreatedAt,
+		UpdatedAt:         res.UpdatedAt,
 	}, nil
 }

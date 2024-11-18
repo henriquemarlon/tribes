@@ -24,11 +24,13 @@ func (u *FindAllUsersUseCase) Execute() (*FindAllUsersOutputDTO, error) {
 	output := make(FindAllUsersOutputDTO, len(res))
 	for i, user := range res {
 		output[i] = &FindUserOutputDTO{
-			Id:        user.Id,
-			Role:      user.Role,
-			Address:   user.Address,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
+			Id:                user.Id,
+			Role:              user.Role,
+			Address:           user.Address,
+			InvestmentLimit:   user.InvestmentLimit,
+			DebtIssuanceLimit: user.DebtIssuanceLimit,
+			CreatedAt:         user.CreatedAt,
+			UpdatedAt:         user.UpdatedAt,
 		}
 	}
 	return &output, nil

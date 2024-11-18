@@ -29,8 +29,8 @@ type CrowdfundingRepository interface {
 	FindCrowdfundingsByInvestor(investor common.Address) ([]*Crowdfunding, error)
 	FindCrowdfundingById(id uint) (*Crowdfunding, error)
 	FindAllCrowdfundings() ([]*Crowdfunding, error)
-	CloseCrowdfunding(id uint) ([]*Order, error)
-	SettleCrowdfunding(id uint) ([]*Order, error)
+	CloseCrowdfunding(id uint) ([]*Crowdfunding, error)
+	SettleCrowdfunding(id uint) ([]*Crowdfunding, error)
 	UpdateCrowdfunding(crowdfunding *Crowdfunding) (*Crowdfunding, error)
 	DeleteCrowdfunding(id uint) error
 }

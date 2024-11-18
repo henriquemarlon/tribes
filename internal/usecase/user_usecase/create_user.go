@@ -2,6 +2,7 @@ package user_usecase
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
@@ -12,10 +13,12 @@ type CreateUserInputDTO struct {
 }
 
 type CreateUserOutputDTO struct {
-	Id        uint           `json:"id"`
-	Role      string         `json:"role"`
-	Address   common.Address `json:"address"`
-	CreatedAt int64          `json:"created_at"`
+	Id                uint           `json:"id"`
+	Role              string         `json:"role"`
+	Address           common.Address `json:"address"`
+	InvestmentLimit   *uint256.Int   `json:"investment_limit,omitempty" gorm:"type:bigint"`
+	DebtIssuanceLimit *uint256.Int   `json:"debt_issuance_limit,omitempty" gorm:"type:bigint"`
+	CreatedAt         int64          `json:"created_at"`
 }
 
 type CreateUserUseCase struct {
@@ -38,9 +41,11 @@ func (u *CreateUserUseCase) Execute(input *CreateUserInputDTO, metadata rollmele
 		return nil, err
 	}
 	return &CreateUserOutputDTO{
-		Id:        res.Id,
-		Role:      res.Role,
-		Address:   res.Address,
-		CreatedAt: res.CreatedAt,
+		Id:                res.Id,
+		Role:              res.Role,
+		Address:           res.Address,
+		InvestmentLimit:   res.InvestmentLimit,
+		DebtIssuanceLimit: res.DebtIssuanceLimit,
+		CreatedAt:         res.CreatedAt,
 	}, nil
 }
