@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"github.com/tribeshq/tribes/cmd/dapp/root"
+	"github.com/tribeshq/tribes/cmd/tribes-rollup/root"
 )
 
 func main() {

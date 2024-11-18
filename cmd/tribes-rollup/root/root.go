@@ -13,15 +13,15 @@ import (
 )
 
 const (
-	CMD_NAME = "tribes-dapp"
+	CMD_NAME = "tribes-rollup"
 )
 
 var (
 	useMemoryDB bool
 	Cmd         = &cobra.Command{
 		Use:   CMD_NAME,
-		Short: "Runs Tribes DApp",
-		Long:  `Runs Tribes DApp`,
+		Short: "Runs Tribes Rollup",
+		Long:  `Runs Tribes Rollup`,
 		Run:   run,
 	}
 )
