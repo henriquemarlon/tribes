@@ -29,25 +29,7 @@ func (r *ContractRepositorySqlite) CreateContract(input *entity.Contract) (*enti
 	if err != nil {
 		return nil, fmt.Errorf("failed to create contract: %w", err)
 	}
-
-	var result map[string]interface{}
-	err = r.Db.Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts WHERE symbol = ? LIMIT 1", input.Symbol).
-		Scan(&result).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, entity.ErrContractNotFound
-		}
-		return nil, err
-	}
-
-	contract := &entity.Contract{
-		Id:        uint(result["id"].(int64)),
-		Symbol:    result["symbol"].(string),
-		Address:   common.HexToAddress(result["address"].(string)),
-		CreatedAt: result["created_at"].(int64),
-		UpdatedAt: result["updated_at"].(int64),
-	}
-	return contract, nil
+	return r.FindContractBySymbol(input.Symbol)
 }
 
 func (r *ContractRepositorySqlite) FindAllContracts() ([]*entity.Contract, error) {
