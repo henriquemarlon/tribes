@@ -17,10 +17,11 @@ var (
 type CrowdfundingState string
 
 const (
-	CrowdfundingStateOngoing  CrowdfundingState = "ongoing"
-	CrowdfundingStateClosed   CrowdfundingState = "closed"
-	CrowdfundingStateCanceled CrowdfundingState = "canceled"
-	CrowdfundingStateSettled  CrowdfundingState = "settled"
+	CrowdfundingStateUnderReview CrowdfundingState = "under_review"
+	CrowdfundingStateClosed      CrowdfundingState = "closed"
+	CrowdfundingStateOngoing     CrowdfundingState = "ongoing"
+	CrowdfundingStateCanceled    CrowdfundingState = "canceled"
+	CrowdfundingStateSettled     CrowdfundingState = "settled"
 )
 
 type CrowdfundingRepository interface {

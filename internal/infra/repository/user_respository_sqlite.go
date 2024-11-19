@@ -110,10 +110,18 @@ func (r *UserRepositorySqlite) UpdateUser(input *entity.User) (*entity.User, err
 		return nil, err
 	}
 
-	userJSON["role"] = input.Role
-	userJSON["address"] = input.Address.String()
-	userJSON["investment_limit"] = input.InvestmentLimit.String()
-	userJSON["debt_issuance_limit"] = input.DebtIssuanceLimit.String()
+	if input.Role != "" {
+		userJSON["role"] = input.Role
+	}
+	if input.Address != (common.Address{}) {
+		userJSON["address"] = input.Address.String()
+	}
+	if input.InvestmentLimit != nil {
+		userJSON["investment_limit"] = input.InvestmentLimit.String()
+	}
+	if input.InvestmentLimit != nil {
+		userJSON["debt_issuance_limit"] = input.DebtIssuanceLimit.String()
+	}
 	userJSON["updated_at"] = input.UpdatedAt
 
 	userBytes, err := json.Marshal(userJSON)
@@ -129,12 +137,13 @@ func (r *UserRepositorySqlite) UpdateUser(input *entity.User) (*entity.User, err
 		return nil, err
 	}
 
-	res := r.Db.Save(userJSON)
+	res := r.Db.Save(&user)
 	if res.Error != nil {
 		return nil, fmt.Errorf("failed to update user: %w", res.Error)
 	}
 	return &user, nil
 }
+
 
 func (r *UserRepositorySqlite) DeleteUser(address common.Address) error {
 	res := r.Db.Delete(&entity.User{}, "address = ?", address.String())

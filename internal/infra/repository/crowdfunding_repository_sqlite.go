@@ -178,8 +178,8 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor comm
 	err := r.Db.Raw(`
 		SELECT c.id, c.creator, c.debt_issued, c.max_interest_rate, c.state, c.expires_at, c.created_at, c.updated_at 
 		FROM crowdfundings c
-		JOIN crowdfunding_investors ci ON c.id = ci.crowdfunding_id
-		WHERE ci.investor = ?
+		JOIN orders o ON c.id = o.crowdfunding_id
+		WHERE o.investor = ?
 	`, investor.String()).Scan(&results).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -224,14 +224,6 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor comm
 		crowdfundings = append(crowdfundings, crowdfunding)
 	}
 	return crowdfundings, nil
-}
-
-func (r *CrowdfundingRepositorySqlite) CloseCrowdfunding(crowdfundingId uint) ([]*entity.Crowdfunding, error) {
-	return nil, nil
-}
-
-func (r *CrowdfundingRepositorySqlite) SettleCrowdfunding(crowdfundingId uint) ([]*entity.Crowdfunding, error) {
-	return nil, nil
 }
 
 func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(input *entity.Crowdfunding) (*entity.Crowdfunding, error) {
@@ -279,4 +271,12 @@ func (r *CrowdfundingRepositorySqlite) DeleteCrowdfunding(id uint) error {
 		return entity.ErrCrowdfundingNotFound
 	}
 	return nil
+}
+
+func (r *CrowdfundingRepositorySqlite) CloseCrowdfunding(crowdfundingId uint) ([]*entity.Crowdfunding, error) {
+	return nil, nil
+}
+
+func (r *CrowdfundingRepositorySqlite) SettleCrowdfunding(crowdfundingId uint) ([]*entity.Crowdfunding, error) {
+	return nil, nil
 }

@@ -170,9 +170,15 @@ func (r *OrderRepositorySqlite) UpdateOrder(input *entity.Order) (*entity.Order,
 		return nil, err
 	}
 
-	orderJSON["amount"] = input.Amount.String()
-	orderJSON["interest_rate"] = input.InterestRate.String()
-	orderJSON["state"] = input.State
+	if input.Amount.Sign() > 0 {
+		orderJSON["amount"] = input.Amount.String()
+	}
+	if input.InterestRate.Sign() > 0 {
+		orderJSON["interest_rate"] = input.InterestRate.String()
+	}
+	if input.State != "" {
+		orderJSON["state"] = input.State
+	}
 	orderJSON["updated_at"] = input.UpdatedAt
 
 	orderBytes, err := json.Marshal(orderJSON)
