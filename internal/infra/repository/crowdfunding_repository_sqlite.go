@@ -236,10 +236,15 @@ func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(input *entity.Crowdfun
 		return nil, err
 	}
 
-	crowdfundingJSON["debt_issued"] = input.DebtIssued.Hex()
-	crowdfundingJSON["max_interest_rate"] = input.MaxInterestRate.Hex()
-	crowdfundingJSON["state"] = input.State
-	crowdfundingJSON["expires_at"] = input.ExpiresAt
+	if input.DebtIssued != nil {
+		crowdfundingJSON["debt_issued"] = input.DebtIssued.Hex()
+	}
+	if input.MaxInterestRate != nil {
+		crowdfundingJSON["max_interest_rate"] = input.MaxInterestRate.Hex()
+	}
+	if input.State != "" {
+		crowdfundingJSON["state"] = input.State
+	}
 	crowdfundingJSON["updated_at"] = input.UpdatedAt
 
 	crowdfundingBytes, err := json.Marshal(crowdfundingJSON)

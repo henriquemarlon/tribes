@@ -68,3 +68,21 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
 	return nil
 }
+
+func (h *CrowdfundingAdvanceHandlers) UpdateCrowdfundingHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	var input crowdfunding_usecase.UpdateCrowdfundingInputDTO
+	if err := json.Unmarshal(payload, &input); err != nil {
+		return err
+	}
+	updateCrowdfunding := crowdfunding_usecase.NewUpdateCrowdfundingUseCase(h.CrowdfundingRepository)
+	res, err := updateCrowdfunding.Execute(input, metadata)
+	if err != nil {
+		return err
+	}
+	crowdfunding, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+	env.Notice(append([]byte("crowdfunding updated - "), crowdfunding...))
+	return nil
+}
