@@ -10,8 +10,8 @@ import (
 )
 
 type CreateOrderInputDTO struct {
-	Creator common.Address `json:"creator"`
-	Price   *uint256.Int   `json:"interest_rate"`
+	Creator      common.Address `json:"creator"`
+	InterestRate *uint256.Int   `json:"interest_rate"`
 }
 
 type CreateOrderOutputDTO struct {
@@ -25,13 +25,15 @@ type CreateOrderOutputDTO struct {
 }
 
 type CreateOrderUseCase struct {
+	UserRepository         entity.UserRepository
 	OrderRepository        entity.OrderRepository
 	ContractRepository     entity.ContractRepository
 	CrowdfundingRepository entity.CrowdfundingRepository
 }
 
-func NewCreateOrderUseCase(orderRepository entity.OrderRepository, contractRepository entity.ContractRepository, crowdfundingRepository entity.CrowdfundingRepository) *CreateOrderUseCase {
+func NewCreateOrderUseCase(userRepository entity.UserRepository, orderRepository entity.OrderRepository, contractRepository entity.ContractRepository, crowdfundingRepository entity.CrowdfundingRepository) *CreateOrderUseCase {
 	return &CreateOrderUseCase{
+		UserRepository:         userRepository,
 		OrderRepository:        orderRepository,
 		ContractRepository:     contractRepository,
 		CrowdfundingRepository: crowdfundingRepository,
@@ -39,43 +41,68 @@ func NewCreateOrderUseCase(orderRepository entity.OrderRepository, contractRepos
 }
 
 func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*CreateOrderOutputDTO, error) {
+	erc20Deposit, ok := deposit.(*rollmelette.ERC20Deposit)
+	if !ok {
+		return nil, fmt.Errorf("invalid deposit type provided for order creation: %T", deposit)
+	}
+
+	creator, err := c.UserRepository.FindUserByAddress(metadata.MsgSender)
+	if err != nil {
+		return nil, fmt.Errorf("error finding creator: %w", err)
+	}
+
+	depositAmount := uint256.MustFromBig(erc20Deposit.Amount)
+	if creator.InvestmentLimit.Cmp(depositAmount) < 0 {
+		return nil, fmt.Errorf("investor limit exceeded, cannot create order")
+	}
+
 	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(input.Creator)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error finding crowdfunding campaigns: %w", err)
 	}
+
 	var activeCrowdfunding *entity.Crowdfunding
 	for _, crowdfunding := range crowdfundings {
 		if crowdfunding.State == entity.CrowdfundingStateOngoing {
+			if metadata.BlockTimestamp > crowdfunding.ExpiresAt {
+				return nil, fmt.Errorf("active crowdfunding expired, cannot create order")
+			}
 			activeCrowdfunding = crowdfunding
+			break
 		}
 	}
 	if activeCrowdfunding == nil {
-		return nil, fmt.Errorf("no active crowdfunding found, cannot create order for creator: %v", input.Creator)
+		return nil, fmt.Errorf("no active crowdfunding found for creator: %v", input.Creator)
 	}
 
-	if metadata.BlockTimestamp > activeCrowdfunding.ExpiresAt {
-		return nil, fmt.Errorf("active crowdfunding expired, cannot create order")
-	}
 	stablecoin, err := c.ContractRepository.FindContractBySymbol("STABLECOIN")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error finding stablecoin contract: %w", err)
 	}
-	if deposit.(*rollmelette.ERC20Deposit).Token != stablecoin.Address {
-		return nil, fmt.Errorf("invalid contract address provided for order creation: %v", deposit.(*rollmelette.ERC20Deposit).Token)
-	}
-
-	if input.Price.Gt(activeCrowdfunding.MaxInterestRate) {
-		return nil, fmt.Errorf("order price exceeds active crowdfunding max interest rate")
+	if erc20Deposit.Token != stablecoin.Address {
+		return nil, fmt.Errorf("invalid contract address provided for order creation: %v", erc20Deposit.Token)
 	}
 
-	order, err := entity.NewOrder(activeCrowdfunding.Id, deposit.(*rollmelette.ERC20Deposit).Sender, uint256.MustFromBig(deposit.(*rollmelette.ERC20Deposit).Amount), input.Price, metadata.BlockTimestamp)
+	if input.InterestRate.Gt(activeCrowdfunding.MaxInterestRate) {
+		return nil, fmt.Errorf("order interest rate exceeds active crowdfunding max interest rate")
+	}
+
+	order, err := entity.NewOrder(activeCrowdfunding.Id, erc20Deposit.Sender, depositAmount, input.InterestRate, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
+
 	res, err := c.OrderRepository.CreateOrder(order)
 	if err != nil {
 		return nil, err
 	}
+
+	creator.InvestmentLimit.Sub(creator.InvestmentLimit, order.Amount)
+	_, err = c.UserRepository.UpdateUser(creator)
+	if err != nil {
+		return nil, fmt.Errorf("error decreasing creator investment limit: %w", err)
+	}
+
 	return &CreateOrderOutputDTO{
 		Id:             res.Id,
 		CrowdfundingId: res.CrowdfundingId,

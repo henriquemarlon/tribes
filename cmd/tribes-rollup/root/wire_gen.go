@@ -30,11 +30,11 @@ func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
 }
 
 func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
-	orderRepositorySqlite := repository.NewOrderRepositorySqlite(gormDB)
 	userRepositorySqlite := repository.NewUserRepositorySqlite(gormDB)
+	orderRepositorySqlite := repository.NewOrderRepositorySqlite(gormDB)
 	contractRepositorySqlite := repository.NewContractRepositorySqlite(gormDB)
 	crowdfundingRepositorySqlite := repository.NewCrowdfundingRepositorySqlite(gormDB)
-	orderAdvanceHandlers := advance_handler.NewOrderAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, contractRepositorySqlite, crowdfundingRepositorySqlite)
+	orderAdvanceHandlers := advance_handler.NewOrderAdvanceHandlers(userRepositorySqlite, orderRepositorySqlite, contractRepositorySqlite, crowdfundingRepositorySqlite)
 	userAdvanceHandlers := advance_handler.NewUserAdvanceHandlers(userRepositorySqlite, contractRepositorySqlite)
 	crowdfundingAdvanceHandlers := advance_handler.NewCrowdfundingAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, crowdfundingRepositorySqlite, contractRepositorySqlite)
 	contractAdvanceHandlers := advance_handler.NewContractAdvanceHandlers(contractRepositorySqlite)
