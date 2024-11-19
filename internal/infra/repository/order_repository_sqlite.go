@@ -3,7 +3,6 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -23,12 +22,12 @@ func NewOrderRepositorySqlite(db *gorm.DB) *OrderRepositorySqlite {
 func (r *OrderRepositorySqlite) CreateOrder(input *entity.Order) (*entity.Order, error) {
 	err := r.Db.Model(&entity.Order{}).Create(map[string]interface{}{
 		"crowdfunding_id": input.CrowdfundingId,
-		"investor":       input.Investor.String(),
-		"amount":         input.Amount.String(),
-		"interest_rate":  input.InterestRate.String(),
-		"state":          input.State,
-		"created_at":     input.CreatedAt,
-		"updated_at":     input.UpdatedAt,
+		"investor":        input.Investor.String(),
+		"amount":          input.Amount.String(),
+		"interest_rate":   input.InterestRate.String(),
+		"state":           input.State,
+		"created_at":      input.CreatedAt,
+		"updated_at":      input.UpdatedAt,
 	}).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create order: %w", err)

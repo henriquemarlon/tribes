@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/suite"
 	"io"
 	"log/slog"
 	"os"
@@ -10,8 +12,6 @@ import (
 	"strings"
 	"syscall"
 	"testing"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/suite"
 )
 
 func TestAppSuite(t *testing.T) {
@@ -65,7 +65,7 @@ func (s *AppSuite) startProcess(name string, args []string, readyLog, descriptio
 	}
 
 	err := cmd.Start()
-	s.Require().NoError(err, "Failed to start " + description)
+	s.Require().NoError(err, "Failed to start "+description)
 }
 
 func (s *AppSuite) waitForLog(pipe io.ReadCloser, readyLog, description string) {

@@ -3,7 +3,6 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -143,7 +142,6 @@ func (r *UserRepositorySqlite) UpdateUser(input *entity.User) (*entity.User, err
 	}
 	return &user, nil
 }
-
 
 func (r *UserRepositorySqlite) DeleteUser(address common.Address) error {
 	res := r.Db.Delete(&entity.User{}, "address = ?", address.String())

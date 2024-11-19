@@ -11,7 +11,6 @@ type FindCrowdfundingsByInvestorInputDTO struct {
 
 type FindCrowdfundingsByInvestorOutputDTO []*FindCrowdfundingOutputDTO
 
-
 type FindCrowdfundingByInvestorUseCase struct {
 	CrowdfundingRepository entity.CrowdfundingRepository
 }
