@@ -75,7 +75,7 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	}
 
 	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-	contract, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
+	stablecoin, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
 		Symbol: "STABLECOIN",
 	})
 	if err != nil {
@@ -87,8 +87,23 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 		return fmt.Errorf("no application address defined yet, contact the Tribes support")
 	}
 
+	// Return the funds to the investors who had their orders rejected
+	for _, order := range res.Orders {
+		if order.State == entity.OrderStateRejected {
+			if err = env.ERC20Transfer(
+				stablecoin.Address,
+				appAddress,
+				order.Investor,
+				order.Amount.ToBig(),
+			); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Transfer the raised funds to the creator
 	if err = env.ERC20Transfer(
-		contract.Address,
+		stablecoin.Address,
 		appAddress,
 		res.Creator,
 		res.DebtIssued.ToBig(),
@@ -157,5 +172,23 @@ func (h *CrowdfundingAdvanceHandlers) UpdateCrowdfundingHandler(env rollmelette.
 		return err
 	}
 	env.Notice(append([]byte("crowdfunding updated - "), crowdfunding...))
+	return nil
+}
+
+func (h *CrowdfundingAdvanceHandlers) DeleteCrowdfundingHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	var input *crowdfunding_usecase.DeleteCrowdfundingInputDTO
+	if err := json.Unmarshal(payload, &input); err != nil {
+		return err
+	}
+	deleteCrowdfunding := crowdfunding_usecase.NewDeleteCrowdfundingUseCase(h.CrowdfundingRepository)
+	err := deleteCrowdfunding.Execute(input)
+	if err != nil {
+		return err
+	}
+	crowdfunding, err := json.Marshal(input)
+	if err != nil {
+		return err
+	}
+	env.Notice(append([]byte("crowdfunding deleted - "), crowdfunding...))
 	return nil
 }
