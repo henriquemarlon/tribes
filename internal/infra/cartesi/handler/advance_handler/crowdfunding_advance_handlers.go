@@ -121,6 +121,9 @@ func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.
 	contract, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
 		Symbol: "STABLECOIN",
 	})
+	if err != nil {
+		return err
+	}
 	for _, order := range res.Orders {
 		if order.State == entity.OrderStateSettled {
 			interest := new(uint256.Int).Mul(order.Amount, order.InterestRate)
