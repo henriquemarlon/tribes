@@ -42,7 +42,7 @@ func (u *CreateUserUseCase) Execute(input *CreateUserInputDTO, metadata rollmele
 	}
 	return &CreateUserOutputDTO{
 		Id:                res.Id,
-		Role:              res.Role,
+		Role:              string(res.Role),
 		Address:           res.Address,
 		InvestmentLimit:   res.InvestmentLimit,
 		DebtIssuanceLimit: res.DebtIssuanceLimit,

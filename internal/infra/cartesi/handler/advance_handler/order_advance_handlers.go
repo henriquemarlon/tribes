@@ -2,6 +2,8 @@ package advance_handler
 
 import (
 	"encoding/json"
+	"fmt"
+
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/order_usecase"
@@ -31,6 +33,19 @@ func (h *OrderAdvanceHandlers) CreateOrderHandler(env rollmelette.Env, metadata 
 	createOrder := order_usecase.NewCreateOrderUseCase(h.UserRepository, h.OrderRepository, h.ContractRepository, h.CrowdfundingRepository)
 	res, err := createOrder.Execute(&input, deposit, metadata)
 	if err != nil {
+		return err
+	}
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
+	if err := env.ERC20Transfer(
+		deposit.(*rollmelette.ERC20Deposit).Token,
+		metadata.MsgSender,
+		appAddress,
+		deposit.(*rollmelette.ERC20Deposit).Amount,
+	); err != nil {
 		return err
 	}
 	order, err := json.Marshal(res)

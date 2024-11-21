@@ -16,11 +16,11 @@ var (
 type OrderState string
 
 const (
-	OrderStatePending  OrderState = "pending"
-	OrderStateAccepted OrderState = "accepted"
-	OrderStateExpired  OrderState = "partially_accepted"
-	OrderStateRejected OrderState = "rejected"
-	OrderStatePaid     OrderState = "paid"
+	OrderStatePending           OrderState = "pending"
+	OrderStateAccepted          OrderState = "accepted"
+	OrderStatePartiallyAccepted OrderState = "partially_accepted"
+	OrderStateRejected          OrderState = "rejected"
+	OrderStateSettled           OrderState = "paid"
 )
 
 type OrderRepository interface {
@@ -67,11 +67,11 @@ func (b *Order) Validate() error {
 	if b.Investor == (common.Address{}) {
 		return fmt.Errorf("%w: investor address cannot be empty", ErrInvalidOrder)
 	}
-	if b.Amount.Sign() == 0 {
-		return fmt.Errorf("%w: amount cannot be zero", ErrInvalidOrder)
+	if b.Amount.Sign() <= 0 {
+		return fmt.Errorf("%w: amount cannot be zero or negative", ErrInvalidOrder)
 	}
-	if b.InterestRate.Sign() == 0 {
-		return fmt.Errorf("%w: interest rate cannot be zero", ErrInvalidOrder)
+	if b.InterestRate.Sign() <= 0 {
+		return fmt.Errorf("%w: interest rate cannot be zero or negative", ErrInvalidOrder)
 	}
 	if b.CreatedAt == 0 {
 		return fmt.Errorf("%w: creation date is missing", ErrInvalidCrowdfunding)

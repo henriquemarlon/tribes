@@ -46,14 +46,25 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 		return nil, fmt.Errorf("invalid deposit type provided for order creation: %T", deposit)
 	}
 
+	user, err := c.UserRepository.FindUserByAddress(metadata.MsgSender)
+	if user == nil {
+		return nil, fmt.Errorf("error finding user: %w", err)
+	}
+
+	// According with the CVM Resolution 88
+	depositAmount := uint256.MustFromBig(erc20Deposit.Amount)
+	if user.InvestmentLimit.Cmp(depositAmount) < 0 {
+		return nil, fmt.Errorf("investor limit exceeded, cannot create order")
+	}
+
+	// According with the CVM Resolution 88
+	if user.Role != entity.UserRoleNonQualifiedInvestor && user.Role != entity.UserRoleQualifiedInvestor {
+		return nil, fmt.Errorf("user role not allowed to create order: %v", user.Role)
+	}
+
 	creator, err := c.UserRepository.FindUserByAddress(metadata.MsgSender)
 	if err != nil {
 		return nil, fmt.Errorf("error finding creator: %w", err)
-	}
-
-	depositAmount := uint256.MustFromBig(erc20Deposit.Amount)
-	if creator.InvestmentLimit.Cmp(depositAmount) < 0 {
-		return nil, fmt.Errorf("investor limit exceeded, cannot create order")
 	}
 
 	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(input.Creator)

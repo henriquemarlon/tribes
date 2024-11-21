@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/crowdfunding_usecase"
@@ -57,5 +58,33 @@ func (h *CrowdfundingInspectHandlers) FindAllCrowdfundingsHandler(env rollmelett
 }
 
 func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByInvestorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+	findCrowdfundingsByInvestor := crowdfunding_usecase.NewFindCrowdfundingsByInvestorUseCase(h.CrowdfundingRepository)
+	res, err := findCrowdfundingsByInvestor.Execute(&crowdfunding_usecase.FindCrowdfundingsByInvestorInputDTO{
+		Investor: common.HexToAddress(router.PathValue(ctx, "address")),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to find crowdfundings by investor: %w", err)
+	}
+	crowdfundings, err := json.Marshal(res)
+	if err != nil {
+		return fmt.Errorf("failed to marshal crowdfundings: %w", err)
+	}
+	env.Report(crowdfundings)
+	return nil
+}
+
+func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByCreatorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+	findCrowdfundingsByCreator := crowdfunding_usecase.NewFindCrowdfundingsByCreatorUseCase(h.CrowdfundingRepository)
+	res, err := findCrowdfundingsByCreator.Execute(&crowdfunding_usecase.FindCrowdfundingsByCreatorInputDTO{
+		Creator: common.HexToAddress(router.PathValue(ctx, "address")),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to find crowdfundings by creator: %w", err)
+	}
+	crowdfundings, err := json.Marshal(res)
+	if err != nil {
+		return fmt.Errorf("failed to marshal crowdfundings: %w", err)
+	}
+	env.Report(crowdfundings)
 	return nil
 }

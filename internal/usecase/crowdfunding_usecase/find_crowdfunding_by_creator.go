@@ -11,15 +11,15 @@ type FindCrowdfundingsByCreatorInputDTO struct {
 
 type FindCrowdfundingsByCreatorOutputDTO []*FindCrowdfundingOutputDTO
 
-type FindCrowdfundingByCreatorUseCase struct {
+type FindCrowdfundingsByCreatorUseCase struct {
 	CrowdfundingRepository entity.CrowdfundingRepository
 }
 
-func NewFindCrowdfundingByCreatorUseCase(crowdfundingRepository entity.CrowdfundingRepository) *FindCrowdfundingByCreatorUseCase {
-	return &FindCrowdfundingByCreatorUseCase{CrowdfundingRepository: crowdfundingRepository}
+func NewFindCrowdfundingsByCreatorUseCase(crowdfundingRepository entity.CrowdfundingRepository) *FindCrowdfundingsByCreatorUseCase {
+	return &FindCrowdfundingsByCreatorUseCase{CrowdfundingRepository: crowdfundingRepository}
 }
 
-func (f *FindCrowdfundingByCreatorUseCase) Execute(input *FindCrowdfundingsByCreatorInputDTO) (*FindCrowdfundingsByCreatorOutputDTO, error) {
+func (f *FindCrowdfundingsByCreatorUseCase) Execute(input *FindCrowdfundingsByCreatorInputDTO) (*FindCrowdfundingsByCreatorOutputDTO, error) {
 	res, err := f.CrowdfundingRepository.FindCrowdfundingsByCreator(input.Creator)
 	if err != nil {
 		return nil, err

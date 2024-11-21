@@ -33,7 +33,7 @@ type UserRepository interface {
 
 type User struct {
 	Id                uint           `json:"id" gorm:"primaryKey"`
-	Role              string         `json:"role,omitempty" gorm:"not null"`
+	Role              UserRole       `json:"role,omitempty" gorm:"not null"`
 	Address           common.Address `json:"address,omitempty" gorm:"type:text;uniqueIndex;not null"`
 	InvestmentLimit   *uint256.Int   `json:"investment_limit,omitempty" gorm:"type:bigint"`
 	DebtIssuanceLimit *uint256.Int   `json:"debt_issuance_limit,omitempty" gorm:"type:bigint"`
@@ -43,7 +43,7 @@ type User struct {
 
 func NewUser(role string, address common.Address, created_at int64) (*User, error) {
 	user := &User{
-		Role:              role,
+		Role:              UserRole(role),
 		InvestmentLimit:   setInvestimentLimit(role),
 		DebtIssuanceLimit: setDebtIssuanceLimit(role),
 		Address:           address,

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/order_usecase"
@@ -77,5 +79,18 @@ func (h *OrderInspectHandlers) FindAllOrdersHandler(env rollmelette.EnvInspector
 }
 
 func (h *OrderInspectHandlers) FindOrdersByInvestorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+	address := strings.ToLower(router.PathValue(ctx, "address"))
+	findOrdersByInvestor := order_usecase.NewFindOrdersByInvestorUseCase(h.OrderRepository)
+	res, err := findOrdersByInvestor.Execute(&order_usecase.FinsOrdersByInvestorInputDTO{
+		Investor: common.HexToAddress(address),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to find orders by investor: %w", err)
+	}
+	orders, err := json.Marshal(res)
+	if err != nil {
+		return fmt.Errorf("failed to marshal orders: %w", err)
+	}
+	env.Report(orders)
 	return nil
 }

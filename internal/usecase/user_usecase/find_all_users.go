@@ -25,7 +25,7 @@ func (u *FindAllUsersUseCase) Execute() (*FindAllUsersOutputDTO, error) {
 	for i, user := range res {
 		output[i] = &FindUserOutputDTO{
 			Id:                user.Id,
-			Role:              user.Role,
+			Role:              string(user.Role),
 			Address:           user.Address,
 			InvestmentLimit:   user.InvestmentLimit,
 			DebtIssuanceLimit: user.DebtIssuanceLimit,

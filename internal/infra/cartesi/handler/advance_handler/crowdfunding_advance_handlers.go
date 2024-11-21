@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/internal/usecase/contract_usecase"
 	"github.com/tribeshq/tribes/internal/usecase/crowdfunding_usecase"
 )
 
@@ -62,10 +64,78 @@ func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.
 }
 
 func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	var input *crowdfunding_usecase.CloseCrowdfundingInputDTO
+	if err := json.Unmarshal(payload, &input); err != nil {
+		return err
+	}
+	closeCrowdfunding := crowdfunding_usecase.NewCloseCrowdfundingUseCase(h.CrowdfundingRepository, h.UserRepository, h.OrderRepository)
+	res, err := closeCrowdfunding.Execute(input, metadata)
+	if err != nil {
+		return err
+	}
+
+	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
+	contract, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
+		Symbol: "STABLECOIN",
+	})
+	if err != nil {
+		return err
+	}
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
+
+	if err = env.ERC20Transfer(
+		contract.Address,
+		appAddress,
+		res.Creator,
+		res.DebtIssued.ToBig(),
+	); err != nil {
+		return err
+	}
+	crowdfunding, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+	env.Notice(append([]byte("crowdfunding closed - "), crowdfunding...))
 	return nil
 }
 
 func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	var input *crowdfunding_usecase.SettleCrowdfundingInputDTO
+	if err := json.Unmarshal(payload, &input); err != nil {
+		return err
+	}
+	settleCrowdfunding := crowdfunding_usecase.NewSettleCrowdfundingUseCase(h.UserRepository, h.CrowdfundingRepository, h.ContractRepository)
+	res, err := settleCrowdfunding.Execute(input, deposit, metadata)
+	if err != nil {
+		return err
+	}
+	crowdfunding, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
+	contract, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
+		Symbol: "STABLECOIN",
+	})
+	for _, order := range res.Orders {
+		if order.State == entity.OrderStateSettled {
+			interest := new(uint256.Int).Mul(order.Amount, order.InterestRate)
+			interest.Div(interest, uint256.NewInt(100))
+			if err := env.ERC20Transfer(
+				contract.Address,
+				res.Creator,
+				order.Investor,
+				new(uint256.Int).Add(order.Amount, interest).ToBig(),
+			); err != nil {
+				return err
+			}
+		}
+	}
+	env.Notice(append([]byte("crowdfunding settled - "), crowdfunding...))
 	return nil
 }
 

@@ -36,7 +36,7 @@ func NewUpdateUserUseCase(userRepository entity.UserRepository) *UpdateUserUseCa
 
 func (u *UpdateUserUseCase) Execute(input *UpdateUserInputDTO, metadata rollmelette.Metadata) (*UpdateUserOutputDTO, error) {
 	user, err := u.UserRepository.UpdateUser(&entity.User{
-		Role:              input.Role,
+		Role:              entity.UserRole(input.Role),
 		Address:           input.Address,
 		InvestmentLimit:   input.InvestmentLimit,
 		DebtIssuanceLimit: input.DebtIssuanceLimit,
@@ -47,7 +47,7 @@ func (u *UpdateUserUseCase) Execute(input *UpdateUserInputDTO, metadata rollmele
 	}
 	return &UpdateUserOutputDTO{
 		Id:                user.Id,
-		Role:              user.Role,
+		Role:              string(user.Role),
 		Address:           user.Address,
 		InvestmentLimit:   user.InvestmentLimit,
 		DebtIssuanceLimit: user.DebtIssuanceLimit,

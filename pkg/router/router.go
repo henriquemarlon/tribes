@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/rollmelette/rollmelette"
 	"regexp"
+
+	"github.com/rollmelette/rollmelette"
 )
 
 type ctxKey string

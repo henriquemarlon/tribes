@@ -45,7 +45,7 @@ func (r *UserRepositorySqlite) FindUserByAddress(address common.Address) (*entit
 	}
 	return &entity.User{
 		Id:                uint(result["id"].(int64)),
-		Role:              result["role"].(string),
+		Role:              entity.UserRole(result["role"].(string)),
 		Address:           common.HexToAddress(result["address"].(string)),
 		InvestmentLimit:   uint256.MustFromHex(result["investment_limit"].(string)),
 		DebtIssuanceLimit: uint256.MustFromHex(result["debt_issuance_limit"].(string)),
@@ -67,7 +67,7 @@ func (r *UserRepositorySqlite) FindUsersByRole(role string) ([]*entity.User, err
 	for _, result := range results {
 		users = append(users, &entity.User{
 			Id:                uint(result["id"].(int64)),
-			Role:              result["role"].(string),
+			Role:              entity.UserRole(result["role"].(string)),
 			Address:           common.HexToAddress(result["address"].(string)),
 			InvestmentLimit:   uint256.MustFromHex(result["investment_limit"].(string)),
 			DebtIssuanceLimit: uint256.MustFromHex(result["debt_issuance_limit"].(string)),
@@ -88,7 +88,7 @@ func (r *UserRepositorySqlite) FindAllUsers() ([]*entity.User, error) {
 	for _, result := range results {
 		users = append(users, &entity.User{
 			Id:                uint(result["id"].(int64)),
-			Role:              result["role"].(string),
+			Role:              entity.UserRole(result["role"].(string)),
 			Address:           common.HexToAddress(result["address"].(string)),
 			InvestmentLimit:   uint256.MustFromHex(result["investment_limit"].(string)),
 			DebtIssuanceLimit: uint256.MustFromHex(result["debt_issuance_limit"].(string)),

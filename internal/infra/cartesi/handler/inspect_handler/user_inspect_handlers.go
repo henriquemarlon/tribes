@@ -58,16 +58,18 @@ func (h *UserInspectHandlers) FindAllUsersHandler(env rollmelette.EnvInspector, 
 }
 
 func (h *UserInspectHandlers) BalanceHandler(env rollmelette.EnvInspector, ctx context.Context) error {
-	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-	crowdfunding, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
-		Symbol: strings.ToUpper(router.PathValue(ctx, "symbol")),
-	})
+	findAllContracts := contract_usecase.NewFindAllContractsUseCase(h.ContractRepository)
+	contracts, err := findAllContracts.Execute()
 	if err != nil {
-		return fmt.Errorf("failed to find crowdfunding: %w", err)
+		return fmt.Errorf("failed to find all contracts: %w", err)
 	}
-	balanceBytes, err := json.Marshal(env.ERC20BalanceOf(crowdfunding.Address, common.HexToAddress(router.PathValue(ctx, "address"))))
+	balances := make(map[string]string)
+	for _, contract := range contracts {
+		balances[contract.Symbol] = env.ERC20BalanceOf(contract.Address, contract.Address).String()
+	}
+	balanceBytes, err := json.Marshal(balances)
 	if err != nil {
-		return fmt.Errorf("failed to marshal balance: %w", err)
+		return fmt.Errorf("failed to marshal balances: %w", err)
 	}
 	env.Report(balanceBytes)
 	return nil

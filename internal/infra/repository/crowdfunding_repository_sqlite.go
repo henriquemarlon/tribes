@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -20,15 +21,8 @@ func NewCrowdfundingRepositorySqlite(db *gorm.DB) *CrowdfundingRepositorySqlite 
 }
 
 func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(input *entity.Crowdfunding) (*entity.Crowdfunding, error) {
-	err := r.Db.Model(&entity.Crowdfunding{}).Create(map[string]interface{}{
-		"creator":           input.Creator.String(),
-		"debt_issued":       input.DebtIssued.Hex(),
-		"max_interest_rate": input.MaxInterestRate.Hex(),
-		"state":             input.State,
-		"expires_at":        input.ExpiresAt,
-		"created_at":        input.CreatedAt,
-		"updated_at":        input.UpdatedAt,
-	}).Error
+	// Create crowdfunding entity
+	err := r.Db.Create(&input).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create crowdfunding: %w", err)
 	}
@@ -36,10 +30,11 @@ func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(input *entity.Crowdfun
 }
 
 func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings() ([]*entity.Crowdfunding, error) {
+	// Manually map fields for each crowdfunding
 	var results []map[string]interface{}
-	err := r.Db.Raw("SELECT id, creator, debt_issued, max_interest_rate, state, expires_at, created_at, updated_at FROM crowdfundings").Scan(&results).Error
+	err := r.Db.Model(&entity.Crowdfunding{}).Find(&results).Error
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load all crowdfundings: %w", err)
 	}
 
 	var crowdfundings []*entity.Crowdfunding
@@ -51,16 +46,17 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings() ([]*entity.Crowdfu
 			MaxInterestRate: uint256.MustFromHex(result["max_interest_rate"].(string)),
 			State:           entity.CrowdfundingState(result["state"].(string)),
 			ExpiresAt:       result["expires_at"].(int64),
+			MaturityAt:      result["maturity_at"].(int64),
 			CreatedAt:       result["created_at"].(int64),
 			UpdatedAt:       result["updated_at"].(int64),
 		}
 
+		// Manually map orders
 		var orderResults []map[string]interface{}
-		err = r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", crowdfunding.Id).Scan(&orderResults).Error
+		err = r.Db.Model(&entity.Order{}).Where("crowdfunding_id = ?", crowdfunding.Id).Find(&orderResults).Error
 		if err != nil {
 			return nil, fmt.Errorf("failed to load orders for crowdfunding: %w", err)
 		}
-
 		for _, orderResult := range orderResults {
 			order := &entity.Order{
 				Id:             uint(orderResult["id"].(int64)),
@@ -82,12 +78,12 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings() ([]*entity.Crowdfu
 
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(id uint) (*entity.Crowdfunding, error) {
 	var result map[string]interface{}
-	err := r.Db.Raw("SELECT id, creator, debt_issued, max_interest_rate, state, expires_at, created_at, updated_at FROM crowdfundings WHERE id = ? LIMIT 1", id).Scan(&result).Error
+	err := r.Db.Model(&entity.Crowdfunding{}).Where("id = ?", id).First(&result).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, entity.ErrCrowdfundingNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to find crowdfunding by id: %w", err)
 	}
 
 	crowdfunding := &entity.Crowdfunding{
@@ -97,16 +93,16 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(id uint) (*entity.Cr
 		MaxInterestRate: uint256.MustFromHex(result["max_interest_rate"].(string)),
 		State:           entity.CrowdfundingState(result["state"].(string)),
 		ExpiresAt:       result["expires_at"].(int64),
+		MaturityAt:      result["maturity_at"].(int64),
 		CreatedAt:       result["created_at"].(int64),
 		UpdatedAt:       result["updated_at"].(int64),
 	}
 
 	var orderResults []map[string]interface{}
-	err = r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", crowdfunding.Id).Scan(&orderResults).Error
+	err = r.Db.Model(&entity.Order{}).Where("crowdfunding_id = ?", crowdfunding.Id).Find(&orderResults).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to load orders for crowdfunding: %w", err)
 	}
-
 	for _, orderResult := range orderResults {
 		order := &entity.Order{
 			Id:             uint(orderResult["id"].(int64)),
@@ -126,12 +122,12 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(id uint) (*entity.Cr
 
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(creator common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw("SELECT id, creator, debt_issued, max_interest_rate, state, expires_at, created_at, updated_at FROM crowdfundings WHERE creator = ?", creator.String()).Scan(&results).Error
+	err := r.Db.Model(&entity.Crowdfunding{}).Where("creator = ?", creator.String()).Find(&results).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, entity.ErrCrowdfundingNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to find crowdfundings by creator: %w", err)
 	}
 
 	var crowdfundings []*entity.Crowdfunding
@@ -143,16 +139,16 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(creator common
 			MaxInterestRate: uint256.MustFromHex(result["max_interest_rate"].(string)),
 			State:           entity.CrowdfundingState(result["state"].(string)),
 			ExpiresAt:       result["expires_at"].(int64),
+			MaturityAt:      result["maturity_at"].(int64),
 			CreatedAt:       result["created_at"].(int64),
 			UpdatedAt:       result["updated_at"].(int64),
 		}
 
 		var orderResults []map[string]interface{}
-		err = r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", crowdfunding.Id).Scan(&orderResults).Error
+		err = r.Db.Model(&entity.Order{}).Where("crowdfunding_id = ?", crowdfunding.Id).Find(&orderResults).Error
 		if err != nil {
 			return nil, fmt.Errorf("failed to load orders for crowdfunding: %w", err)
 		}
-
 		for _, orderResult := range orderResults {
 			order := &entity.Order{
 				Id:             uint(orderResult["id"].(int64)),
@@ -175,7 +171,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(creator common
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
 	err := r.Db.Raw(`
-		SELECT c.id, c.creator, c.debt_issued, c.max_interest_rate, c.state, c.expires_at, c.created_at, c.updated_at 
+		SELECT DISTINCT c.* 
 		FROM crowdfundings c
 		JOIN orders o ON c.id = o.crowdfunding_id
 		WHERE o.investor = ?
@@ -184,7 +180,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor comm
 		if err == gorm.ErrRecordNotFound {
 			return nil, entity.ErrCrowdfundingNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to find crowdfundings by investor: %w", err)
 	}
 
 	var crowdfundings []*entity.Crowdfunding
@@ -196,16 +192,16 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor comm
 			MaxInterestRate: uint256.MustFromHex(result["max_interest_rate"].(string)),
 			State:           entity.CrowdfundingState(result["state"].(string)),
 			ExpiresAt:       result["expires_at"].(int64),
+			MaturityAt:      result["maturity_at"].(int64),
 			CreatedAt:       result["created_at"].(int64),
 			UpdatedAt:       result["updated_at"].(int64),
 		}
 
 		var orderResults []map[string]interface{}
-		err = r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", crowdfunding.Id).Scan(&orderResults).Error
+		err = r.Db.Model(&entity.Order{}).Where("crowdfunding_id = ?", crowdfunding.Id).Find(&orderResults).Error
 		if err != nil {
 			return nil, fmt.Errorf("failed to load orders for crowdfunding: %w", err)
 		}
-
 		for _, orderResult := range orderResults {
 			order := &entity.Order{
 				Id:             uint(orderResult["id"].(int64)),
@@ -243,6 +239,12 @@ func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(input *entity.Crowdfun
 	}
 	if input.State != "" {
 		crowdfundingJSON["state"] = input.State
+	}
+	if input.ExpiresAt != 0 {
+		crowdfundingJSON["expires_at"] = input.ExpiresAt
+	}
+	if input.MaturityAt != 0 {
+		crowdfundingJSON["maturity_at"] = input.MaturityAt
 	}
 	crowdfundingJSON["updated_at"] = input.UpdatedAt
 

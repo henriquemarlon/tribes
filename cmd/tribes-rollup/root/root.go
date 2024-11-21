@@ -120,21 +120,23 @@ func NewDApp(ah *AdvanceHandlers, ih *InspectHandlers, ms *Middlewares) *router.
 	r.HandleAdvance("createOrder", ah.OrderAdvanceHandlers.CreateOrderHandler)
 
 	r.HandleAdvance("createCrowdfunding", ms.TLSN.Middleware(ah.CrowdfundingAdvanceHandlers.CreateCrowdfundingHandler))
+	r.HandleAdvance("updateCrowdfunding", ms.RBAC.Middleware(ah.CrowdfundingAdvanceHandlers.UpdateCrowdfundingHandler, []string{"creator"}))
 	r.HandleAdvance("closeCrowdfunding", ah.CrowdfundingAdvanceHandlers.CloseCrowdfundingHandler)
 	r.HandleAdvance("settleCrowdfunding", ms.RBAC.Middleware(ah.CrowdfundingAdvanceHandlers.SettleCrowdfundingHandler, []string{"creator"}))
-
-	// r.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
-	// r.HandleAdvance("withdrawApp", ms.RBAC.Middleware(ah.UserAdvanceHandlers.WithdrawAppHandler, []string{"admin"}))
 
 	r.HandleAdvance("createUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.CreateUserHandler, []string{"admin"}))
 	r.HandleAdvance("updateUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.UpdateUserHandler, []string{"admin"}))
 	r.HandleAdvance("deleteUser", ms.RBAC.Middleware(ah.UserAdvanceHandlers.DeleteUserHandler, []string{"admin"}))
+	r.HandleAdvance("withdraw", ah.UserAdvanceHandlers.WithdrawHandler)
 
 	r.HandleInspect("crowdfunding", ih.CrowdfundingInspectHandlers.FindAllCrowdfundingsHandler)
 	r.HandleInspect("crowdfunding/{id}", ih.CrowdfundingInspectHandlers.FindCrowdfundingByIdHandler)
+	r.HandleInspect("crowdfunding/creator/{address}", ih.CrowdfundingInspectHandlers.FindCrowdfundingsByCreatorHandler)
+	r.HandleInspect("crowdfunding/investor/{address}", ih.CrowdfundingInspectHandlers.FindCrowdfundingsByInvestorHandler)
 
 	r.HandleInspect("order", ih.OrderInspectHandlers.FindAllOrdersHandler)
 	r.HandleInspect("order/{id}", ih.OrderInspectHandlers.FindOrderByIdHandler)
+	r.HandleInspect("order/investor/{address}", ih.OrderInspectHandlers.FindOrdersByInvestorHandler)
 	r.HandleInspect("order/crowdfunding/{id}", ih.OrderInspectHandlers.FindBisdByCrowdfundingIdHandler)
 
 	r.HandleInspect("contract", ih.ContractInspectHandlers.FindAllContractsHandler)

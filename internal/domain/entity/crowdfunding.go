@@ -41,9 +41,11 @@ type Crowdfunding struct {
 	Creator         common.Address    `json:"creator,omitempty" gorm:"type:text;not null"`
 	DebtIssued      *uint256.Int      `json:"debt_issued,omitempty" gorm:"type:bigint;not null"`
 	MaxInterestRate *uint256.Int      `json:"max_interest_rate,omitempty" gorm:"type:bigint;not null"`
+	TotalObligation *uint256.Int      `json:"total_obligation,omitempty" gorm:"type:bigint;not null;default:0"`
 	State           CrowdfundingState `json:"state,omitempty" gorm:"type:text;not null"`
 	Orders          []*Order          `json:"orders,omitempty" gorm:"foreignKey:CrowdfundingId;constraint:OnDelete:CASCADE"`
 	ExpiresAt       int64             `json:"expires_at,omitempty" gorm:"not null"`
+	MaturityAt      int64             `json:"maturity_at,omitempty" gorm:"not null"`
 	CreatedAt       int64             `json:"created_at,omitempty" gorm:"not null"`
 	UpdatedAt       int64             `json:"updated_at,omitempty" gorm:"default:0"`
 }

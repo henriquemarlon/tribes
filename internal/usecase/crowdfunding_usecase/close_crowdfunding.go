@@ -10,11 +10,11 @@ import (
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
-type FinishCrowdfundingInputDTO struct {
+type CloseCrowdfundingInputDTO struct {
 	Creator common.Address `json:"creator"`
 }
 
-type FinishCrowdfundingOutputDTO struct {
+type CloseCrowdfundingOutputDTO struct {
 	Id              uint            `json:"id"`
 	Creator         common.Address  `json:"creator,omitempty"`
 	DebtIssued      *uint256.Int    `json:"debt_issued,omitempty"`
@@ -26,47 +26,63 @@ type FinishCrowdfundingOutputDTO struct {
 	UpdatedAt       int64           `json:"updated_at,omitempty"`
 }
 
-type FinishCrowdfundingUseCase struct {
+type CloseCrowdfundingUseCase struct {
 	OrderRepository        entity.OrderRepository
 	UserRepository         entity.UserRepository
 	CrowdfundingRepository entity.CrowdfundingRepository
 }
 
-func NewFinishCrowdfundingUseCase(crowdfundingRepository entity.CrowdfundingRepository, userRepository entity.UserRepository, orderRepository entity.OrderRepository) *FinishCrowdfundingUseCase {
-	return &FinishCrowdfundingUseCase{
+func NewCloseCrowdfundingUseCase(crowdfundingRepository entity.CrowdfundingRepository, userRepository entity.UserRepository, orderRepository entity.OrderRepository) *CloseCrowdfundingUseCase {
+	return &CloseCrowdfundingUseCase{
 		OrderRepository:        orderRepository,
 		UserRepository:         userRepository,
 		CrowdfundingRepository: crowdfundingRepository,
 	}
 }
 
-func (u *FinishCrowdfundingUseCase) Execute(input *FinishCrowdfundingInputDTO, metadata rollmelette.Metadata) (*FinishCrowdfundingOutputDTO, error) {
+func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, metadata rollmelette.Metadata) (*CloseCrowdfundingOutputDTO, error) {
 	crowdfundings, err := u.CrowdfundingRepository.FindCrowdfundingsByCreator(input.Creator)
 	if err != nil {
 		return nil, err
 	}
-	if len(crowdfundings) == 0 {
-		return nil, fmt.Errorf("no active crowdfunding found, cannot finish crowdfunding")
-	}
-	activeCrowdfunding := crowdfundings[0]
 
-	if metadata.BlockTimestamp < activeCrowdfunding.ExpiresAt {
+	var ongoingCrowdfunding *entity.Crowdfunding
+	for _, crowdfunding := range crowdfundings {
+		if crowdfunding.State == entity.CrowdfundingState("ongoing") {
+			ongoingCrowdfunding = crowdfunding
+			break
+		}
+	}
+
+	if ongoingCrowdfunding == nil {
+		return nil, fmt.Errorf("no ongoing crowdfunding found, cannot finish crowdfunding")
+	}
+
+	if metadata.BlockTimestamp < ongoingCrowdfunding.ExpiresAt {
 		return nil, fmt.Errorf("active crowdfunding not expired, you can't finish it yet")
 	}
 
-	orders, err := u.OrderRepository.FindOrdersByCrowdfundingId(activeCrowdfunding.Id)
+	orders, err := u.OrderRepository.FindOrdersByCrowdfundingId(ongoingCrowdfunding.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(orders) == 0 {
-		activeCrowdfunding.State = entity.CrowdfundingState("canceled")
-		activeCrowdfunding.UpdatedAt = metadata.BlockTimestamp
-		res, err := u.CrowdfundingRepository.UpdateCrowdfunding(activeCrowdfunding)
+	totalCollected := uint256.NewInt(0)
+	for _, order := range orders {
+		totalCollected.Add(totalCollected, order.Amount)
+	}
+
+	// According to CVM Resolution 88
+	twoThirdsTarget := new(uint256.Int).Mul(ongoingCrowdfunding.DebtIssued, uint256.NewInt(2)).Div(ongoingCrowdfunding.DebtIssued, uint256.NewInt(3))
+
+	if totalCollected.Lt(twoThirdsTarget) {
+		ongoingCrowdfunding.State = entity.CrowdfundingState("canceled")
+		ongoingCrowdfunding.UpdatedAt = metadata.BlockTimestamp
+		res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ongoingCrowdfunding)
 		if err != nil {
 			return nil, err
 		}
-		return &FinishCrowdfundingOutputDTO{
+		return &CloseCrowdfundingOutputDTO{
 			Id:              res.Id,
 			Creator:         res.Creator,
 			DebtIssued:      res.DebtIssued,
@@ -83,7 +99,7 @@ func (u *FinishCrowdfundingUseCase) Execute(input *FinishCrowdfundingInputDTO, m
 		return orders[i].InterestRate.Cmp(orders[j].InterestRate) < 0
 	})
 
-	debtIssuedRemaining := new(uint256.Int).Set(activeCrowdfunding.DebtIssued)
+	debtIssuedRemaining := new(uint256.Int).Set(ongoingCrowdfunding.DebtIssued)
 
 	for _, order := range orders {
 		if debtIssuedRemaining.IsZero() {
@@ -141,14 +157,23 @@ func (u *FinishCrowdfundingUseCase) Execute(input *FinishCrowdfundingInputDTO, m
 		}
 	}
 
-	activeCrowdfunding.State = entity.CrowdfundingState("finished")
-	activeCrowdfunding.UpdatedAt = metadata.BlockTimestamp
-	res, err := u.CrowdfundingRepository.UpdateCrowdfunding(activeCrowdfunding)
+	totalObligation := new(uint256.Int)
+	for _, order := range orders {
+		interest := new(uint256.Int).Mul(order.Amount, order.InterestRate)
+		interest.Div(interest, uint256.NewInt(100))
+		obligation := new(uint256.Int).Add(order.Amount, interest)
+		totalObligation.Add(totalObligation, obligation)
+	}
+
+	ongoingCrowdfunding.TotalObligation = totalObligation
+	ongoingCrowdfunding.State = entity.CrowdfundingState("closed")
+	ongoingCrowdfunding.UpdatedAt = metadata.BlockTimestamp
+	res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ongoingCrowdfunding)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FinishCrowdfundingOutputDTO{
+	return &CloseCrowdfundingOutputDTO{
 		Id:              res.Id,
 		Creator:         res.Creator,
 		DebtIssued:      res.DebtIssued,

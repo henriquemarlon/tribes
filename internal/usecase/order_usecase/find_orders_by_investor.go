@@ -11,17 +11,17 @@ type FinsOrdersByInvestorInputDTO struct {
 
 type FindOrdersByInvestorOutputDTO []*FindOrderOutputDTO
 
-type FindOrderByInvestorUsecase struct {
+type FindOrdersByInvestorUseCase struct {
 	OrderRepository entity.OrderRepository
 }
 
-func NewFindOrderByInvestorUsecase(orderRepository entity.OrderRepository) *FindOrderByInvestorUsecase {
-	return &FindOrderByInvestorUsecase{
+func NewFindOrdersByInvestorUseCase(orderRepository entity.OrderRepository) *FindOrdersByInvestorUseCase {
+	return &FindOrdersByInvestorUseCase{
 		OrderRepository: orderRepository,
 	}
 }
 
-func (o *FindOrderByInvestorUsecase) Execute(input *FinsOrdersByInvestorInputDTO) (FindOrdersByInvestorOutputDTO, error) {
+func (o *FindOrdersByInvestorUseCase) Execute(input *FinsOrdersByInvestorInputDTO) (FindOrdersByInvestorOutputDTO, error) {
 	res, err := o.OrderRepository.FindOrdersByInvestor(input.Investor)
 	if err != nil {
 		return nil, err

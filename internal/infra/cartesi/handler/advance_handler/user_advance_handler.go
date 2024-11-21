@@ -75,45 +75,54 @@ func (h *UserAdvanceHandlers) DeleteUserHandler(env rollmelette.Env, metadata ro
 	return nil
 }
 
-// func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
-// 	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-// 	stablecoin, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{Symbol: "STABLECOIN"})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	stablecoinBalance := env.ERC20BalanceOf(stablecoin.Address, metadata.MsgSender)
-// 	if stablecoinBalance.Sign() == 0 {
-// 		return fmt.Errorf("no balance of %v to withdraw", stablecoin.Symbol)
-// 	}
-// 	stablecoinVoucherIndex, err := env.ERC20Withdraw(stablecoin.Address, metadata.MsgSender, stablecoinBalance)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	env.Notice([]byte(fmt.Sprintf("withdrawn %v of %v from %v with voucher index: %v", stablecoin.Symbol, stablecoinBalance, metadata.MsgSender, stablecoinVoucherIndex)))
-// 	return nil
-// }
+func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	var input user_usecase.WithdrawInputDTO
+	if err := json.Unmarshal(payload, &input); err != nil {
+		return err
+	}
+	findUserByAddress := user_usecase.NewCreateUserUseCase(h.UserRepository)
+	res, err := findUserByAddress.Execute(&user_usecase.CreateUserInputDTO{
+		Address: metadata.MsgSender,
+	}, metadata)
+	if err != nil {
+		return err
+	}
 
-// func (h *UserAdvanceHandlers) WithdrawAppHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
-// 	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-// 	stablecoin, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{Symbol: "STABLECOIN"})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	application, isDefined := env.AppAddress()
-// 	if !isDefined {
-// 		return fmt.Errorf("no application address defined yet, contact the Tribes support")
-// 	}
-// 	stablecoinBalance := env.ERC20BalanceOf(stablecoin.Address, application)
-// 	if stablecoinBalance.Sign() == 0 {
-// 		return fmt.Errorf("no balance of %v to withdraw", stablecoin.Symbol)
-// 	}
-// 	if err := env.ERC20Transfer(stablecoin.Address, application, metadata.MsgSender, stablecoinBalance); err != nil {
-// 		return err
-// 	}
-// 	stablecoinVoucherIndex, err := env.ERC20Withdraw(stablecoin.Address, metadata.MsgSender, stablecoinBalance)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	env.Notice([]byte(fmt.Sprintf("withdrawn %v of %v from %v with voucher index: %v", stablecoin.Symbol, stablecoinBalance, metadata.MsgSender, stablecoinVoucherIndex)))
-// 	return nil
-// }
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
+
+	switch entity.UserRole(res.Role) {
+	case entity.UserRoleAdmin:
+		// The Admin role can withdraw the entire Application Balance if wanted
+		err := env.ERC20Transfer(
+			input.Token,
+			appAddress,
+			metadata.MsgSender,
+			input.Amount.ToBig(),
+		)
+		if err != nil {
+			return err
+		}
+		_, err = env.ERC20Withdraw(
+			input.Token,
+			metadata.MsgSender,
+			input.Amount.ToBig(),
+		)
+		if err != nil {
+			return err
+		}
+	default:
+		_, err := env.ERC20Withdraw(
+			input.Token,
+			metadata.MsgSender,
+			input.Amount.ToBig(),
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
