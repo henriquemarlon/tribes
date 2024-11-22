@@ -31,7 +31,7 @@ var (
 
 // ERC20PortalMetaData contains all meta data concerning the ERC20Portal contract.
 var ERC20PortalMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractIInputBox\",\"name\":\"inputBox\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ERC20TransferFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"appContract\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"execLayerData\",\"type\":\"bytes\"}],\"name\":\"depositERC20Tokens\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInputBox\",\"outputs\":[{\"internalType\":\"contractIInputBox\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractIInputBox\",\"name\":\"_inputBox\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_dapp\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_execLayerData\",\"type\":\"bytes\"}],\"name\":\"depositERC20Tokens\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInputBox\",\"outputs\":[{\"internalType\":\"contractIInputBox\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // ERC20PortalABI is the input ABI used to generate the binding from.
@@ -213,21 +213,21 @@ func (_ERC20Portal *ERC20PortalCallerSession) GetInputBox() (common.Address, err
 
 // DepositERC20Tokens is a paid mutator transaction binding the contract method 0x95854b81.
 //
-// Solidity: function depositERC20Tokens(address token, address appContract, uint256 value, bytes execLayerData) returns()
-func (_ERC20Portal *ERC20PortalTransactor) DepositERC20Tokens(opts *bind.TransactOpts, token common.Address, appContract common.Address, value *big.Int, execLayerData []byte) (*types.Transaction, error) {
-	return _ERC20Portal.contract.Transact(opts, "depositERC20Tokens", token, appContract, value, execLayerData)
+// Solidity: function depositERC20Tokens(address _token, address _dapp, uint256 _amount, bytes _execLayerData) returns()
+func (_ERC20Portal *ERC20PortalTransactor) DepositERC20Tokens(opts *bind.TransactOpts, _token common.Address, _dapp common.Address, _amount *big.Int, _execLayerData []byte) (*types.Transaction, error) {
+	return _ERC20Portal.contract.Transact(opts, "depositERC20Tokens", _token, _dapp, _amount, _execLayerData)
 }
 
 // DepositERC20Tokens is a paid mutator transaction binding the contract method 0x95854b81.
 //
-// Solidity: function depositERC20Tokens(address token, address appContract, uint256 value, bytes execLayerData) returns()
-func (_ERC20Portal *ERC20PortalSession) DepositERC20Tokens(token common.Address, appContract common.Address, value *big.Int, execLayerData []byte) (*types.Transaction, error) {
-	return _ERC20Portal.Contract.DepositERC20Tokens(&_ERC20Portal.TransactOpts, token, appContract, value, execLayerData)
+// Solidity: function depositERC20Tokens(address _token, address _dapp, uint256 _amount, bytes _execLayerData) returns()
+func (_ERC20Portal *ERC20PortalSession) DepositERC20Tokens(_token common.Address, _dapp common.Address, _amount *big.Int, _execLayerData []byte) (*types.Transaction, error) {
+	return _ERC20Portal.Contract.DepositERC20Tokens(&_ERC20Portal.TransactOpts, _token, _dapp, _amount, _execLayerData)
 }
 
 // DepositERC20Tokens is a paid mutator transaction binding the contract method 0x95854b81.
 //
-// Solidity: function depositERC20Tokens(address token, address appContract, uint256 value, bytes execLayerData) returns()
-func (_ERC20Portal *ERC20PortalTransactorSession) DepositERC20Tokens(token common.Address, appContract common.Address, value *big.Int, execLayerData []byte) (*types.Transaction, error) {
-	return _ERC20Portal.Contract.DepositERC20Tokens(&_ERC20Portal.TransactOpts, token, appContract, value, execLayerData)
+// Solidity: function depositERC20Tokens(address _token, address _dapp, uint256 _amount, bytes _execLayerData) returns()
+func (_ERC20Portal *ERC20PortalTransactorSession) DepositERC20Tokens(_token common.Address, _dapp common.Address, _amount *big.Int, _execLayerData []byte) (*types.Transaction, error) {
+	return _ERC20Portal.Contract.DepositERC20Tokens(&_ERC20Portal.TransactOpts, _token, _dapp, _amount, _execLayerData)
 }

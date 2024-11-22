@@ -21,7 +21,7 @@ func NewRBACMiddleware(userRepository entity.UserRepository) *RBACMiddleware {
 	}
 }
 
-func (m *RBACMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc, role []string) router.AdvanceHandlerFunc {
+func (m *RBACMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc, roles []string) router.AdvanceHandlerFunc {
 	return func(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
 		findUserByAddress := user_usecase.NewFindUserByAddressUseCase(m.UserRepository)
 		user, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
@@ -33,8 +33,8 @@ func (m *RBACMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc, role 
 			}
 			return err
 		}
-		for _, r := range role {
-			if user.Role != r {
+		for _, role := range roles {
+			if user.Role != role {
 				return fmt.Errorf("user with address: %v don't have necessary permission", user.Address)
 			}
 		}

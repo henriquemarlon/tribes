@@ -23,8 +23,8 @@ func (r *UserRepositorySqlite) CreateUser(input *entity.User) (*entity.User, err
 	err := r.Db.Model(&entity.User{}).Create(map[string]interface{}{
 		"role":                input.Role,
 		"address":             input.Address.String(),
-		"investment_limit":    input.InvestmentLimit.String(),
-		"debt_issuance_limit": input.DebtIssuanceLimit.String(),
+		"investment_limit":    input.InvestmentLimit.Hex(),
+		"debt_issuance_limit": input.DebtIssuanceLimit.Hex(),
 		"created_at":          input.CreatedAt,
 		"updated_at":          input.UpdatedAt,
 	}).Error

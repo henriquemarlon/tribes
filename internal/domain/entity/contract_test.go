@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -14,35 +15,46 @@ func TestNewContract(t *testing.T) {
 	createdAt := time.Now().Unix()
 
 	contract, err := NewContract(symbol, address, createdAt)
-	assert.Nil(t, err)
-	assert.NotNil(t, contract)
-	assert.Equal(t, symbol, contract.Symbol)
-	assert.Equal(t, address, contract.Address)
-	assert.NotZero(t, contract.CreatedAt)
+
+	assert.Nil(t, err, "Unexpected error when creating a valid contract")
+	assert.NotNil(t, contract, "The created contract should not be nil")
+	assert.Equal(t, symbol, contract.Symbol, "The contract symbol is incorrect")
+	assert.Equal(t, address, contract.Address, "The contract address is incorrect")
+	assert.Equal(t, createdAt, contract.CreatedAt, "The contract creation date is incorrect")
 }
 
 func TestContract_Validate(t *testing.T) {
-	createdAt := time.Now().Unix()
+	t.Run("Invalid symbol", func(t *testing.T) {
+		contract := &Contract{
+			Symbol:    "",
+			Address:   common.HexToAddress("0x123"),
+			CreatedAt: time.Now().Unix(),
+		}
+		err := contract.Validate()
+		assert.NotNil(t, err, "An error should be returned for an invalid symbol")
+		assert.True(t, errors.Is(err, ErrInvalidContract), "The returned error should be ErrInvalidContract")
+		assert.Contains(t, err.Error(), "symbol cannot be empty", "The error message should mention that the symbol is empty")
+	})
 
-	// Invalid symbol
-	contract := &Contract{
-		Symbol:    "",
-		Address:   common.HexToAddress("0x123"),
-		CreatedAt: createdAt,
-	}
-	err := contract.Validate()
-	assert.NotNil(t, err)
-	assert.Equal(t, ErrInvalidContract, err)
+	t.Run("Invalid address", func(t *testing.T) {
+		contract := &Contract{
+			Symbol:    "ETH",
+			Address:   common.Address{},
+			CreatedAt: time.Now().Unix(),
+		}
+		err := contract.Validate()
+		assert.NotNil(t, err, "An error should be returned for an invalid address")
+		assert.True(t, errors.Is(err, ErrInvalidContract), "The returned error should be ErrInvalidContract")
+		assert.Contains(t, err.Error(), "address cannot be empty", "The error message should mention that the address is empty")
+	})
 
-	// Invalid address
-	contract.Symbol = "ETH"
-	contract.Address = common.Address{}
-	err = contract.Validate()
-	assert.NotNil(t, err)
-	assert.Equal(t, ErrInvalidContract, err)
-
-	// Valid contract
-	contract.Address = common.HexToAddress("0x123")
-	err = contract.Validate()
-	assert.Nil(t, err)
+	t.Run("Valid contract", func(t *testing.T) {
+		contract := &Contract{
+			Symbol:    "ETH",
+			Address:   common.HexToAddress("0x123"),
+			CreatedAt: time.Now().Unix(),
+		}
+		err := contract.Validate()
+		assert.Nil(t, err, "No error should be returned for a valid contract")
+	})
 }

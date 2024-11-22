@@ -30,8 +30,6 @@ type CrowdfundingRepository interface {
 	FindCrowdfundingsByInvestor(investor common.Address) ([]*Crowdfunding, error)
 	FindCrowdfundingById(id uint) (*Crowdfunding, error)
 	FindAllCrowdfundings() ([]*Crowdfunding, error)
-	CloseCrowdfunding(id uint) ([]*Crowdfunding, error)
-	SettleCrowdfunding(id uint) ([]*Crowdfunding, error)
 	UpdateCrowdfunding(crowdfunding *Crowdfunding) (*Crowdfunding, error)
 	DeleteCrowdfunding(id uint) error
 }
@@ -39,9 +37,9 @@ type CrowdfundingRepository interface {
 type Crowdfunding struct {
 	Id              uint              `json:"id" gorm:"primaryKey"`
 	Creator         common.Address    `json:"creator,omitempty" gorm:"type:text;not null"`
-	DebtIssued      *uint256.Int      `json:"debt_issued,omitempty" gorm:"type:bigint;not null"`
-	MaxInterestRate *uint256.Int      `json:"max_interest_rate,omitempty" gorm:"type:bigint;not null"`
-	TotalObligation *uint256.Int      `json:"total_obligation,omitempty" gorm:"type:bigint;not null;default:0"`
+	DebtIssued      *uint256.Int      `json:"debt_issued,omitempty" gorm:"type:text;not null"`
+	MaxInterestRate *uint256.Int      `json:"max_interest_rate,omitempty" gorm:"type:text;not null"`
+	TotalObligation *uint256.Int      `json:"total_obligation,omitempty" gorm:"type:text;not null;default:0"`
 	State           CrowdfundingState `json:"state,omitempty" gorm:"type:text;not null"`
 	Orders          []*Order          `json:"orders,omitempty" gorm:"foreignKey:CrowdfundingId;constraint:OnDelete:CASCADE"`
 	ExpiresAt       int64             `json:"expires_at,omitempty" gorm:"not null"`

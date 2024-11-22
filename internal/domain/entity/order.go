@@ -74,7 +74,7 @@ func (b *Order) Validate() error {
 		return fmt.Errorf("%w: interest rate cannot be zero or negative", ErrInvalidOrder)
 	}
 	if b.CreatedAt == 0 {
-		return fmt.Errorf("%w: creation date is missing", ErrInvalidCrowdfunding)
+		return fmt.Errorf("%w: creation date is missing", ErrInvalidOrder)
 	}
 	return nil
 }

@@ -4,22 +4,17 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 )
 
-const (
-	openzeppelin        = "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-5.0.2.tgz"
-	rollupsContractsUrl = "https://registry.npmjs.org/@cartesi/rollups/-/rollups-2.0.0-rc.10.tgz"
-	baseContractsPath   = "package/export/artifacts/contracts/"
-	bindingPkg          = "rollups_contracts"
-)
+const rollupsContractsUrl = "https://registry.npmjs.org/@cartesi/rollups/-/rollups-1.4.0.tgz"
+const baseContractsPath = "package/export/artifacts/contracts/"
+const bindingPkg = "rollups_contracts"
 
 type contractBinding struct {
 	jsonPath string
@@ -29,19 +24,14 @@ type contractBinding struct {
 
 var bindings = []contractBinding{
 	{
-		jsonPath: "package/build/contracts/EIP712.json",
-		typeName: "EIP712",
-		outFile:  "./pkg/rollups_contracts/eip712.go",
-	},
-	{
 		jsonPath: baseContractsPath + "inputs/InputBox.sol/InputBox.json",
 		typeName: "InputBox",
 		outFile:  "./pkg/rollups_contracts/input_box.go",
 	},
 	{
-		jsonPath: baseContractsPath + "dapp/Application.sol/Application.json",
-		typeName: "Application",
-		outFile:  "./pkg/rollups_contracts/application.go",
+		jsonPath: baseContractsPath + "dapp/CartesiDApp.sol/CartesiDApp.json",
+		typeName: "CartesiDApp",
+		outFile:  "./pkg/rollups_contracts/cartesi_dapp.go",
 	},
 	{
 		jsonPath: baseContractsPath + "portals/ERC20Portal.sol/ERC20Portal.json",
@@ -51,144 +41,97 @@ var bindings = []contractBinding{
 }
 
 func main() {
-	// Configurar logs detalhados
-	slog.Info("Starting contract bindings generation")
-
-	// Baixar e descompactar pacotes de contratos
-	contractsZip, err := downloadContracts(rollupsContractsUrl)
-	checkErr("download contracts", err)
+	contractsZip := downloadContracts(rollupsContractsUrl)
 	defer contractsZip.Close()
-
-	contractsTar, err := unzip(contractsZip)
-	checkErr("unzip contracts", err)
+	contractsTar := unzip(contractsZip)
 	defer contractsTar.Close()
 
-	contractsOpenZeppelin, err := downloadContracts(openzeppelin)
-	checkErr("download OpenZeppelin contracts", err)
-	defer contractsOpenZeppelin.Close()
-
-	contractsTarOpenZeppelin, err := unzip(contractsOpenZeppelin)
-	checkErr("unzip OpenZeppelin contracts", err)
-	defer contractsTarOpenZeppelin.Close()
-
-	// Mapear arquivos necessários
 	files := make(map[string]bool)
 	for _, b := range bindings {
 		files[b.jsonPath] = true
 	}
+	contents := readFilesFromTar(contractsTar, files)
 
-	contents, err := readFilesFromTar(contractsTar, files)
-	checkErr("read files from tar (Rollups)", err)
-
-	contentsZ, err := readFilesFromTar(contractsTarOpenZeppelin, files)
-	checkErr("read files from tar (OpenZeppelin)", err)
-
-	// Mesclar conteúdos de ambos os pacotes
-	for key, content := range contentsZ {
-		contents[key] = content
-	}
-
-	// Gerar bindings para cada contrato
 	for _, b := range bindings {
 		content := contents[b.jsonPath]
 		if content == nil {
-			log.Fatalf("missing contents for %s", b.jsonPath)
+			log.Fatal("missing contents for ", b.jsonPath)
 		}
 		generateBinding(b, content)
 	}
-
-	slog.Info("Contract bindings generation completed successfully")
 }
 
 // Exit if there is any error.
 func checkErr(context string, err any) {
 	if err != nil {
-		log.Fatalf("%s: %v", context, err)
+		log.Fatal(context, ": ", err)
 	}
 }
 
-// Download the contracts from the provided URL.
-func downloadContracts(url string) (io.ReadCloser, error) {
-	slog.Info("Downloading contracts", slog.String("url", url))
+// Download the contracts from rollupsContractsUrl.
+// Return the buffer with the contracts.
+func downloadContracts(url string) io.ReadCloser {
+	log.Print("downloading contracts from ", url)
 	response, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to download contracts from %s: %w", url, err)
-	}
+	checkErr("download tgz", err)
 	if response.StatusCode != http.StatusOK {
-		defer response.Body.Close()
-		return nil, fmt.Errorf("failed to download contracts from %s: status code %s", url, response.Status)
+		response.Body.Close()
+		log.Fatal("invalid status: ", response.Status)
 	}
-	return response.Body, nil
+	return response.Body
 }
 
 // Decompress the buffer with the contracts.
-func unzip(r io.Reader) (io.ReadCloser, error) {
-	slog.Info("Unzipping contracts")
+func unzip(r io.Reader) io.ReadCloser {
+	log.Print("unziping contracts")
 	gzipReader, err := gzip.NewReader(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unzip: %w", err)
-	}
-	return gzipReader, nil
+	checkErr("unziping", err)
+	return gzipReader
 }
 
-// Read the required files from the tar archive.
-func readFilesFromTar(r io.Reader, files map[string]bool) (map[string][]byte, error) {
+// Read the required files from the tar.
+// Return a map with the file contents.
+func readFilesFromTar(r io.Reader, files map[string]bool) map[string][]byte {
 	contents := make(map[string][]byte)
 	tarReader := tar.NewReader(r)
-
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
 			break // End of archive
 		}
-		if err != nil {
-			return nil, fmt.Errorf("error while reading tar: %w", err)
-		}
-
+		checkErr("read tar", err)
 		if files[header.Name] {
-			slog.Info("Found file in tar", slog.String("name", header.Name))
 			contents[header.Name], err = io.ReadAll(tarReader)
-			if err != nil {
-				return nil, fmt.Errorf("error while reading file inside tar: %w", err)
-			}
+			checkErr("read tar", err)
 		}
 	}
-	return contents, nil
+	return contents
 }
 
-// Extract the ABI from the contract JSON.
+// Get the .abi key from the json
 func getAbi(rawJson []byte) []byte {
 	var contents struct {
 		Abi json.RawMessage `json:"abi"`
 	}
 	err := json.Unmarshal(rawJson, &contents)
-	checkErr("decode JSON", err)
+	checkErr("decode json", err)
 	return contents.Abi
 }
 
 // Generate the Go bindings for the contracts.
 func generateBinding(b contractBinding, content []byte) {
-	// Ensure the output directory exists
-	err := os.MkdirAll("./pkg/rollups_contracts", 0755)
-	checkErr("create output directory", err)
-
-	// Prepare binding parameters
-	abi := getAbi(content)
 	var (
 		sigs    []map[string]string
-		abis    = []string{string(abi)}
+		abis    = []string{string(getAbi(content))}
 		bins    = []string{""}
 		types   = []string{b.typeName}
 		libs    = make(map[string]string)
 		aliases = make(map[string]string)
 	)
-
-	// Generate bindings
 	code, err := bind.Bind(types, abis, bins, sigs, bindingPkg, bind.LangGo, libs, aliases)
 	checkErr("generate binding", err)
-
-	// Write binding to file
-	err = os.WriteFile(b.outFile, []byte(code), 0600)
+	const fileMode = 0600
+	err = os.WriteFile(b.outFile, []byte(code), fileMode)
 	checkErr("write binding file", err)
-	slog.Info("Generated binding", slog.String("file", b.outFile))
+	log.Print("generated binding ", b.outFile)
 }

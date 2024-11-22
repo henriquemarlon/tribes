@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -43,27 +44,21 @@ func SetupSQlite(path string) (*gorm.DB, error) {
 	if path == ":memory:" {
 		users = []map[string]interface{}{
 			{
-				"role":       "admin",
-				"address":    common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
-				"created_at": 0,
-			},
-			{
-				"role":       "creator",
-				"address":    common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4").String(),
-				"created_at": 0,
+				"role":                "admin",
+				"address":             common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
+				"investment_limit":    uint256.NewInt(0).Hex(),
+				"debt_issuance_limit": uint256.NewInt(0).Hex(),
+				"created_at":          0,
 			},
 		}
 	} else {
 		users = []map[string]interface{}{
 			{
-				"role":       "admin",
-				"address":    common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
-				"created_at": 0,
-			},
-			{
-				"role":       "user",
-				"address":    common.HexToAddress("0xf49Fc2E6478982F125c0F38d38f67B32772604B4").String(),
-				"created_at": 0,
+				"role":                "admin",
+				"address":             common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
+				"investment_limit":    uint256.NewInt(0).Hex(),
+				"debt_issuance_limit": uint256.NewInt(0).Hex(),
+				"created_at":          0,
 			},
 		}
 	}
