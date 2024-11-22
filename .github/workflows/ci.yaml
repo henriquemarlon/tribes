@@ -20,7 +20,6 @@ jobs:
       NODE_VERSION: 18
       CARTESI_CLI_VERSION: 0.15.0
       CARTESI_MACHINE_IMAGE_NAME: tribes-machine
-      CARTESI_NODE_IMAGE_NAME: tribes-node
       REGISTRY: ghcr.io/${{ github.repository_owner }}
     steps:
       - name: Check out repository
@@ -68,19 +67,7 @@ jobs:
         id: build_machine
         run: make machine
 
-      - name: Build Cartesi Node Image
-        id: build_node
-        run: |
-          docker build \
-          -t validator:latest \
-          -f ./build/Dockerfile.validator . 
-
       - name: Push Cartesi Machine image
         run: |
           docker image tag machine:latest "${{ env.REGISTRY }}/${{ env.CARTESI_MACHINE_IMAGE_NAME }}"
           docker image push --all-tags "${{ env.REGISTRY }}/${{ env.CARTESI_MACHINE_IMAGE_NAME }}"
-
-      - name: Push Cartesi Node image
-        run: |
-          docker image tag validator:latest "${{ env.REGISTRY }}/${{ env.CARTESI_NODE_IMAGE_NAME }}"
-          docker image push --all-tags "${{ env.REGISTRY }}/${{ env.CARTESI_NODE_IMAGE_NAME }}"
