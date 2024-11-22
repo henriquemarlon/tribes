@@ -23,21 +23,51 @@ func NewRBACMiddleware(userRepository entity.UserRepository) *RBACMiddleware {
 
 func (m *RBACMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc, roles []string) router.AdvanceHandlerFunc {
 	return func(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
-		findUserByAddress := user_usecase.NewFindUserByAddressUseCase(m.UserRepository)
-		user, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
-			Address: metadata.MsgSender,
-		})
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("user not found during RBAC middleware check")
+		erc20Deposit, ok := deposit.(*rollmelette.ERC20Deposit)
+		if ok {
+			findUserByAddress := user_usecase.NewFindUserByAddressUseCase(m.UserRepository)
+			user, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
+				Address: erc20Deposit.Sender,
+			})
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return fmt.Errorf("user not found during RBAC middleware check")
+				}
+				return err
 			}
-			return err
-		}
-		for _, role := range roles {
-			if user.Role != role {
+			var hasRole bool
+			for _, role := range roles {
+				if user.Role == role {
+					hasRole = true
+					break
+				}
+			}
+			if !hasRole {
 				return fmt.Errorf("user with address: %v don't have necessary permission", user.Address)
 			}
+			return handlerFunc(env, metadata, deposit, payload)
+		} else {
+			findUserByAddress := user_usecase.NewFindUserByAddressUseCase(m.UserRepository)
+			user, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
+				Address: metadata.MsgSender,
+			})
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return fmt.Errorf("user not found during RBAC middleware check")
+				}
+				return err
+			}
+			var hasRole bool
+			for _, role := range roles {
+				if user.Role == role {
+					hasRole = true
+					break
+				}
+			}
+			if !hasRole {
+				return fmt.Errorf("user with address: %v don't have necessary permission", user.Address)
+			}
+			return handlerFunc(env, metadata, deposit, payload)
 		}
-		return handlerFunc(env, metadata, deposit, payload)
 	}
 }

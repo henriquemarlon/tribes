@@ -53,12 +53,19 @@ func (uc *SettleCrowdfundingUseCase) Execute(input *SettleCrowdfundingInputDTO, 
 	}
 
 	if erc20Deposit.Token != stablecoin.Address {
-		return nil, fmt.Errorf("token deposit is not the same as the stablecoin, cannot settle crowdfunding")
+		return nil, fmt.Errorf("token deposit is not the same as the stablecoin %v, cannot settle crowdfunding", stablecoin.Address)
 	}
 
 	crowdfunding, err := uc.CrowdfundingRepository.FindCrowdfundingById(input.CrowdfundingId)
 	if err != nil {
 		return nil, fmt.Errorf("error finding crowdfunding campaign: %w", err)
+	}
+	if crowdfunding.MaturityAt > metadata.BlockTimestamp {
+		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign is not yet reached")
+	}
+	
+	if crowdfunding.State == entity.CrowdfundingStateSettled {
+		return nil, fmt.Errorf("crowdfunding campaign not found")
 	}
 
 	switch crowdfunding.State {

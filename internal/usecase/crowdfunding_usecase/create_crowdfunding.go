@@ -10,8 +10,10 @@ import (
 )
 
 type CreateCrowdfundingInputDTO struct {
+	DebitIssued     *uint256.Int `json:"debt_issued"`
 	MaxInterestRate *uint256.Int `json:"max_interest_rate"`
 	ExpiresAt       int64        `json:"expires_at"`
+	MaturityAt      int64        `json:"maturity_at"`
 }
 
 type CreateCrowdfundingOutputDTO struct {
@@ -22,6 +24,7 @@ type CreateCrowdfundingOutputDTO struct {
 	State           string          `json:"state"`
 	Orders          []*entity.Order `json:"orders"`
 	ExpiresAt       int64           `json:"expires_at"`
+	MaturityAt      int64           `json:"maturity_at"`
 	CreatedAt       int64           `json:"created_at"`
 }
 
@@ -43,15 +46,13 @@ func (c *CreateCrowdfundingUseCase) Execute(input *CreateCrowdfundingInputDTO, d
 		return nil, fmt.Errorf("invalid deposit type: %T", deposit)
 	}
 
-	creator, err := c.UserRepository.FindUserByAddress(metadata.MsgSender)
+	creator, err := c.UserRepository.FindUserByAddress(erc20Deposit.Sender)
 	if err != nil {
 		return nil, fmt.Errorf("error finding creator: %w", err)
 	}
 
-	debtIssued := uint256.MustFromBig(erc20Deposit.Amount)
-
 	// Validate debt issuance limit
-	if creator.DebtIssuanceLimit.Cmp(debtIssued) < 0 {
+	if creator.DebtIssuanceLimit.Cmp(input.DebitIssued) < 0 {
 		return nil, fmt.Errorf("creator debt issuance limit exceeded")
 	}
 
@@ -67,20 +68,17 @@ func (c *CreateCrowdfundingUseCase) Execute(input *CreateCrowdfundingInputDTO, d
 		}
 	}
 
-	res, err := c.CrowdfundingRepository.CreateCrowdfunding(&entity.Crowdfunding{
-		Creator:         creator.Address,
-		DebtIssued:      debtIssued,
-		MaxInterestRate: input.MaxInterestRate,
-		State:           entity.CrowdfundingStateUnderReview,
-		ExpiresAt:       input.ExpiresAt,
-		CreatedAt:       metadata.BlockTimestamp,
-	})
+	crowdfunding, err := entity.NewCrowdfunding(creator.Address, input.DebitIssued, input.MaxInterestRate, input.ExpiresAt, input.MaturityAt, metadata.BlockTimestamp)
+	if err != nil {
+		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
+	}
+	res, err := c.CrowdfundingRepository.CreateCrowdfunding(crowdfunding)
 	if err != nil {
 		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
 	}
 
 	// Decrease creator's debt issuance limit
-	creator.DebtIssuanceLimit.Sub(creator.DebtIssuanceLimit, debtIssued)
+	creator.DebtIssuanceLimit.Sub(creator.DebtIssuanceLimit, input.DebitIssued)
 	if _, err = c.UserRepository.UpdateUser(creator); err != nil {
 		return nil, fmt.Errorf("error updating creator debt issuance limit: %w", err)
 	}
@@ -93,6 +91,7 @@ func (c *CreateCrowdfundingUseCase) Execute(input *CreateCrowdfundingInputDTO, d
 		State:           string(res.State),
 		Orders:          res.Orders,
 		ExpiresAt:       res.ExpiresAt,
+		MaturityAt:      res.MaturityAt,
 		CreatedAt:       res.CreatedAt,
 	}, nil
 }

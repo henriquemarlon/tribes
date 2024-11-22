@@ -46,7 +46,7 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 		return nil, fmt.Errorf("invalid deposit type provided for order creation: %T", deposit)
 	}
 
-	user, err := c.UserRepository.FindUserByAddress(metadata.MsgSender)
+	user, err := c.UserRepository.FindUserByAddress(erc20Deposit.Sender)
 	if user == nil {
 		return nil, fmt.Errorf("error finding user: %w", err)
 	}
@@ -60,11 +60,6 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 	// According with the CVM Resolution 88
 	if user.Role != entity.UserRoleNonQualifiedInvestor && user.Role != entity.UserRoleQualifiedInvestor {
 		return nil, fmt.Errorf("user role not allowed to create order: %v", user.Role)
-	}
-
-	creator, err := c.UserRepository.FindUserByAddress(metadata.MsgSender)
-	if err != nil {
-		return nil, fmt.Errorf("error finding creator: %w", err)
 	}
 
 	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(input.Creator)
@@ -108,8 +103,8 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 		return nil, err
 	}
 
-	creator.InvestmentLimit.Sub(creator.InvestmentLimit, order.Amount)
-	_, err = c.UserRepository.UpdateUser(creator)
+	user.InvestmentLimit.Sub(user.InvestmentLimit, order.Amount)
+	_, err = c.UserRepository.UpdateUser(user)
 	if err != nil {
 		return nil, fmt.Errorf("error decreasing creator investment limit: %w", err)
 	}

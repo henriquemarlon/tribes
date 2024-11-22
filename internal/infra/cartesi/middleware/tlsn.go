@@ -25,9 +25,13 @@ func NewTLSNMiddleware(userRepository entity.UserRepository) *TLSNMiddleware {
 
 func (m *TLSNMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc) router.AdvanceHandlerFunc {
 	return func(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+		erc20Deposit, ok := deposit.(*rollmelette.ERC20Deposit)
+		if !ok {
+			return fmt.Errorf("invalid deposit type: %T", deposit)
+		}
 		findUserByAddress := user_usecase.NewFindUserByAddressUseCase(m.UserRepository)
 		user, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
-			Address: metadata.MsgSender,
+			Address: erc20Deposit.Sender,
 		})
 
 		if err != nil {
