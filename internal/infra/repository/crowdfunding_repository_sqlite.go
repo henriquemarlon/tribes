@@ -22,7 +22,7 @@ func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(ctx context.Context, i
 	if input.TotalObligation == nil {
 		input.TotalObligation = uint256.NewInt(0)
 	}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		INSERT INTO crowdfundings (creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
@@ -37,7 +37,7 @@ func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(ctx context.Context, i
 
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context, id uint) (*entity.Crowdfunding, error) {
 	var result map[string]interface{}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
 		FROM crowdfundings WHERE id = ? LIMIT 1
 	`, id).Scan(&result).Error
@@ -62,7 +62,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context,
 	}
 
 	var orders []map[string]interface{}
-	err = r.Db.Raw(`
+	err = r.Db.WithContext(ctx).Raw(`
 		SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at
 		FROM orders WHERE crowdfunding_id = ?
 	`, crowdfunding.Id).Scan(&orders).Error
@@ -88,7 +88,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context,
 
 func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings(ctx context.Context) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
 		FROM crowdfundings
 	`).Scan(&results).Error
@@ -116,7 +116,7 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings(ctx context.Context)
 
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.Context, investor common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		SELECT DISTINCT c.id, c.creator, c.debt_issued, c.max_interest_rate, 
 		                c.total_obligation, c.state, c.expires_at, c.maturity_at, 
 		                c.created_at, c.updated_at
@@ -144,7 +144,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.C
 		}
 
 		var orders []map[string]interface{}
-		err = r.Db.Raw(`
+		err = r.Db.WithContext(ctx).Raw(`
 			SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at
 			FROM orders WHERE crowdfunding_id = ?
 		`, crowdfunding.Id).Scan(&orders).Error
@@ -172,7 +172,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.C
 
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(ctx context.Context, creator common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
 		FROM crowdfundings WHERE creator = ?
 	`, creator.String()).Scan(&results).Error
@@ -224,7 +224,7 @@ func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(ctx context.Context, i
 	}
 	crowdfunding.UpdatedAt = input.UpdatedAt
 
-	res := r.Db.Model(&entity.Crowdfunding{}).Where("id = ?", crowdfunding.Id).Updates(map[string]interface{}{
+	res := r.Db.WithContext(ctx).Model(&entity.Crowdfunding{}).Where("id = ?", crowdfunding.Id).Updates(map[string]interface{}{
 		"debt_issued":       crowdfunding.DebtIssued.Hex(),
 		"max_interest_rate": crowdfunding.MaxInterestRate.Hex(),
 		"total_obligation":  crowdfunding.TotalObligation.Hex(),

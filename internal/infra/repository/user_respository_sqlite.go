@@ -21,7 +21,7 @@ func NewUserRepositorySqlite(db *gorm.DB) *UserRepositorySqlite {
 }
 
 func (r *UserRepositorySqlite) CreateUser(ctx context.Context, input *entity.User) (*entity.User, error) {
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		INSERT INTO users (role, address, investment_limit, debt_issuance_limit, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?)
 		RETURNING id
@@ -34,7 +34,7 @@ func (r *UserRepositorySqlite) CreateUser(ctx context.Context, input *entity.Use
 
 func (r *UserRepositorySqlite) FindUserByAddress(ctx context.Context, address common.Address) (*entity.User, error) {
 	var result map[string]interface{}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at 
 		FROM users WHERE address = ? LIMIT 1
 	`, address.String()).Scan(&result).Error
@@ -58,7 +58,7 @@ func (r *UserRepositorySqlite) FindUserByAddress(ctx context.Context, address co
 
 func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string) ([]*entity.User, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at 
 		FROM users WHERE role = ?
 	`, role).Scan(&results).Error
@@ -83,7 +83,7 @@ func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string)
 
 func (r *UserRepositorySqlite) FindAllUsers(ctx context.Context) ([]*entity.User, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at 
 		FROM users
 	`).Scan(&results).Error
@@ -123,7 +123,7 @@ func (r *UserRepositorySqlite) UpdateUser(ctx context.Context, input *entity.Use
 	}
 	user.UpdatedAt = input.UpdatedAt
 
-	res := r.Db.Model(&entity.User{}).Where("id = ?", user.Id).Updates(map[string]interface{}{
+	res := r.Db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", user.Id).Updates(map[string]interface{}{
 		"role":                user.Role,
 		"investment_limit":    user.InvestmentLimit.Hex(),
 		"debt_issuance_limit": user.DebtIssuanceLimit.Hex(),

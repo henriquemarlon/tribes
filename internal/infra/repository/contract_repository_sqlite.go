@@ -20,7 +20,7 @@ func NewContractRepositorySqlite(db *gorm.DB) *ContractRepositorySqlite {
 }
 
 func (r *ContractRepositorySqlite) CreateContract(ctx context.Context, input *entity.Contract) (*entity.Contract, error) {
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		INSERT INTO contracts (symbol, address, created_at, updated_at)
 		VALUES (?, ?, ?, ?)
 		RETURNING id
@@ -33,7 +33,7 @@ func (r *ContractRepositorySqlite) CreateContract(ctx context.Context, input *en
 
 func (r *ContractRepositorySqlite) FindAllContracts(ctx context.Context) ([]*entity.Contract, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts").Scan(&results).Error
+	err := r.Db.WithContext(ctx).Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts").Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to find all contracts: %w", err)
 	}
@@ -53,7 +53,7 @@ func (r *ContractRepositorySqlite) FindAllContracts(ctx context.Context) ([]*ent
 
 func (r *ContractRepositorySqlite) FindContractBySymbol(ctx context.Context, symbol string) (*entity.Contract, error) {
 	var result map[string]interface{}
-	err := r.Db.Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts WHERE symbol = ? LIMIT 1", symbol).Scan(&result).Error
+	err := r.Db.WithContext(ctx).Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts WHERE symbol = ? LIMIT 1", symbol).Scan(&result).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, entity.ErrContractNotFound

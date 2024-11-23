@@ -21,7 +21,7 @@ func NewOrderRepositorySqlite(db *gorm.DB) *OrderRepositorySqlite {
 }
 
 func (r *OrderRepositorySqlite) CreateOrder(ctx context.Context, input *entity.Order) (*entity.Order, error) {
-	err := r.Db.Raw(`
+	err := r.Db.WithContext(ctx).Raw(`
 		INSERT INTO orders (crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
@@ -34,7 +34,7 @@ func (r *OrderRepositorySqlite) CreateOrder(ctx context.Context, input *entity.O
 
 func (r *OrderRepositorySqlite) FindOrderById(ctx context.Context, id uint) (*entity.Order, error) {
 	var result map[string]interface{}
-	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE id = ? LIMIT 1", id).Scan(&result).Error
+	err := r.Db.WithContext(ctx).Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE id = ? LIMIT 1", id).Scan(&result).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, entity.ErrOrderNotFound
@@ -56,7 +56,7 @@ func (r *OrderRepositorySqlite) FindOrderById(ctx context.Context, id uint) (*en
 
 func (r *OrderRepositorySqlite) FindOrdersByCrowdfundingId(ctx context.Context, id uint) ([]*entity.Order, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", id).Scan(&results).Error
+	err := r.Db.WithContext(ctx).Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", id).Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to find orders by crowdfunding ID: %w", err)
 	}
@@ -79,7 +79,7 @@ func (r *OrderRepositorySqlite) FindOrdersByCrowdfundingId(ctx context.Context, 
 
 func (r *OrderRepositorySqlite) FindOrdersByState(ctx context.Context, crowdfundingId uint, state string) ([]*entity.Order, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ? AND state = ?", crowdfundingId, state).Scan(&results).Error
+	err := r.Db.WithContext(ctx).Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ? AND state = ?", crowdfundingId, state).Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to find orders by state: %w", err)
 	}
@@ -102,7 +102,7 @@ func (r *OrderRepositorySqlite) FindOrdersByState(ctx context.Context, crowdfund
 
 func (r *OrderRepositorySqlite) FindOrdersByInvestor(ctx context.Context, investor common.Address) ([]*entity.Order, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE investor = ?", investor.String()).Scan(&results).Error
+	err := r.Db.WithContext(ctx).Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE investor = ?", investor.String()).Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to find orders by investor: %w", err)
 	}
@@ -125,7 +125,7 @@ func (r *OrderRepositorySqlite) FindOrdersByInvestor(ctx context.Context, invest
 
 func (r *OrderRepositorySqlite) FindAllOrders(ctx context.Context) ([]*entity.Order, error) {
 	var results []map[string]interface{}
-	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders").Scan(&results).Error
+	err := r.Db.WithContext(ctx).Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders").Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to find all orders: %w", err)
 	}
@@ -163,7 +163,7 @@ func (r *OrderRepositorySqlite) UpdateOrder(ctx context.Context, input *entity.O
 	}
 	order.UpdatedAt = input.UpdatedAt
 
-	res := r.Db.Model(&entity.Order{}).Where("id = ?", input.Id).Updates(map[string]interface{}{
+	res := r.Db.WithContext(ctx).Model(&entity.Order{}).Where("id = ?", input.Id).Updates(map[string]interface{}{
 		"amount":        order.Amount.Hex(),
 		"interest_rate": order.InterestRate.Hex(),
 		"state":         order.State,
