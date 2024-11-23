@@ -2,21 +2,16 @@
     <img src="https://github.com/user-attachments/assets/275b9ce4-3a4b-4965-82a3-5b6160ea76a5" align="center" width="30%">
 </p>
 <div align="center">
-    <i>An Typescript example using Cartesi Cli, Nonodo and Deroll as High-Level Framework</i>
+    <i>The Creator's Economy enabler</i>
 </div>
 <div align="center">
-<b>This example aims to demonstrate the lifecycle of a DApp using Deroll. In addition it serves.</b>
+<b>Collateralized tokenization of receivables for debt issuance through crowdfunding.</b>
 </div>
 <br>
 <p align="center">
 	<img src="https://img.shields.io/github/license/henriquemarlon/tribes?style=default&logo=opensourceinitiative&logoColor=white&color=959CD0" alt="license">
 	<img src="https://img.shields.io/github/last-commit/henriquemarlon/tribes?style=default&logo=git&logoColor=white&color=D1DCCB" alt="last-commit">
 	<img src="https://img.shields.io/github/languages/count/henriquemarlon/tribes?style=default&color=323232" alt="repo-language-count">
-</p>
-<p align="center"><!-- default option, no dependency badges. -->
-</p>
-<p align="center">
-	<!-- default option, no dependency badges. -->
 </p>
 <br>
 
@@ -34,10 +29,7 @@
 
 ##  Overview
 
-Here's a compelling overview of the Tribes project:
-
-Tribes is an open-source project that solves the problem of decentralized data management for large-scale applications. Its key features include automated workflow orchestration through a Makefile, dependency management using Go modules and cryptographic hashes in the `go.sum` file, and support for popular libraries like Gorm, Cobra, and Wire. This project benefits developers by streamlining their workflow, ensuring code integrity, and providing a reliable foundation for building scalable software systems. The target audience includes data engineers, software architects, and developers working on large-scale applications that require efficient data processing and management.
-
+A crowdfunding platform designed for prominent content creators, enabling them to monetize their influence by issuing tokenized debt instruments collateralized exclusively by their tokenized future receivables. Based on Resolution No. 88 of the Brazilian Securities and Exchange Commission (CVM), the Brazilian SEC, the platform connects creators with a network of investors, offering a structured and transparent alternative to finance scalable businesses while leveraging the economic potential of their audiences, ensuring legal compliance and attractive returns for investors.
 
 ##  Project Structure
 
