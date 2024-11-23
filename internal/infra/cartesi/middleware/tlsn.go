@@ -15,11 +15,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
 	"github.com/tribeshq/tribes/pkg/router"
+	"log/slog"
 )
 
 type TLSNMiddleware struct {
