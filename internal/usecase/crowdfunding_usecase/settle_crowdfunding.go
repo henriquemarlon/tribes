@@ -63,7 +63,7 @@ func (uc *SettleCrowdfundingUseCase) Execute(input *SettleCrowdfundingInputDTO, 
 	if crowdfunding.MaturityAt > metadata.BlockTimestamp {
 		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign is not yet reached")
 	}
-	
+
 	if crowdfunding.State == entity.CrowdfundingStateSettled {
 		return nil, fmt.Errorf("crowdfunding campaign not found")
 	}

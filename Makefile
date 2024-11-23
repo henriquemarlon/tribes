@@ -20,7 +20,12 @@ machine:
 	@cartesi build --from-image machine:latest
 	$(END_LOG)
 
-.PHONY: local
+.PHONY: dev
+dev:
+	$(START_LOG)
+	@nonodo -- air
+
+.PHONY: dev-machine
 local:
 	$(START_LOG)
 	@nonodo -- cartesi-machine --network \

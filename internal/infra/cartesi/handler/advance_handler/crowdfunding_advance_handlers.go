@@ -100,7 +100,7 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 			}
 		}
 	}
-	
+
 	if res.State == string(entity.CrowdfundingStateClosed) {
 		// Transfer the raised funds to the creator
 		if err = env.ERC20Transfer(

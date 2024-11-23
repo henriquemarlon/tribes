@@ -2,10 +2,10 @@ package repository
 
 import (
 	"fmt"
-	"gorm.io/gorm"
-	"github.com/holiman/uint256"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"gorm.io/gorm"
 )
 
 type UserRepositorySqlite struct {

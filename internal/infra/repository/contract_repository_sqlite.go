@@ -2,9 +2,9 @@ package repository
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"gorm.io/gorm"
 )
 
 type ContractRepositorySqlite struct {
