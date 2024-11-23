@@ -31,11 +31,8 @@
   - [ Usage](#-usage)
   - [ Testing](#-testing)
 - [ Project Roadmap](#-project-roadmap)
-- [ Contributing](#-contributing)
-- [ License](#-license)
+- [ Contributors](#-contributors)
 - [ Acknowledgments](#-acknowledgments)
-
----
 
 ##  Overview
 
@@ -76,7 +73,6 @@ Tribes is an open-source project that solves the problem of decentralized data m
     ├── test
     │   └── integration
     └── website
-        └── .gitkeep
 ```
 
 ##  Getting Started
@@ -87,7 +83,6 @@ Before getting started with tribes, ensure your runtime environment meets the fo
 
 - **Programming Language:** Go
 - **Package Manager:** Go modules, Cargo
-
 
 ###  Installation
 
@@ -107,22 +102,17 @@ Install tribes using one of the following methods:
 
 3. Install the project dependencies:
 
-
 **Using `go modules`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Go-00ADD8.svg?style={badge_style}&logo=go&logoColor=white" />](https://golang.org/)
 
 ```sh
 ❯ go build
 ```
 
-
 **Using `cargo`** &nbsp; [<img align="center" src="" />]()
 
 ```sh
 ❯ echo 'INSERT-INSTALL-COMMAND-HERE'
 ```
-
-
-
 
 ###  Usage
 Run tribes using the following command:
@@ -132,13 +122,11 @@ Run tribes using the following command:
 ❯ go run {entrypoint}
 ```
 
-
 **Using `cargo`** &nbsp; [<img align="center" src="" />]()
 
 ```sh
 ❯ echo 'INSERT-RUN-COMMAND-HERE'
 ```
-
 
 ###  Testing
 Run the test suite using the following command:
@@ -148,22 +136,17 @@ Run the test suite using the following command:
 ❯ go test ./...
 ```
 
-
 **Using `cargo`** &nbsp; [<img align="center" src="" />]()
 
 ```sh
 ❯ echo 'INSERT-TEST-COMMAND-HERE'
 ```
 
-
----
 ##  Project Roadmap
 
 - [X] **`Task 1`**: <strike>Implement feature one.</strike>
 - [ ] **`Task 2`**: Implement feature two.
 - [ ] **`Task 3`**: Implement feature three.
-
----
 
 ##  Contributors
 
@@ -173,10 +156,6 @@ Run the test suite using the following command:
    </a>
 </p>
 
----
-
 ##  Acknowledgments
 
 - List any resources, contributors, inspiration, etc. here.
-
----
