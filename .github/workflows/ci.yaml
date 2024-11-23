@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - 'main'
+      - 'feature/repository'
     paths-ignore:
       - 'website/**'
     tags:
-      - 'v*'   
+      - 'v*'
+       
   workflow_dispatch:
 
 jobs:
@@ -39,6 +41,11 @@ jobs:
         run: make test
         env:
           BUILDX_BUILDER: ${{ steps.setup_buildx.outputs.name }}
+
+      - name: Run Go Linter
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.58.2
 
       - name: Extract metadata from Git refs and GitHub events
         id: extract_metadata
