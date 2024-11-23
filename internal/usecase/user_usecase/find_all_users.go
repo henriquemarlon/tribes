@@ -1,6 +1,8 @@
 package user_usecase
 
 import (
+	"context"
+
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
@@ -16,8 +18,8 @@ func NewFindAllUsersUseCase(userRepository entity.UserRepository) *FindAllUsersU
 	}
 }
 
-func (u *FindAllUsersUseCase) Execute() (*FindAllUsersOutputDTO, error) {
-	res, err := u.UserRepository.FindAllUsers()
+func (u *FindAllUsersUseCase) Execute(ctx context.Context) (*FindAllUsersOutputDTO, error) {
+	res, err := u.UserRepository.FindAllUsers(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,8 @@
 package user_usecase
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
@@ -19,8 +21,8 @@ func NewFindUserByAddressUseCase(userRepository entity.UserRepository) *FindUser
 	}
 }
 
-func (u *FindUserByAddressUseCase) Execute(input *FindUserByAddressInputDTO) (*FindUserOutputDTO, error) {
-	res, err := u.UserRepository.FindUserByAddress(input.Address)
+func (u *FindUserByAddressUseCase) Execute(ctx context.Context, input *FindUserByAddressInputDTO) (*FindUserOutputDTO, error) {
+	res, err := u.UserRepository.FindUserByAddress(ctx, input.Address)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -17,7 +18,7 @@ func NewCrowdfundingRepositorySqlite(db *gorm.DB) *CrowdfundingRepositorySqlite 
 	return &CrowdfundingRepositorySqlite{Db: db}
 }
 
-func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(input *entity.Crowdfunding) (*entity.Crowdfunding, error) {
+func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(ctx context.Context, input *entity.Crowdfunding) (*entity.Crowdfunding, error) {
 	if input.TotalObligation == nil {
 		input.TotalObligation = uint256.NewInt(0)
 	}
@@ -31,10 +32,10 @@ func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(input *entity.Crowdfun
 	if err != nil {
 		return nil, err
 	}
-	return r.FindCrowdfundingById(input.Id)
+	return r.FindCrowdfundingById(ctx, input.Id)
 }
 
-func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(id uint) (*entity.Crowdfunding, error) {
+func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context, id uint) (*entity.Crowdfunding, error) {
 	var result map[string]interface{}
 	err := r.Db.Raw(`
 		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at 
@@ -65,7 +66,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(id uint) (*entity.Cr
 	return crowdfunding, nil
 }
 
-func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings() ([]*entity.Crowdfunding, error) {
+func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings(ctx context.Context) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
 	err := r.Db.Raw(`
 		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
@@ -83,7 +84,7 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings() ([]*entity.Crowdfu
 	return crowdfundings, nil
 }
 
-func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(creator common.Address) ([]*entity.Crowdfunding, error) {
+func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(ctx context.Context, creator common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
 	err := r.Db.Raw(`
 		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
@@ -104,7 +105,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(creator common
 	return crowdfundings, nil
 }
 
-func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor common.Address) ([]*entity.Crowdfunding, error) {
+func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.Context, investor common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
 	err := r.Db.Raw(`
 		SELECT DISTINCT c.id, c.creator, c.debt_issued, c.max_interest_rate, 
@@ -143,8 +144,8 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(investor comm
 	return crowdfundings, nil
 }
 
-func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(input *entity.Crowdfunding) (*entity.Crowdfunding, error) {
-	crowdfunding, err := r.FindCrowdfundingById(input.Id)
+func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(ctx context.Context, input *entity.Crowdfunding) (*entity.Crowdfunding, error) {
+	crowdfunding, err := r.FindCrowdfundingById(ctx, input.Id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find crowdfunding for update: %w", err)
 	}
@@ -182,10 +183,10 @@ func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(input *entity.Crowdfun
 		return nil, fmt.Errorf("failed to update crowdfunding: %w", res.Error)
 	}
 
-	return r.FindCrowdfundingById(crowdfunding.Id)
+	return r.FindCrowdfundingById(ctx, crowdfunding.Id)
 }
 
-func (r *CrowdfundingRepositorySqlite) DeleteCrowdfunding(id uint) error {
+func (r *CrowdfundingRepositorySqlite) DeleteCrowdfunding(ctx context.Context, id uint) error {
 	res := r.Db.Delete(&entity.Crowdfunding{}, "id = ?", id)
 	if res.Error != nil {
 		return fmt.Errorf("failed to delete crowdfunding: %w", res.Error)

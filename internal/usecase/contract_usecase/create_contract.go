@@ -1,6 +1,8 @@
 package contract_usecase
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -28,12 +30,12 @@ func NewCreateContractUseCase(contractRepository entity.ContractRepository) *Cre
 	}
 }
 
-func (s *CreateContractUseCase) Execute(input *CreateContractInputDTO, metadata rollmelette.Metadata) (*CreateContractOutputDTO, error) {
+func (s *CreateContractUseCase) Execute(ctx context.Context, input *CreateContractInputDTO, metadata rollmelette.Metadata) (*CreateContractOutputDTO, error) {
 	contract, err := entity.NewContract(input.Symbol, input.Address, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.ContractRepository.CreateContract(contract)
+	res, err := s.ContractRepository.CreateContract(ctx,contract)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,8 @@
 package user_usecase
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
@@ -34,8 +36,8 @@ func NewUpdateUserUseCase(userRepository entity.UserRepository) *UpdateUserUseCa
 	}
 }
 
-func (u *UpdateUserUseCase) Execute(input *UpdateUserInputDTO, metadata rollmelette.Metadata) (*UpdateUserOutputDTO, error) {
-	user, err := u.UserRepository.UpdateUser(&entity.User{
+func (u *UpdateUserUseCase) Execute(ctx context.Context, input *UpdateUserInputDTO, metadata rollmelette.Metadata) (*UpdateUserOutputDTO, error) {
+	user, err := u.UserRepository.UpdateUser(ctx, &entity.User{
 		Role:              entity.UserRole(input.Role),
 		Address:           input.Address,
 		InvestmentLimit:   input.InvestmentLimit,

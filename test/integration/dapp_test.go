@@ -7,7 +7,6 @@ import (
 	"os"
 	"testing"
 	"time"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/stretchr/testify/suite"
@@ -49,7 +48,7 @@ func (s *DAppSuite) SetupTest() {
 	s.tester = rollmelette.NewTester(app)
 }
 
-func (s *DAppSuite) TestItCreatedCrowdfundingAndFinishdCrowdfundingWithoutPartialSellingAndPayingAllOrderder() {
+func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	admin := common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 	creator := common.HexToAddress("0x0000000000000000000000000000000000000007")
 	investor01 := common.HexToAddress("0x0000000000000000000000000000000000000001")

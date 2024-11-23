@@ -1,6 +1,7 @@
 package crowdfunding_usecase
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -40,13 +41,13 @@ func NewCreateCrowdfundingUseCase(userRepository entity.UserRepository, crowdfun
 	}
 }
 
-func (c *CreateCrowdfundingUseCase) Execute(input *CreateCrowdfundingInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*CreateCrowdfundingOutputDTO, error) {
+func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCrowdfundingInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*CreateCrowdfundingOutputDTO, error) {
 	erc20Deposit, ok := deposit.(*rollmelette.ERC20Deposit)
 	if !ok {
 		return nil, fmt.Errorf("invalid deposit type: %T", deposit)
 	}
 
-	creator, err := c.UserRepository.FindUserByAddress(erc20Deposit.Sender)
+	creator, err := c.UserRepository.FindUserByAddress(ctx, erc20Deposit.Sender)
 	if err != nil {
 		return nil, fmt.Errorf("error finding creator: %w", err)
 	}
@@ -56,7 +57,7 @@ func (c *CreateCrowdfundingUseCase) Execute(input *CreateCrowdfundingInputDTO, d
 		return nil, fmt.Errorf("creator debt issuance limit exceeded")
 	}
 
-	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(creator.Address)
+	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(ctx, creator.Address)
 	if err != nil {
 		return nil, fmt.Errorf("error finding crowdfunding campaigns: %w", err)
 	}
@@ -72,14 +73,14 @@ func (c *CreateCrowdfundingUseCase) Execute(input *CreateCrowdfundingInputDTO, d
 	if err != nil {
 		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
 	}
-	res, err := c.CrowdfundingRepository.CreateCrowdfunding(crowdfunding)
+	res, err := c.CrowdfundingRepository.CreateCrowdfunding(ctx, crowdfunding)
 	if err != nil {
 		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
 	}
 
 	// Decrease creator's debt issuance limit
 	creator.DebtIssuanceLimit.Sub(creator.DebtIssuanceLimit, input.DebitIssued)
-	if _, err = c.UserRepository.UpdateUser(creator); err != nil {
+	if _, err = c.UserRepository.UpdateUser(ctx, creator); err != nil {
 		return nil, fmt.Errorf("error updating creator debt issuance limit: %w", err)
 	}
 

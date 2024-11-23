@@ -1,6 +1,8 @@
 package crowdfunding_usecase
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
@@ -41,8 +43,8 @@ func NewUpdateCrowdfundingUseCase(crowdfundingRepository entity.CrowdfundingRepo
 	}
 }
 
-func (uc *UpdateCrowdfundingUsecase) Execute(input UpdateCrowdfundingInputDTO, metadata rollmelette.Metadata) (*UpdateCrowdfundingOutputDTO, error) {
-	crowdfunding, err := uc.CrowdfundingRepository.UpdateCrowdfunding(&entity.Crowdfunding{
+func (uc *UpdateCrowdfundingUsecase) Execute(ctx context.Context, input UpdateCrowdfundingInputDTO, metadata rollmelette.Metadata) (*UpdateCrowdfundingOutputDTO, error) {
+	crowdfunding, err := uc.CrowdfundingRepository.UpdateCrowdfunding(ctx, &entity.Crowdfunding{
 		Id:              input.Id,
 		DebtIssued:      input.DebtIssued,
 		MaxInterestRate: input.MaxInterestRate,

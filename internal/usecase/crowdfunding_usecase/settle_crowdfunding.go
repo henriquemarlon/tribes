@@ -1,6 +1,7 @@
 package crowdfunding_usecase
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -41,13 +42,13 @@ func NewSettleCrowdfundingUseCase(userRepository entity.UserRepository, crowdfun
 	}
 }
 
-func (uc *SettleCrowdfundingUseCase) Execute(input *SettleCrowdfundingInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*SettleCrowdfundingOutputDTO, error) {
+func (uc *SettleCrowdfundingUseCase) Execute(ctx context.Context, input *SettleCrowdfundingInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*SettleCrowdfundingOutputDTO, error) {
 	erc20Deposit, ok := deposit.(*rollmelette.ERC20Deposit)
 	if !ok {
 		return nil, fmt.Errorf("invalid deposit type: %T", deposit)
 	}
 
-	stablecoin, err := uc.ContractRepository.FindContractBySymbol("STABLECOIN")
+	stablecoin, err := uc.ContractRepository.FindContractBySymbol(ctx, "STABLECOIN")
 	if err != nil {
 		return nil, fmt.Errorf("error finding stablecoin contract: %w", err)
 	}
@@ -56,10 +57,11 @@ func (uc *SettleCrowdfundingUseCase) Execute(input *SettleCrowdfundingInputDTO, 
 		return nil, fmt.Errorf("token deposit is not the same as the stablecoin %v, cannot settle crowdfunding", stablecoin.Address)
 	}
 
-	crowdfunding, err := uc.CrowdfundingRepository.FindCrowdfundingById(input.CrowdfundingId)
+	crowdfunding, err := uc.CrowdfundingRepository.FindCrowdfundingById(ctx, input.CrowdfundingId)
 	if err != nil {
 		return nil, fmt.Errorf("error finding crowdfunding campaign: %w", err)
 	}
+	
 	if crowdfunding.MaturityAt > metadata.BlockTimestamp {
 		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign is not yet reached")
 	}
@@ -84,18 +86,18 @@ func (uc *SettleCrowdfundingUseCase) Execute(input *SettleCrowdfundingInputDTO, 
 
 		crowdfunding.State = entity.CrowdfundingStateSettled
 		crowdfunding.UpdatedAt = metadata.BlockTimestamp
-		res, err := uc.CrowdfundingRepository.UpdateCrowdfunding(crowdfunding)
+		res, err := uc.CrowdfundingRepository.UpdateCrowdfunding(ctx, crowdfunding)
 		if err != nil {
 			return nil, fmt.Errorf("error updating crowdfunding campaign: %w", err)
 		}
 
-		creator, err := uc.UserRepository.FindUserByAddress(crowdfunding.Creator)
+		creator, err := uc.UserRepository.FindUserByAddress(ctx, crowdfunding.Creator)
 		if err != nil {
 			return nil, fmt.Errorf("error finding creator: %w", err)
 		}
 
 		creator.DebtIssuanceLimit = new(uint256.Int).Sub(creator.DebtIssuanceLimit, crowdfunding.DebtIssued)
-		_, err = uc.UserRepository.UpdateUser(creator)
+		_, err = uc.UserRepository.UpdateUser(ctx, creator)
 		if err != nil {
 			return nil, fmt.Errorf("error updating creator debt issuance limit: %w", err)
 		}

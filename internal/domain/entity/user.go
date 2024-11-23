@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -23,12 +24,12 @@ const (
 )
 
 type UserRepository interface {
-	CreateUser(User *User) (*User, error)
-	FindUsersByRole(role string) ([]*User, error)
-	FindUserByAddress(address common.Address) (*User, error)
-	FindAllUsers() ([]*User, error)
-	UpdateUser(User *User) (*User, error)
-	DeleteUser(address common.Address) error
+	CreateUser(ctx context.Context, User *User) (*User, error)
+	FindUsersByRole(ctx context.Context, role string) ([]*User, error)
+	FindUserByAddress(ctx context.Context, address common.Address) (*User, error)
+	FindAllUsers(ctx context.Context) ([]*User, error)
+	UpdateUser(ctx context.Context, User *User) (*User, error)
+	DeleteUser(ctx context.Context, address common.Address) error
 }
 
 type User struct {

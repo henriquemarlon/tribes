@@ -1,6 +1,8 @@
 package order_usecase
 
 import (
+	"context"
+
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
@@ -18,6 +20,6 @@ func NewDeleteOrderUseCase(orderRepository entity.OrderRepository) *DeleteOrderU
 	}
 }
 
-func (c *DeleteOrderUseCase) Execute(input *DeleteOrderInputDTO) error {
-	return c.OrderRepository.DeleteOrder(input.Id)
+func (c *DeleteOrderUseCase) Execute(ctx context.Context, input *DeleteOrderInputDTO) error {
+	return c.OrderRepository.DeleteOrder(ctx, input.Id)
 }

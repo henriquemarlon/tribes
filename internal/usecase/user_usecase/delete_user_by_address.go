@@ -1,6 +1,8 @@
 package user_usecase
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
@@ -19,6 +21,6 @@ func NewDeleteUserUseCase(userRepository entity.UserRepository) *DeleteUserUseCa
 	}
 }
 
-func (u *DeleteUserUseCase) Execute(input *DeleteUserInputDTO) error {
-	return u.UserRepository.DeleteUser(input.Address)
+func (u *DeleteUserUseCase) Execute(ctx context.Context, input *DeleteUserInputDTO) error {
+	return u.UserRepository.DeleteUser(ctx, input.Address)
 }

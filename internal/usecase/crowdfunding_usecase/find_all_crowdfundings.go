@@ -1,6 +1,8 @@
 package crowdfunding_usecase
 
 import (
+	"context"
+
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
@@ -14,8 +16,8 @@ func NewFindAllCrowdfundingsUseCase(crowdfundingRepository entity.CrowdfundingRe
 	return &FindAllCrowdfundingsUseCase{CrowdfundingRepository: crowdfundingRepository}
 }
 
-func (f *FindAllCrowdfundingsUseCase) Execute() (*FindAllCrowdfundingsOutputDTO, error) {
-	res, err := f.CrowdfundingRepository.FindAllCrowdfundings()
+func (f *FindAllCrowdfundingsUseCase) Execute(ctx context.Context) (*FindAllCrowdfundingsOutputDTO, error) {
+	res, err := f.CrowdfundingRepository.FindAllCrowdfundings(ctx)
 	if err != nil {
 		return nil, err
 	}

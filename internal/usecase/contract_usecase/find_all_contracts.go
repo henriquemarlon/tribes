@@ -1,6 +1,10 @@
 package contract_usecase
 
-import "github.com/tribeshq/tribes/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/tribeshq/tribes/internal/domain/entity"
+)
 
 type FindAllContractsOutputDTO []*FindContractOutputDTO
 
@@ -14,8 +18,8 @@ func NewFindAllContractsUseCase(contractRepository entity.ContractRepository) *F
 	}
 }
 
-func (s *FindAllContractsUsecase) Execute() (FindAllContractsOutputDTO, error) {
-	res, err := s.ContractRepository.FindAllContracts()
+func (s *FindAllContractsUsecase) Execute(ctx context.Context) (FindAllContractsOutputDTO, error) {
+	res, err := s.ContractRepository.FindAllContracts(ctx)
 	if err != nil {
 		return nil, err
 	}

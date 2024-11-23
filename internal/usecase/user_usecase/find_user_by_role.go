@@ -1,6 +1,8 @@
 package user_usecase
 
 import (
+	"context"
+
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
@@ -20,8 +22,8 @@ func NewFindUserByRoleUseCase(userRepository entity.UserRepository) *FindUserByR
 	}
 }
 
-func (u *FindUserByRoleUseCase) Execute(input *FindUserByRoleInputDTO) ([]*FindUserOutputDTO, error) {
-	res, err := u.userRepository.FindUsersByRole(input.Role)
+func (u *FindUserByRoleUseCase) Execute(ctx context.Context, input *FindUserByRoleInputDTO) ([]*FindUserOutputDTO, error) {
+	res, err := u.userRepository.FindUsersByRole(ctx, input.Role)
 	if err != nil {
 		return nil, err
 	}

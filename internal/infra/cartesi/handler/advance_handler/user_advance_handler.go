@@ -1,6 +1,7 @@
 package advance_handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -26,8 +27,9 @@ func (h *UserAdvanceHandlers) CreateUserHandler(env rollmelette.Env, metadata ro
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	createUser := user_usecase.NewCreateUserUseCase(h.UserRepository)
-	res, err := createUser.Execute(&input, metadata)
+	res, err := createUser.Execute(ctx, &input, metadata)
 	if err != nil {
 		return err
 	}
@@ -44,8 +46,9 @@ func (h *UserAdvanceHandlers) UpdateUserHandler(env rollmelette.Env, metadata ro
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	updateUser := user_usecase.NewUpdateUserUseCase(h.UserRepository)
-	res, err := updateUser.Execute(&input, metadata)
+	res, err := updateUser.Execute(ctx, &input, metadata)
 	if err != nil {
 		return err
 	}
@@ -62,8 +65,9 @@ func (h *UserAdvanceHandlers) DeleteUserHandler(env rollmelette.Env, metadata ro
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return fmt.Errorf("failed to unmarshal input: %w", err)
 	}
+	ctx := context.Background()
 	deleteUserByAddress := user_usecase.NewDeleteUserUseCase(h.UserRepository)
-	err := deleteUserByAddress.Execute(&input)
+	err := deleteUserByAddress.Execute(ctx, &input)
 	if err != nil {
 		return err
 	}
@@ -80,8 +84,9 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	findUserByAddress := user_usecase.NewCreateUserUseCase(h.UserRepository)
-	res, err := findUserByAddress.Execute(&user_usecase.CreateUserInputDTO{
+	res, err := findUserByAddress.Execute(ctx, &user_usecase.CreateUserInputDTO{
 		Address: metadata.MsgSender,
 	}, metadata)
 	if err != nil {

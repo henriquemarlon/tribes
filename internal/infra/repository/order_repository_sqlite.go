@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -18,7 +20,7 @@ func NewOrderRepositorySqlite(db *gorm.DB) *OrderRepositorySqlite {
 	}
 }
 
-func (r *OrderRepositorySqlite) CreateOrder(input *entity.Order) (*entity.Order, error) {
+func (r *OrderRepositorySqlite) CreateOrder(ctx context.Context, input *entity.Order) (*entity.Order, error) {
 	err := r.Db.Raw(`
 		INSERT INTO orders (crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -30,28 +32,28 @@ func (r *OrderRepositorySqlite) CreateOrder(input *entity.Order) (*entity.Order,
 	return input, nil
 }
 
-func (r *OrderRepositorySqlite) FindOrderById(id uint) (*entity.Order, error) {
+func (r *OrderRepositorySqlite) FindOrderById(ctx context.Context, id uint) (*entity.Order, error) {
 	return r.findOrderByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE id = ? LIMIT 1", id)
 }
 
-func (r *OrderRepositorySqlite) FindOrdersByCrowdfundingId(id uint) ([]*entity.Order, error) {
+func (r *OrderRepositorySqlite) FindOrdersByCrowdfundingId(ctx context.Context, id uint) ([]*entity.Order, error) {
 	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", id)
 }
 
-func (r *OrderRepositorySqlite) FindOrdersByState(crowdfundingId uint, state string) ([]*entity.Order, error) {
+func (r *OrderRepositorySqlite) FindOrdersByState(ctx context.Context, crowdfundingId uint, state string) ([]*entity.Order, error) {
 	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ? AND state = ?", crowdfundingId, state)
 }
 
-func (r *OrderRepositorySqlite) FindOrdersByInvestor(investor common.Address) ([]*entity.Order, error) {
+func (r *OrderRepositorySqlite) FindOrdersByInvestor(ctx context.Context, investor common.Address) ([]*entity.Order, error) {
 	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE investor = ?", investor.String())
 }
 
-func (r *OrderRepositorySqlite) FindAllOrders() ([]*entity.Order, error) {
+func (r *OrderRepositorySqlite) FindAllOrders(ctx context.Context) ([]*entity.Order, error) {
 	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders")
 }
 
-func (r *OrderRepositorySqlite) UpdateOrder(input *entity.Order) (*entity.Order, error) {
-	order, err := r.FindOrderById(input.Id)
+func (r *OrderRepositorySqlite) UpdateOrder(ctx context.Context, input *entity.Order) (*entity.Order, error) {
+	order, err := r.FindOrderById(ctx, input.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +81,7 @@ func (r *OrderRepositorySqlite) UpdateOrder(input *entity.Order) (*entity.Order,
 	return order, nil
 }
 
-func (r *OrderRepositorySqlite) DeleteOrder(id uint) error {
+func (r *OrderRepositorySqlite) DeleteOrder(ctx context.Context, id uint) error {
 	res := r.Db.Delete(&entity.Order{}, "id = ?", id)
 	if res.Error != nil {
 		return fmt.Errorf("failed to delete order: %w", res.Error)

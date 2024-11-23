@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -24,14 +25,14 @@ const (
 )
 
 type OrderRepository interface {
-	CreateOrder(order *Order) (*Order, error)
-	FindOrderById(id uint) (*Order, error)
-	FindOrdersByCrowdfundingId(id uint) ([]*Order, error)
-	FindOrdersByState(crowdfundingId uint, state string) ([]*Order, error)
-	FindOrdersByInvestor(investor common.Address) ([]*Order, error)
-	FindAllOrders() ([]*Order, error)
-	UpdateOrder(order *Order) (*Order, error)
-	DeleteOrder(id uint) error
+	CreateOrder(ctx context.Context, order *Order) (*Order, error)
+	FindOrderById(ctx context.Context, id uint) (*Order, error)
+	FindOrdersByCrowdfundingId(ctx context.Context, id uint) ([]*Order, error)
+	FindOrdersByState(ctx context.Context, crowdfundingId uint, state string) ([]*Order, error)
+	FindOrdersByInvestor(ctx context.Context, investor common.Address) ([]*Order, error)
+	FindAllOrders(ctx context.Context) ([]*Order, error)
+	UpdateOrder(ctx context.Context, order *Order) (*Order, error)
+	DeleteOrder(ctx context.Context, id uint) error
 }
 
 type Order struct {
