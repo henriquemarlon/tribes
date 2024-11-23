@@ -9,10 +9,9 @@
 </div>
 <br>
 <p align="center">
-	<img src="https://img.shields.io/github/license/henriquemarlon/tribes?style=default&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
-	<img src="https://img.shields.io/github/last-commit/henriquemarlon/tribes?style=default&logo=git&logoColor=white&color=0080ff" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/top/henriquemarlon/tribes?style=default&color=0080ff" alt="repo-top-language">
-	<img src="https://img.shields.io/github/languages/count/henriquemarlon/tribes?style=default&color=0080ff" alt="repo-language-count">
+	<img src="https://img.shields.io/github/license/henriquemarlon/tribes?style=default&logo=opensourceinitiative&logoColor=white&color=959CD0" alt="license">
+	<img src="https://img.shields.io/github/last-commit/henriquemarlon/tribes?style=default&logo=git&logoColor=white&color=D1DCCB" alt="last-commit">
+	<img src="https://img.shields.io/github/languages/count/henriquemarlon/tribes?style=default&color=323232" alt="repo-language-count">
 </p>
 <p align="center"><!-- default option, no dependency badges. -->
 </p>
