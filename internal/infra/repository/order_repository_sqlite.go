@@ -33,23 +33,117 @@ func (r *OrderRepositorySqlite) CreateOrder(ctx context.Context, input *entity.O
 }
 
 func (r *OrderRepositorySqlite) FindOrderById(ctx context.Context, id uint) (*entity.Order, error) {
-	return r.findOrderByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE id = ? LIMIT 1", id)
+	var result map[string]interface{}
+	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE id = ? LIMIT 1", id).Scan(&result).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrOrderNotFound
+		}
+		return nil, fmt.Errorf("failed to find order by ID: %w", err)
+	}
+
+	return &entity.Order{
+		Id:             uint(result["id"].(int64)),
+		CrowdfundingId: uint(result["crowdfunding_id"].(int64)),
+		Investor:       common.HexToAddress(result["investor"].(string)),
+		Amount:         uint256.MustFromHex(result["amount"].(string)),
+		InterestRate:   uint256.MustFromHex(result["interest_rate"].(string)),
+		State:          entity.OrderState(result["state"].(string)),
+		CreatedAt:      result["created_at"].(int64),
+		UpdatedAt:      result["updated_at"].(int64),
+	}, nil
 }
 
 func (r *OrderRepositorySqlite) FindOrdersByCrowdfundingId(ctx context.Context, id uint) ([]*entity.Order, error) {
-	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", id)
+	var results []map[string]interface{}
+	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ?", id).Scan(&results).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find orders by crowdfunding ID: %w", err)
+	}
+
+	var orders []*entity.Order
+	for _, data := range results {
+		orders = append(orders, &entity.Order{
+			Id:             uint(data["id"].(int64)),
+			CrowdfundingId: uint(data["crowdfunding_id"].(int64)),
+			Investor:       common.HexToAddress(data["investor"].(string)),
+			Amount:         uint256.MustFromHex(data["amount"].(string)),
+			InterestRate:   uint256.MustFromHex(data["interest_rate"].(string)),
+			State:          entity.OrderState(data["state"].(string)),
+			CreatedAt:      data["created_at"].(int64),
+			UpdatedAt:      data["updated_at"].(int64),
+		})
+	}
+	return orders, nil
 }
 
 func (r *OrderRepositorySqlite) FindOrdersByState(ctx context.Context, crowdfundingId uint, state string) ([]*entity.Order, error) {
-	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ? AND state = ?", crowdfundingId, state)
+	var results []map[string]interface{}
+	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE crowdfunding_id = ? AND state = ?", crowdfundingId, state).Scan(&results).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find orders by state: %w", err)
+	}
+
+	var orders []*entity.Order
+	for _, data := range results {
+		orders = append(orders, &entity.Order{
+			Id:             uint(data["id"].(int64)),
+			CrowdfundingId: uint(data["crowdfunding_id"].(int64)),
+			Investor:       common.HexToAddress(data["investor"].(string)),
+			Amount:         uint256.MustFromHex(data["amount"].(string)),
+			InterestRate:   uint256.MustFromHex(data["interest_rate"].(string)),
+			State:          entity.OrderState(data["state"].(string)),
+			CreatedAt:      data["created_at"].(int64),
+			UpdatedAt:      data["updated_at"].(int64),
+		})
+	}
+	return orders, nil
 }
 
 func (r *OrderRepositorySqlite) FindOrdersByInvestor(ctx context.Context, investor common.Address) ([]*entity.Order, error) {
-	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE investor = ?", investor.String())
+	var results []map[string]interface{}
+	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders WHERE investor = ?", investor.String()).Scan(&results).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find orders by investor: %w", err)
+	}
+
+	var orders []*entity.Order
+	for _, data := range results {
+		orders = append(orders, &entity.Order{
+			Id:             uint(data["id"].(int64)),
+			CrowdfundingId: uint(data["crowdfunding_id"].(int64)),
+			Investor:       common.HexToAddress(data["investor"].(string)),
+			Amount:         uint256.MustFromHex(data["amount"].(string)),
+			InterestRate:   uint256.MustFromHex(data["interest_rate"].(string)),
+			State:          entity.OrderState(data["state"].(string)),
+			CreatedAt:      data["created_at"].(int64),
+			UpdatedAt:      data["updated_at"].(int64),
+		})
+	}
+	return orders, nil
 }
 
 func (r *OrderRepositorySqlite) FindAllOrders(ctx context.Context) ([]*entity.Order, error) {
-	return r.findOrdersByQuery("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders")
+	var results []map[string]interface{}
+	err := r.Db.Raw("SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at FROM orders").Scan(&results).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find all orders: %w", err)
+	}
+
+	var orders []*entity.Order
+	for _, data := range results {
+		orders = append(orders, &entity.Order{
+			Id:             uint(data["id"].(int64)),
+			CrowdfundingId: uint(data["crowdfunding_id"].(int64)),
+			Investor:       common.HexToAddress(data["investor"].(string)),
+			Amount:         uint256.MustFromHex(data["amount"].(string)),
+			InterestRate:   uint256.MustFromHex(data["interest_rate"].(string)),
+			State:          entity.OrderState(data["state"].(string)),
+			CreatedAt:      data["created_at"].(int64),
+			UpdatedAt:      data["updated_at"].(int64),
+		})
+	}
+	return orders, nil
 }
 
 func (r *OrderRepositorySqlite) UpdateOrder(ctx context.Context, input *entity.Order) (*entity.Order, error) {
@@ -90,44 +184,4 @@ func (r *OrderRepositorySqlite) DeleteOrder(ctx context.Context, id uint) error 
 		return entity.ErrOrderNotFound
 	}
 	return nil
-}
-
-func (r *OrderRepositorySqlite) findOrderByQuery(query string, args ...interface{}) (*entity.Order, error) {
-	var result map[string]interface{}
-	err := r.Db.Raw(query, args...).Scan(&result).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, entity.ErrOrderNotFound
-		}
-		return nil, fmt.Errorf("failed to find order: %w", err)
-	}
-
-	return r.mapToOrderEntity(result), nil
-}
-
-func (r *OrderRepositorySqlite) findOrdersByQuery(query string, args ...interface{}) ([]*entity.Order, error) {
-	var results []map[string]interface{}
-	err := r.Db.Raw(query, args...).Scan(&results).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to find orders: %w", err)
-	}
-
-	var orders []*entity.Order
-	for _, result := range results {
-		orders = append(orders, r.mapToOrderEntity(result))
-	}
-	return orders, nil
-}
-
-func (r *OrderRepositorySqlite) mapToOrderEntity(data map[string]interface{}) *entity.Order {
-	return &entity.Order{
-		Id:             uint(data["id"].(int64)),
-		CrowdfundingId: uint(data["crowdfunding_id"].(int64)),
-		Investor:       common.HexToAddress(data["investor"].(string)),
-		Amount:         uint256.MustFromHex(data["amount"].(string)),
-		InterestRate:   uint256.MustFromHex(data["interest_rate"].(string)),
-		State:          entity.OrderState(data["state"].(string)),
-		CreatedAt:      data["created_at"].(int64),
-		UpdatedAt:      data["updated_at"].(int64),
-	}
 }

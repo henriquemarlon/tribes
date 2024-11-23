@@ -11,8 +11,8 @@ env: ./.env.develop
 	@echo "Environment file created at ./.env.develop"
 	$(END_LOG)
 
-.PHONY: machine
-machine:
+.PHONY: build
+build:
 	$(START_LOG)
 	@docker build \
 		-t machine:latest \
@@ -26,14 +26,6 @@ dev:
 	@cd ./cmd/tribes-rollup/lib && cargo build --release
 	@cp ./cmd/tribes-rollup/lib/target/release/libverifier.a ./internal/infra/cartesi/middleware/
 	@nonodo -- air
-
-.PHONY: dev-machine
-local:
-	$(START_LOG)
-	@nonodo -- cartesi-machine --network \
-		--flash-drive=label:root,filename:.cartesi/image.ext2 \
-		--env=ROLLUP_HTTP_SERVER_URL=http://10.0.2.2:5004 \
-		-- /var/opt/cartesi-app/app
 	
 .PHONY: generate
 generate:

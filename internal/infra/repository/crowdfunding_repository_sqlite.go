@@ -23,22 +23,22 @@ func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(ctx context.Context, i
 		input.TotalObligation = uint256.NewInt(0)
 	}
 	err := r.Db.Raw(`
-		INSERT INTO crowdfundings 
-		(creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at)
+		INSERT INTO crowdfundings (creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
 	`, input.Creator.String(), input.DebtIssued.Hex(), input.MaxInterestRate.Hex(),
-		input.TotalObligation.Hex(), input.State, input.ExpiresAt, input.MaturityAt, input.CreatedAt, input.UpdatedAt).Scan(&input.Id).Error
+		input.TotalObligation.Hex(), input.State, input.ExpiresAt, input.MaturityAt,
+		input.CreatedAt, input.UpdatedAt).Scan(&input.Id).Error
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create crowdfunding: %w", err)
 	}
-	return r.FindCrowdfundingById(ctx, input.Id)
+	return input, nil
 }
 
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context, id uint) (*entity.Crowdfunding, error) {
 	var result map[string]interface{}
 	err := r.Db.Raw(`
-		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at 
+		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
 		FROM crowdfundings WHERE id = ? LIMIT 1
 	`, id).Scan(&result).Error
 	if err != nil {
@@ -48,7 +48,18 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context,
 		return nil, fmt.Errorf("failed to find crowdfunding by id: %w", err)
 	}
 
-	crowdfunding := r.mapToCrowdfundingEntity(result)
+	crowdfunding := &entity.Crowdfunding{
+		Id:              uint(result["id"].(int64)),
+		Creator:         common.HexToAddress(result["creator"].(string)),
+		DebtIssued:      uint256.MustFromHex(result["debt_issued"].(string)),
+		MaxInterestRate: uint256.MustFromHex(result["max_interest_rate"].(string)),
+		TotalObligation: uint256.MustFromHex(result["total_obligation"].(string)),
+		State:           entity.CrowdfundingState(result["state"].(string)),
+		ExpiresAt:       result["expires_at"].(int64),
+		MaturityAt:      result["maturity_at"].(int64),
+		CreatedAt:       result["created_at"].(int64),
+		UpdatedAt:       result["updated_at"].(int64),
+	}
 
 	var orders []map[string]interface{}
 	err = r.Db.Raw(`
@@ -60,7 +71,16 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context,
 	}
 
 	for _, order := range orders {
-		crowdfunding.Orders = append(crowdfunding.Orders, r.mapToOrderEntity(order))
+		crowdfunding.Orders = append(crowdfunding.Orders, &entity.Order{
+			Id:             uint(order["id"].(int64)),
+			CrowdfundingId: uint(order["crowdfunding_id"].(int64)),
+			Investor:       common.HexToAddress(order["investor"].(string)),
+			Amount:         uint256.MustFromHex(order["amount"].(string)),
+			InterestRate:   uint256.MustFromHex(order["interest_rate"].(string)),
+			State:          entity.OrderState(order["state"].(string)),
+			CreatedAt:      order["created_at"].(int64),
+			UpdatedAt:      order["updated_at"].(int64),
+		})
 	}
 
 	return crowdfunding, nil
@@ -77,30 +97,19 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings(ctx context.Context)
 	}
 
 	var crowdfundings []*entity.Crowdfunding
-	for _, result := range results {
-		crowdfunding := r.mapToCrowdfundingEntity(result)
-		crowdfundings = append(crowdfundings, crowdfunding)
-	}
-	return crowdfundings, nil
-}
-
-func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(ctx context.Context, creator common.Address) ([]*entity.Crowdfunding, error) {
-	var results []map[string]interface{}
-	err := r.Db.Raw(`
-		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
-		FROM crowdfundings WHERE creator = ?
-	`, creator.String()).Scan(&results).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, entity.ErrCrowdfundingNotFound
-		}
-		return nil, fmt.Errorf("failed to find crowdfundings by creator: %w", err)
-	}
-
-	var crowdfundings []*entity.Crowdfunding
-	for _, result := range results {
-		crowdfunding := r.mapToCrowdfundingEntity(result)
-		crowdfundings = append(crowdfundings, crowdfunding)
+	for _, data := range results {
+		crowdfundings = append(crowdfundings, &entity.Crowdfunding{
+			Id:              uint(data["id"].(int64)),
+			Creator:         common.HexToAddress(data["creator"].(string)),
+			DebtIssued:      uint256.MustFromHex(data["debt_issued"].(string)),
+			MaxInterestRate: uint256.MustFromHex(data["max_interest_rate"].(string)),
+			TotalObligation: uint256.MustFromHex(data["total_obligation"].(string)),
+			State:           entity.CrowdfundingState(data["state"].(string)),
+			ExpiresAt:       data["expires_at"].(int64),
+			MaturityAt:      data["maturity_at"].(int64),
+			CreatedAt:       data["created_at"].(int64),
+			UpdatedAt:       data["updated_at"].(int64),
+		})
 	}
 	return crowdfundings, nil
 }
@@ -116,30 +125,75 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.C
 		WHERE o.investor = ?
 	`, investor.String()).Scan(&results).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, entity.ErrCrowdfundingNotFound
-		}
 		return nil, fmt.Errorf("failed to find crowdfundings by investor: %w", err)
 	}
 
 	var crowdfundings []*entity.Crowdfunding
-	for _, result := range results {
-		crowdfunding := r.mapToCrowdfundingEntity(result)
+	for _, data := range results {
+		crowdfunding := &entity.Crowdfunding{
+			Id:              uint(data["id"].(int64)),
+			Creator:         common.HexToAddress(data["creator"].(string)),
+			DebtIssued:      uint256.MustFromHex(data["debt_issued"].(string)),
+			MaxInterestRate: uint256.MustFromHex(data["max_interest_rate"].(string)),
+			TotalObligation: uint256.MustFromHex(data["total_obligation"].(string)),
+			State:           entity.CrowdfundingState(data["state"].(string)),
+			ExpiresAt:       data["expires_at"].(int64),
+			MaturityAt:      data["maturity_at"].(int64),
+			CreatedAt:       data["created_at"].(int64),
+			UpdatedAt:       data["updated_at"].(int64),
+		}
+
 		var orders []map[string]interface{}
 		err = r.Db.Raw(`
 			SELECT id, crowdfunding_id, investor, amount, interest_rate, state, created_at, updated_at
-			FROM orders
-			WHERE crowdfunding_id = ?
+			FROM orders WHERE crowdfunding_id = ?
 		`, crowdfunding.Id).Scan(&orders).Error
 		if err != nil {
 			return nil, fmt.Errorf("failed to load orders for crowdfunding with id %d: %w", crowdfunding.Id, err)
 		}
 
 		for _, order := range orders {
-			crowdfunding.Orders = append(crowdfunding.Orders, r.mapToOrderEntity(order))
+			crowdfunding.Orders = append(crowdfunding.Orders, &entity.Order{
+				Id:             uint(order["id"].(int64)),
+				CrowdfundingId: uint(order["crowdfunding_id"].(int64)),
+				Investor:       common.HexToAddress(order["investor"].(string)),
+				Amount:         uint256.MustFromHex(order["amount"].(string)),
+				InterestRate:   uint256.MustFromHex(order["interest_rate"].(string)),
+				State:          entity.OrderState(order["state"].(string)),
+				CreatedAt:      order["created_at"].(int64),
+				UpdatedAt:      order["updated_at"].(int64),
+			})
 		}
 
 		crowdfundings = append(crowdfundings, crowdfunding)
+	}
+	return crowdfundings, nil
+}
+
+func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(ctx context.Context, creator common.Address) ([]*entity.Crowdfunding, error) {
+	var results []map[string]interface{}
+	err := r.Db.Raw(`
+		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, expires_at, maturity_at, created_at, updated_at
+		FROM crowdfundings WHERE creator = ?
+	`, creator.String()).Scan(&results).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find crowdfundings by creator: %w", err)
+	}
+
+	var crowdfundings []*entity.Crowdfunding
+	for _, result := range results {
+		crowdfundings = append(crowdfundings, &entity.Crowdfunding{
+			Id:              uint(result["id"].(int64)),
+			Creator:         common.HexToAddress(result["creator"].(string)),
+			DebtIssued:      uint256.MustFromHex(result["debt_issued"].(string)),
+			MaxInterestRate: uint256.MustFromHex(result["max_interest_rate"].(string)),
+			TotalObligation: uint256.MustFromHex(result["total_obligation"].(string)),
+			State:           entity.CrowdfundingState(result["state"].(string)),
+			ExpiresAt:       result["expires_at"].(int64),
+			MaturityAt:      result["maturity_at"].(int64),
+			CreatedAt:       result["created_at"].(int64),
+			UpdatedAt:       result["updated_at"].(int64),
+		})
 	}
 	return crowdfundings, nil
 }
@@ -195,34 +249,4 @@ func (r *CrowdfundingRepositorySqlite) DeleteCrowdfunding(ctx context.Context, i
 		return entity.ErrCrowdfundingNotFound
 	}
 	return nil
-}
-
-// Helper to map query result to Crowdfunding entity
-func (r *CrowdfundingRepositorySqlite) mapToCrowdfundingEntity(result map[string]interface{}) *entity.Crowdfunding {
-	return &entity.Crowdfunding{
-		Id:              uint(result["id"].(int64)),
-		Creator:         common.HexToAddress(result["creator"].(string)),
-		DebtIssued:      uint256.MustFromHex(result["debt_issued"].(string)),
-		MaxInterestRate: uint256.MustFromHex(result["max_interest_rate"].(string)),
-		TotalObligation: uint256.MustFromHex(result["total_obligation"].(string)),
-		State:           entity.CrowdfundingState(result["state"].(string)),
-		ExpiresAt:       result["expires_at"].(int64),
-		MaturityAt:      result["maturity_at"].(int64),
-		CreatedAt:       result["created_at"].(int64),
-		UpdatedAt:       result["updated_at"].(int64),
-	}
-}
-
-// Helper to map query result to Order entity
-func (r *CrowdfundingRepositorySqlite) mapToOrderEntity(order map[string]interface{}) *entity.Order {
-	return &entity.Order{
-		Id:             uint(order["id"].(int64)),
-		CrowdfundingId: uint(order["crowdfunding_id"].(int64)),
-		Investor:       common.HexToAddress(order["investor"].(string)),
-		Amount:         uint256.MustFromHex(order["amount"].(string)),
-		InterestRate:   uint256.MustFromHex(order["interest_rate"].(string)),
-		State:          entity.OrderState(order["state"].(string)),
-		CreatedAt:      order["created_at"].(int64),
-		UpdatedAt:      order["updated_at"].(int64),
-	}
 }

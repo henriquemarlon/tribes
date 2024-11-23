@@ -33,44 +33,106 @@ func (r *UserRepositorySqlite) CreateUser(ctx context.Context, input *entity.Use
 }
 
 func (r *UserRepositorySqlite) FindUserByAddress(ctx context.Context, address common.Address) (*entity.User, error) {
-	return r.findUserByQuery("SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at FROM users WHERE address = ? LIMIT 1", address.String())
+	var result map[string]interface{}
+	err := r.Db.Raw(`
+		SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at 
+		FROM users WHERE address = ? LIMIT 1
+	`, address.String()).Scan(&result).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to find user by address: %w", err)
+	}
+
+	return &entity.User{
+		Id:                uint(result["id"].(int64)),
+		Role:              entity.UserRole(result["role"].(string)),
+		Address:           common.HexToAddress(result["address"].(string)),
+		InvestmentLimit:   uint256.MustFromHex(result["investment_limit"].(string)),
+		DebtIssuanceLimit: uint256.MustFromHex(result["debt_issuance_limit"].(string)),
+		CreatedAt:         result["created_at"].(int64),
+		UpdatedAt:         result["updated_at"].(int64),
+	}, nil
 }
 
 func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string) ([]*entity.User, error) {
-	return r.findUsersByQuery("SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at FROM users WHERE role = ?", role)
+	var results []map[string]interface{}
+	err := r.Db.Raw(`
+		SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at 
+		FROM users WHERE role = ?
+	`, role).Scan(&results).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users by role: %w", err)
+	}
+
+	var users []*entity.User
+	for _, data := range results {
+		users = append(users, &entity.User{
+			Id:                uint(data["id"].(int64)),
+			Role:              entity.UserRole(data["role"].(string)),
+			Address:           common.HexToAddress(data["address"].(string)),
+			InvestmentLimit:   uint256.MustFromHex(data["investment_limit"].(string)),
+			DebtIssuanceLimit: uint256.MustFromHex(data["debt_issuance_limit"].(string)),
+			CreatedAt:         data["created_at"].(int64),
+			UpdatedAt:         data["updated_at"].(int64),
+		})
+	}
+	return users, nil
 }
 
 func (r *UserRepositorySqlite) FindAllUsers(ctx context.Context) ([]*entity.User, error) {
-	return r.findUsersByQuery("SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at FROM users")
+	var results []map[string]interface{}
+	err := r.Db.Raw(`
+		SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at 
+		FROM users
+	`).Scan(&results).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find all users: %w", err)
+	}
+
+	var users []*entity.User
+	for _, data := range results {
+		users = append(users, &entity.User{
+			Id:                uint(data["id"].(int64)),
+			Role:              entity.UserRole(data["role"].(string)),
+			Address:           common.HexToAddress(data["address"].(string)),
+			InvestmentLimit:   uint256.MustFromHex(data["investment_limit"].(string)),
+			DebtIssuanceLimit: uint256.MustFromHex(data["debt_issuance_limit"].(string)),
+			CreatedAt:         data["created_at"].(int64),
+			UpdatedAt:         data["updated_at"].(int64),
+		})
+	}
+	return users, nil
 }
 
 func (r *UserRepositorySqlite) UpdateUser(ctx context.Context, input *entity.User) (*entity.User, error) {
-	existingUser, err := r.FindUserByAddress(ctx, input.Address)
+	user, err := r.FindUserByAddress(ctx, input.Address)
 	if err != nil {
 		return nil, err
 	}
 
 	if input.Role != "" {
-		existingUser.Role = input.Role
+		user.Role = input.Role
 	}
 	if input.InvestmentLimit != nil && input.InvestmentLimit.Sign() > 0 {
-		existingUser.InvestmentLimit = input.InvestmentLimit
+		user.InvestmentLimit = input.InvestmentLimit
 	}
 	if input.DebtIssuanceLimit != nil && input.DebtIssuanceLimit.Sign() > 0 {
-		existingUser.DebtIssuanceLimit = input.DebtIssuanceLimit
+		user.DebtIssuanceLimit = input.DebtIssuanceLimit
 	}
-	existingUser.UpdatedAt = input.UpdatedAt
+	user.UpdatedAt = input.UpdatedAt
 
-	res := r.Db.Model(&entity.User{}).Where("id = ?", existingUser.Id).Updates(map[string]interface{}{
-		"role":                existingUser.Role,
-		"investment_limit":    existingUser.InvestmentLimit.Hex(),
-		"debt_issuance_limit": existingUser.DebtIssuanceLimit.Hex(),
-		"updated_at":          existingUser.UpdatedAt,
+	res := r.Db.Model(&entity.User{}).Where("id = ?", user.Id).Updates(map[string]interface{}{
+		"role":                user.Role,
+		"investment_limit":    user.InvestmentLimit.Hex(),
+		"debt_issuance_limit": user.DebtIssuanceLimit.Hex(),
+		"updated_at":          user.UpdatedAt,
 	})
 	if res.Error != nil {
 		return nil, fmt.Errorf("failed to update user: %w", res.Error)
 	}
-	return existingUser, nil
+	return user, nil
 }
 
 func (r *UserRepositorySqlite) DeleteUser(ctx context.Context, address common.Address) error {
@@ -82,43 +144,4 @@ func (r *UserRepositorySqlite) DeleteUser(ctx context.Context, address common.Ad
 		return entity.ErrUserNotFound
 	}
 	return nil
-}
-
-func (r *UserRepositorySqlite) findUserByQuery(query string, args ...interface{}) (*entity.User, error) {
-	var result map[string]interface{}
-	err := r.Db.Raw(query, args...).Scan(&result).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, entity.ErrUserNotFound
-		}
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-
-	return r.mapToUserEntity(result), nil
-}
-
-func (r *UserRepositorySqlite) findUsersByQuery(query string, args ...interface{}) ([]*entity.User, error) {
-	var results []map[string]interface{}
-	err := r.Db.Raw(query, args...).Scan(&results).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to find users: %w", err)
-	}
-
-	var users []*entity.User
-	for _, result := range results {
-		users = append(users, r.mapToUserEntity(result))
-	}
-	return users, nil
-}
-
-func (r *UserRepositorySqlite) mapToUserEntity(data map[string]interface{}) *entity.User {
-	return &entity.User{
-		Id:                uint(data["id"].(int64)),
-		Role:              entity.UserRole(data["role"].(string)),
-		Address:           common.HexToAddress(data["address"].(string)),
-		InvestmentLimit:   uint256.MustFromHex(data["investment_limit"].(string)),
-		DebtIssuanceLimit: uint256.MustFromHex(data["debt_issuance_limit"].(string)),
-		CreatedAt:         data["created_at"].(int64),
-		UpdatedAt:         data["updated_at"].(int64),
-	}
 }
