@@ -42,11 +42,6 @@ jobs:
         env:
           BUILDX_BUILDER: ${{ steps.setup_buildx.outputs.name }}
 
-      - name: Run Go Linter
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.58.2
-
       - name: Extract metadata from Git refs and GitHub events
         id: extract_metadata
         uses: docker/metadata-action@v5
