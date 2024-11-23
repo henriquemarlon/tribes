@@ -41,6 +41,8 @@ generate:
 
 .PHONY: test
 test:
+	@cd ./cmd/tribes-rollup/lib && cargo build --release
+	@cp ./cmd/tribes-rollup/lib/target/release/libverifier.a ./internal/infra/cartesi/middleware/
 	@go test -p=1 ./... -coverprofile=./coverage.md -v
 
 .PHONY: coverage

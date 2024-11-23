@@ -2,20 +2,22 @@ package middleware
 
 /*
 #cgo LDFLAGS: -L./ -lverifier
+#cgo CFLAGS: -I./include
+
 #include <stdint.h>
 
 int32_t add_numbers(int32_t a, int32_t b);
 */
 import "C"
 import (
-	"fmt"
-	"errors"
-	"log/slog"
 	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
 	"github.com/tribeshq/tribes/pkg/router"
+	"log/slog"
 )
 
 type TLSNMiddleware struct {
