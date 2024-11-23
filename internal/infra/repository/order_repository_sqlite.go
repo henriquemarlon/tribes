@@ -131,16 +131,3 @@ func (r *OrderRepositorySqlite) mapToOrderEntity(data map[string]interface{}) *e
 		UpdatedAt:      data["updated_at"].(int64),
 	}
 }
-
-func (r *OrderRepositorySqlite) mapToOrderEntity(data map[string]interface{}) *entity.Order {
-	return &entity.Order{
-		Id:             uint(data["id"].(int64)),
-		CrowdfundingId: uint(data["crowdfunding_id"].(int64)),
-		Investor:       common.HexToAddress(data["investor"].(string)),
-		Amount:         uint256.MustFromHex(data["amount"].(string)),
-		InterestRate:   uint256.MustFromHex(data["interest_rate"].(string)),
-		State:          entity.OrderState(data["state"].(string)),
-		CreatedAt:      data["created_at"].(int64),
-		UpdatedAt:      data["updated_at"].(int64),
-	}
-}
