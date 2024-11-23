@@ -1,14 +1,13 @@
 package middleware
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-
+	"errors"
+	"database/sql"
 	"github.com/rollmelette/rollmelette"
+	"github.com/tribeshq/tribes/pkg/router"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
-	"github.com/tribeshq/tribes/pkg/router"
 )
 
 type RBACMiddleware struct {

@@ -1,12 +1,17 @@
 package middleware
 
+/*
+#cgo LDFLAGS: -L./ -lverifier
+#include <stdint.h>
+
+int32_t add_numbers(int32_t a, int32_t b);
+*/
 import "C"
-
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-
+	"errors"
+	"log/slog"
+	"database/sql"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
@@ -45,11 +50,10 @@ func (m *TLSNMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc) route
 		}
 
 		// TODO: call tlsn verifier here
-		// a := C.int32_t(3)
-		// b := C.int32_t(4)
-		// result := C.add_numbers(a, b)
-		// fmt.Printf("result: %d\n", result)
-
+		a := C.int32_t(3)
+		b := C.int32_t(4)
+		result := C.add_numbers(a, b)
+		slog.Info("TLSN verifier result", "result", result)
 		return handlerFunc(env, metadata, deposit, payload)
 	}
 }
