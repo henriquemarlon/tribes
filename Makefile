@@ -23,6 +23,8 @@ machine:
 .PHONY: dev
 dev:
 	$(START_LOG)
+	@cd ./cmd/tribes-rollup/lib && cargo build --release
+	@cp ./cmd/tribes-rollup/lib/target/release/libverifier.a ./internal/infra/cartesi/middleware/
 	@nonodo -- air
 
 .PHONY: dev-machine
