@@ -49,7 +49,7 @@ func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.
 	}
 	if err := env.ERC20Transfer(
 		deposit.(*rollmelette.ERC20Deposit).Token,
-		metadata.MsgSender,
+		deposit.(*rollmelette.ERC20Deposit).Sender,
 		appAddress,
 		deposit.(*rollmelette.ERC20Deposit).Amount,
 	); err != nil {
@@ -68,7 +68,7 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
-	closeCrowdfunding := crowdfunding_usecase.NewCloseCrowdfundingUseCase(h.CrowdfundingRepository, h.UserRepository, h.OrderRepository)
+	closeCrowdfunding := crowdfunding_usecase.NewCloseCrowdfundingUseCase(h.CrowdfundingRepository, h.OrderRepository)
 	res, err := closeCrowdfunding.Execute(input, metadata)
 	if err != nil {
 		return err
@@ -101,20 +101,22 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 		}
 	}
 
-	// Transfer the raised funds to the creator
-	if err = env.ERC20Transfer(
-		stablecoin.Address,
-		appAddress,
-		res.Creator,
-		res.DebtIssued.ToBig(),
-	); err != nil {
-		return err
+	if res.State == string(entity.CrowdfundingStateClosed) {
+		// Transfer the raised funds to the creator
+		if err = env.ERC20Transfer(
+			stablecoin.Address,
+			appAddress,
+			res.Creator,
+			res.DebtIssued.ToBig(),
+		); err != nil {
+			return err
+		}
 	}
 	crowdfunding, err := json.Marshal(res)
 	if err != nil {
 		return err
 	}
-	env.Notice(append([]byte("crowdfunding closed - "), crowdfunding...))
+	env.Notice(append([]byte(fmt.Sprintf("crowdfunding %v - ", res.State)), crowdfunding...))
 	return nil
 }
 

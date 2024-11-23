@@ -11,8 +11,10 @@ type UpdateCrowdfundingInputDTO struct {
 	Id              uint         `json:"id"`
 	DebtIssued      *uint256.Int `json:"debt_issued"`
 	MaxInterestRate *uint256.Int `json:"max_interest_rate"`
+	TotalObligation *uint256.Int `json:"total_obligation"`
 	State           string       `json:"state"`
 	ExpiresAt       int64        `json:"expires_at"`
+	MaturityAt      int64        `json:"maturity_at"`
 }
 
 type UpdateCrowdfundingOutputDTO struct {
@@ -20,9 +22,11 @@ type UpdateCrowdfundingOutputDTO struct {
 	Creator         common.Address  `json:"creator"`
 	DebtIssued      *uint256.Int    `json:"debt_issued"`
 	MaxInterestRate *uint256.Int    `json:"max_interest_rate"`
+	TotalObligation *uint256.Int    `json:"total_obligation"`
 	State           string          `json:"state"`
 	Orders          []*entity.Order `json:"orders"`
 	ExpiresAt       int64           `json:"expires_at"`
+	MaturityAt      int64           `json:"maturity_at"`
 	CreatedAt       int64           `json:"created_at"`
 	UpdatedAt       int64           `json:"updated_at"`
 }
@@ -42,8 +46,10 @@ func (uc *UpdateCrowdfundingUsecase) Execute(input UpdateCrowdfundingInputDTO, m
 		Id:              input.Id,
 		DebtIssued:      input.DebtIssued,
 		MaxInterestRate: input.MaxInterestRate,
+		TotalObligation: input.TotalObligation,
 		State:           entity.CrowdfundingState(input.State),
 		ExpiresAt:       input.ExpiresAt,
+		MaturityAt:      input.ExpiresAt,
 		UpdatedAt:       metadata.BlockTimestamp,
 	})
 	if err != nil {
@@ -54,9 +60,11 @@ func (uc *UpdateCrowdfundingUsecase) Execute(input UpdateCrowdfundingInputDTO, m
 		Creator:         crowdfunding.Creator,
 		DebtIssued:      crowdfunding.DebtIssued,
 		MaxInterestRate: crowdfunding.MaxInterestRate,
+		TotalObligation: crowdfunding.TotalObligation,
 		State:           string(crowdfunding.State),
 		Orders:          crowdfunding.Orders,
 		ExpiresAt:       crowdfunding.ExpiresAt,
+		MaturityAt:      crowdfunding.MaturityAt,
 		CreatedAt:       crowdfunding.CreatedAt,
 		UpdatedAt:       crowdfunding.UpdatedAt,
 	}, nil

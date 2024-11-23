@@ -2,16 +2,15 @@ package configs
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"time"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"log"
+	"os"
+	"time"
 )
 
 func SetupSQlite(path string) (*gorm.DB, error) {

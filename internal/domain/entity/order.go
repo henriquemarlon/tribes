@@ -38,8 +38,8 @@ type Order struct {
 	Id             uint           `json:"id" gorm:"primaryKey"`
 	CrowdfundingId uint           `json:"crowdfunding_id" gorm:"not null;index"`
 	Investor       common.Address `json:"investor,omitempty" gorm:"not null"`
-	Amount         *uint256.Int   `json:"amount,omitempty" gorm:"type:bigint;not null"`
-	InterestRate   *uint256.Int   `json:"interest_rate,omitempty" gorm:"type:bigint;not null"`
+	Amount         *uint256.Int   `json:"amount,omitempty" gorm:"type:text;not null"`
+	InterestRate   *uint256.Int   `json:"interest_rate,omitempty" gorm:"type:text;not null"`
 	State          OrderState     `json:"state,omitempty" gorm:"type:text;not null"`
 	CreatedAt      int64          `json:"created_at,omitempty" gorm:"not null"`
 	UpdatedAt      int64          `json:"updated_at,omitempty" gorm:"default:0"`

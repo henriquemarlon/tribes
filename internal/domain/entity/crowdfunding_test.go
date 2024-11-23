@@ -15,24 +15,66 @@ func TestNewCrowdfunding(t *testing.T) {
 	debtIssued := uint256.NewInt(1000000000)
 	maxInterestRate := uint256.NewInt(50000000)
 	expiresAt := time.Now().Add(24 * time.Hour).Unix()
+	maturityAt := time.Now().Add(48 * time.Hour).Unix() // Adiciona MaturityAt válido
 	createdAt := time.Now().Unix()
 
 	t.Run("Valid Crowdfunding", func(t *testing.T) {
-		crowdfunding, err := NewCrowdfunding(creator, debtIssued, maxInterestRate, expiresAt, createdAt)
-		assert.Nil(t, err, "Unexpected error when creating a valid crowdfunding")
-		assert.NotNil(t, crowdfunding, "The created crowdfunding should not be nil")
-		assert.Equal(t, creator, crowdfunding.Creator, "Creator address is incorrect")
-		assert.Equal(t, debtIssued, crowdfunding.DebtIssued, "Debt issued is incorrect")
-		assert.Equal(t, maxInterestRate, crowdfunding.MaxInterestRate, "Max interest rate is incorrect")
-		assert.Equal(t, CrowdfundingStateOngoing, crowdfunding.State, "Initial state should be 'ongoing'")
-		assert.Equal(t, expiresAt, crowdfunding.ExpiresAt, "Expiration date is incorrect")
-		assert.Equal(t, createdAt, crowdfunding.CreatedAt, "Creation date is incorrect")
+		crowdfunding, err := NewCrowdfunding(creator, debtIssued, maxInterestRate, expiresAt, maturityAt, createdAt)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+
+		assert.NoError(t, err, "Unexpected error for valid crowdfunding")
+		assert.NotNil(t, crowdfunding, "Crowdfunding should not be nil for valid input")
+		assert.Equal(t, creator, crowdfunding.Creator, "Creator mismatch")
+		assert.Equal(t, debtIssued, crowdfunding.DebtIssued, "DebtIssued mismatch")
+		assert.Equal(t, maxInterestRate, crowdfunding.MaxInterestRate, "MaxInterestRate mismatch")
+		assert.Equal(t, CrowdfundingStateUnderReview, crowdfunding.State, "State mismatch")
+		assert.Equal(t, expiresAt, crowdfunding.ExpiresAt, "ExpiresAt mismatch")
+		assert.Equal(t, maturityAt, crowdfunding.MaturityAt, "MaturityAt mismatch")
+		assert.Equal(t, createdAt, crowdfunding.CreatedAt, "CreatedAt mismatch")
 	})
 
-	t.Run("Invalid Crowdfunding - Validation Error", func(t *testing.T) {
-		_, err := NewCrowdfunding(common.Address{}, debtIssued, maxInterestRate, expiresAt, createdAt)
-		assert.NotNil(t, err, "An error should be returned for an invalid creator address")
-		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "The error should be ErrInvalidCrowdfunding")
+	t.Run("Invalid Creator", func(t *testing.T) {
+		_, err := NewCrowdfunding(common.Address{}, debtIssued, maxInterestRate, expiresAt, maturityAt, createdAt)
+		assert.Error(t, err, "Error expected for invalid creator address")
+		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
+		assert.Contains(t, err.Error(), "invalid creator address", "Error message should mention invalid creator")
+	})
+
+	t.Run("Invalid Debt Issued", func(t *testing.T) {
+		_, err := NewCrowdfunding(creator, uint256.NewInt(0), maxInterestRate, expiresAt, maturityAt, createdAt)
+		assert.Error(t, err, "Error expected for zero DebtIssued")
+		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
+		assert.Contains(t, err.Error(), "debt issued cannot be zero", "Error message should mention DebtIssued")
+	})
+
+	t.Run("Debt Issued Exceeds Maximum", func(t *testing.T) {
+		_, err := NewCrowdfunding(creator, uint256.NewInt(15000000001), maxInterestRate, expiresAt, maturityAt, createdAt)
+		assert.Error(t, err, "Error expected for exceeding max DebtIssued")
+		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
+		assert.Contains(t, err.Error(), "debt issued exceeds the maximum allowed value", "Error message should mention maximum allowed value")
+	})
+
+	t.Run("Invalid Max Interest Rate", func(t *testing.T) {
+		_, err := NewCrowdfunding(creator, debtIssued, uint256.NewInt(0), expiresAt, maturityAt, createdAt)
+		assert.Error(t, err, "Error expected for zero MaxInterestRate")
+		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
+		assert.Contains(t, err.Error(), "max interest rate cannot be zero", "Error message should mention MaxInterestRate")
+	})
+
+	t.Run("Invalid Expiration Date", func(t *testing.T) {
+		_, err := NewCrowdfunding(creator, debtIssued, maxInterestRate, 0, maturityAt, createdAt)
+		assert.Error(t, err, "Error expected for missing Expiration Date")
+		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
+		assert.Contains(t, err.Error(), "expiration date is missing", "Error message should mention Expiration Date")
+	})
+
+	t.Run("Invalid Creation Date >= Expiration Date", func(t *testing.T) {
+		_, err := NewCrowdfunding(creator, debtIssued, maxInterestRate, createdAt, maturityAt, createdAt)
+		assert.Error(t, err, "Error expected for CreatedAt >= Expiration Date")
+		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
+		assert.Contains(t, err.Error(), "creation date cannot be greater than or equal to expiration date", "Error message should mention date issue")
 	})
 }
 
@@ -41,7 +83,21 @@ func TestCrowdfunding_Validate(t *testing.T) {
 	debtIssued := uint256.NewInt(1000000000)
 	maxInterestRate := uint256.NewInt(50000000)
 	expiresAt := time.Now().Add(24 * time.Hour).Unix()
+	maturityAt := time.Now().Add(48 * time.Hour).Unix() // Adiciona MaturityAt válido
 	createdAt := time.Now().Unix()
+
+	t.Run("Valid Crowdfunding", func(t *testing.T) {
+		crowdfunding := &Crowdfunding{
+			Creator:         creator,
+			DebtIssued:      debtIssued,
+			MaxInterestRate: maxInterestRate,
+			ExpiresAt:       expiresAt,
+			MaturityAt:      maturityAt,
+			CreatedAt:       createdAt,
+		}
+		err := crowdfunding.Validate()
+		assert.NoError(t, err, "No error expected for valid crowdfunding")
+	})
 
 	t.Run("Invalid Creator Address", func(t *testing.T) {
 		crowdfunding := &Crowdfunding{
@@ -49,54 +105,26 @@ func TestCrowdfunding_Validate(t *testing.T) {
 			DebtIssued:      debtIssued,
 			MaxInterestRate: maxInterestRate,
 			ExpiresAt:       expiresAt,
+			MaturityAt:      maturityAt,
 			CreatedAt:       createdAt,
 		}
 		err := crowdfunding.Validate()
-		assert.NotNil(t, err, "An error should be returned for an invalid creator address")
-		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "The error should be ErrInvalidCrowdfunding")
-		assert.Contains(t, err.Error(), "invalid creator address", "The error message should mention invalid address")
+		assert.Error(t, err, "Error expected for invalid creator address")
+		assert.Contains(t, err.Error(), "invalid creator address", "Error message should mention invalid creator")
 	})
 
-	t.Run("Invalid Debt Issued - Zero", func(t *testing.T) {
+	t.Run("Invalid Debt Issued Zero", func(t *testing.T) {
 		crowdfunding := &Crowdfunding{
 			Creator:         creator,
 			DebtIssued:      uint256.NewInt(0),
 			MaxInterestRate: maxInterestRate,
 			ExpiresAt:       expiresAt,
+			MaturityAt:      maturityAt,
 			CreatedAt:       createdAt,
 		}
 		err := crowdfunding.Validate()
-		assert.NotNil(t, err, "An error should be returned for zero debt issued")
-		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "The error should be ErrInvalidCrowdfunding")
-		assert.Contains(t, err.Error(), "debt issued cannot be zero", "The error message should mention invalid debt issued")
-	})
-
-	t.Run("Invalid Debt Issued - Exceeds Maximum", func(t *testing.T) {
-		crowdfunding := &Crowdfunding{
-			Creator:         creator,
-			DebtIssued:      uint256.NewInt(15000000001),
-			MaxInterestRate: maxInterestRate,
-			ExpiresAt:       expiresAt,
-			CreatedAt:       createdAt,
-		}
-		err := crowdfunding.Validate()
-		assert.NotNil(t, err, "An error should be returned for debt issued exceeding the maximum allowed value")
-		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "The error should be ErrInvalidCrowdfunding")
-		assert.Contains(t, err.Error(), "debt issued exceeds the maximum allowed value", "The error message should mention exceeded limit")
-	})
-
-	t.Run("Invalid Max Interest Rate", func(t *testing.T) {
-		crowdfunding := &Crowdfunding{
-			Creator:         creator,
-			DebtIssued:      debtIssued,
-			MaxInterestRate: uint256.NewInt(0),
-			ExpiresAt:       expiresAt,
-			CreatedAt:       createdAt,
-		}
-		err := crowdfunding.Validate()
-		assert.NotNil(t, err, "An error should be returned for zero max interest rate")
-		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "The error should be ErrInvalidCrowdfunding")
-		assert.Contains(t, err.Error(), "max interest rate cannot be zero", "The error message should mention invalid max interest rate")
+		assert.Error(t, err, "Error expected for zero DebtIssued")
+		assert.Contains(t, err.Error(), "debt issued cannot be zero", "Error message should mention DebtIssued")
 	})
 
 	t.Run("Invalid Expiration Date", func(t *testing.T) {
@@ -105,37 +133,11 @@ func TestCrowdfunding_Validate(t *testing.T) {
 			DebtIssued:      debtIssued,
 			MaxInterestRate: maxInterestRate,
 			ExpiresAt:       0,
+			MaturityAt:      maturityAt,
 			CreatedAt:       createdAt,
 		}
 		err := crowdfunding.Validate()
-		assert.NotNil(t, err, "An error should be returned for missing expiration date")
-		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "The error should be ErrInvalidCrowdfunding")
-		assert.Contains(t, err.Error(), "expiration date is missing", "The error message should mention missing expiration date")
-	})
-
-	t.Run("Invalid Creation Date - Greater or Equal to Expiration Date", func(t *testing.T) {
-		crowdfunding := &Crowdfunding{
-			Creator:         creator,
-			DebtIssued:      debtIssued,
-			MaxInterestRate: maxInterestRate,
-			ExpiresAt:       createdAt,
-			CreatedAt:       createdAt,
-		}
-		err := crowdfunding.Validate()
-		assert.NotNil(t, err, "An error should be returned for creation date greater than or equal to expiration date")
-		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "The error should be ErrInvalidCrowdfunding")
-		assert.Contains(t, err.Error(), "creation date cannot be greater than or equal to expiration date", "The error message should mention invalid creation date")
-	})
-
-	t.Run("Valid Crowdfunding", func(t *testing.T) {
-		crowdfunding := &Crowdfunding{
-			Creator:         creator,
-			DebtIssued:      debtIssued,
-			MaxInterestRate: maxInterestRate,
-			ExpiresAt:       expiresAt,
-			CreatedAt:       createdAt,
-		}
-		err := crowdfunding.Validate()
-		assert.Nil(t, err, "No error should be returned for a valid crowdfunding")
+		assert.Error(t, err, "Error expected for missing Expiration Date")
+		assert.Contains(t, err.Error(), "expiration date is missing", "Error message should mention Expiration Date")
 	})
 }

@@ -42,7 +42,7 @@ func (h *OrderAdvanceHandlers) CreateOrderHandler(env rollmelette.Env, metadata 
 	}
 	if err := env.ERC20Transfer(
 		deposit.(*rollmelette.ERC20Deposit).Token,
-		metadata.MsgSender,
+		deposit.(*rollmelette.ERC20Deposit).Sender,
 		appAddress,
 		deposit.(*rollmelette.ERC20Deposit).Amount,
 	); err != nil {

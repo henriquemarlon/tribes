@@ -97,65 +97,106 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndFinishdCrowdfundingWithoutPartia
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	createContractInput := []byte(`{"path":"createContract","payload":{"symbol":"STABLECOIN","address":"0x0000000000000000000000000000000000000009"}}`)
-	expectedOutput = fmt.Sprintf(`contract created - {"id":1,"symbol":"STABLECOIN","address":"0x0000000000000000000000000000000000000009","created_at":%d}`, time.Now().Unix())
+	createContractInput := []byte(`{"path":"createContract","payload":{"symbol":"STABLECOIN","address":"0x0000000000000000000000000000000000000008"}}`)
+	expectedOutput = fmt.Sprintf(`contract created - {"id":1,"symbol":"STABLECOIN","address":"0x0000000000000000000000000000000000000008","created_at":%d}`, time.Now().Unix())
 	result = s.tester.Advance(admin, createContractInput)
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	createContractInput = []byte(`{"path":"createContract","payload":{"symbol":"STABLECOIN","address":"0x0000000000000000000000000000000000000009"}}`)
-	expectedOutput = fmt.Sprintf(`contract created - {"id":1,"symbol":"STABLECOIN","address":"0x0000000000000000000000000000000000000009","created_at":%d}`, time.Now().Unix())
+	createContractInput = []byte(`{"path":"createContract","payload":{"symbol":"PINK","address":"0x0000000000000000000000000000000000000009"}}`)
+	expectedOutput = fmt.Sprintf(`contract created - {"id":2,"symbol":"PINK","address":"0x0000000000000000000000000000000000000009","created_at":%d}`, time.Now().Unix())
 	result = s.tester.Advance(admin, createContractInput)
 	s.Len(result.Notices, 1)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// createCrowdfundingInput := []byte(fmt.Sprintf(`{"path":"createdCrowdfunding","payload":{"max_interest_rate":"10","expires_at":%d,"debt_issued":%d}}`, time.Now().Add(5*time.Second).Unix(), 2020))
-	// result = s.tester.Advance(creator, createCrowdfundingInput)
-	// expectedOutput = fmt.Sprintf(`auction created - {"id":1,"creator":"vitalik","debt_issued":"2020","max_interest_rate":"10","state":"ongoing","expires_at":%d,"created_at":%d}`, time.Now().Add(5*time.Second).Unix(), time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	createCrowdfundingInput := []byte(fmt.Sprintf(`{"path":"createCrowdfunding","payload":{"max_interest_rate":"10", "debt_issued":"100000", "expires_at":%d,"maturity_at":%d}}`, time.Now().Add(5*time.Second).Unix(), time.Now().Add(10*time.Second).Unix()))
+	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), creator, big.NewInt(10000), createCrowdfundingInput)
+	expectedOutput = fmt.Sprintf(`crowdfunding created - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"100000","max_interest_rate":"10","state":"under_review","orders":null,"expires_at":%d,"maturity_at":%d,"created_at":%d}`, time.Now().Add(5*time.Second).Unix(), time.Now().Add(10*time.Second).Unix(), time.Now().Unix())
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// createOrderInput := []byte(`{"path": "createOrder", "payload": {"creator": "vitalik","interest_rate":"9"}}`)
-	// result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), investor01, big.NewInt(600), createOrderInput)
-	// expectedOutput = fmt.Sprintf(`bid created - {"id":1,"auction_id":1,"investor":"0x0000000000000000000000000000000000000001","amount":"600","interest_rate":"9","state":"pending","created_at":%d}`, time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	updateCrowdfundingInput := []byte(`{"path":"updateCrowdfunding","payload":{"id":1,"state":"ongoing"}}`)
+	result = s.tester.Advance(admin, updateCrowdfundingInput)
+	expectedOutput = fmt.Sprintf(`crowdfunding updated - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"100000","max_interest_rate":"10","total_obligation":"0","state":"ongoing","orders":null,"expires_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`, time.Now().Add(5*time.Second).Unix(), time.Now().Add(10*time.Second).Unix(), time.Now().Unix(), time.Now().Unix())
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "vitalik","interest_rate":"8"}}`)
-	// result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), investor02, big.NewInt(520), createOrderInput)
-	// expectedOutput = fmt.Sprintf(`bid created - {"id":2,"auction_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"520","interest_rate":"8","state":"pending","created_at":%d}`, time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	createOrderInput := []byte(`{"path": "createOrder", "payload": {"creator": "0x0000000000000000000000000000000000000007","interest_rate":"9"}}`)
+	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor01, big.NewInt(60000), createOrderInput)
+	expectedOutput = fmt.Sprintf(`order created - {"id":1,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000001","amount":"60000","interest_rate":"9","state":"pending","created_at":%d}`, time.Now().Unix())
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "vitalik","interest_rate":"4"}}`)
-	// result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), investor03, big.NewInt(200), createOrderInput)
-	// expectedOutput = fmt.Sprintf(`bid created - {"id":3,"auction_id":1,"investor":"0x0000000000000000000000000000000000000003","amount":"200","interest_rate":"4","state":"pending","created_at":%d}`, time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "0x0000000000000000000000000000000000000007","interest_rate":"8"}}`)
+	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor02, big.NewInt(52000), createOrderInput)
+	expectedOutput = fmt.Sprintf(`order created - {"id":2,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"52000","interest_rate":"8","state":"pending","created_at":%d}`, time.Now().Unix())
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "vitalik","interest_rate":"6"}}`)
-	// result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), investor04, big.NewInt(300), createOrderInput)
-	// expectedOutput = fmt.Sprintf(`bid created - {"id":4,"auction_id":1,"investor":"0x0000000000000000000000000000000000000004","amount":"300","interest_rate":"6","state":"pending","created_at":%d}`, time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "0x0000000000000000000000000000000000000007","interest_rate":"4"}}`)
+	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor03, big.NewInt(2000), createOrderInput)
+	expectedOutput = fmt.Sprintf(`order created - {"id":3,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000003","amount":"2000","interest_rate":"4","state":"pending","created_at":%d}`, time.Now().Unix())
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "vitalik","interest_rate":"4"}}`)
-	// result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), investor05, big.NewInt(400), createOrderInput)
-	// expectedOutput = fmt.Sprintf(`bid created - {"id":5,"auction_id":1,"investor":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"pending","created_at":%d}`, time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "0x0000000000000000000000000000000000000007","interest_rate":"6"}}`)
+	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor04, big.NewInt(3000), createOrderInput)
+	expectedOutput = fmt.Sprintf(`order created - {"id":4,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000004","amount":"3000","interest_rate":"6","state":"pending","created_at":%d}`, time.Now().Unix())
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// closeCrowdfundingInput := []byte(`{"path": "createOrder", "payload": {"creator": "vitalik","interest_rate":"4"}}`)
-	// result = s.tester.Advance(admin, closeCrowdfundingInput)
-	// expectedOutput = fmt.Sprintf(`bid created - {"id":5,"auction_id":1,"investor":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"pending","created_at":%d}`, time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"creator": "0x0000000000000000000000000000000000000007","interest_rate":"4"}}`)
+	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor05, big.NewInt(400), createOrderInput)
+	expectedOutput = fmt.Sprintf(`order created - {"id":5,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"pending","created_at":%d}`, time.Now().Unix())
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
-	// settleCrowdfundingInput := []byte(`{"path":"finishdCrowdfunding", "payload":{"creator":"vitalik"}}`)
-	// result = s.tester.DepositERC20(admin, common.HexToAddress("0x0000000000000000000000000000000000000009"), big.NewInt(0), settleCrowdfundingInput)
-	// expectedOutput = fmt.Sprintf(`auction finished - {"id":1,"creator":"vitalik","debt_issued":"2020","max_interest_rate":"10","state":"finished","bids":[{"id":3,"auction_id":1,"investor":"0x0000000000000000000000000000000000000003","amount":"200","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":5,"auction_id":1,"investor":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},{"id":4,"auction_id":1,"investor":"0x0000000000000000000000000000000000000004","amount":"300","interest_rate":"6","state":"accepted","created_at":%d,"updated_at":%d},{"id":2,"auction_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"520","interest_rate":"8","state":"accepted","created_at":%d,"updated_at":%d},{"id":1,"auction_id":1,"investor":"0x0000000000000000000000000000000000000001","amount":"600","interest_rate":"9","state":"accepted","created_at":%d,"updated_at":%d}],"expires_at":%d,"created_at":%d,"updated_at":%d}`, time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), time.Now().Unix(), time.Now().Add(-5*time.Second).Unix(), time.Now().Unix())
-	// s.Len(result.Notices, 1)
-	// s.Equal(expectedOutput, string(result.Notices[0].Payload))
+	time.Sleep(5 * time.Second)
+
+	closeCrowdfundingInput := []byte(`{"path": "closeCrowdfunding", "payload": {"creator": "0x0000000000000000000000000000000000000007"}}`)
+	result = s.tester.Advance(admin, closeCrowdfundingInput)
+	expectedOutput = fmt.Sprintf(`crowdfunding closed - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108600","state":"closed","orders":[`+
+		`{"id":1,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000001","amount":"60000","interest_rate":"9","state":"accepted","created_at":%d,"updated_at":%d},`+
+		`{"id":2,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"40000","interest_rate":"8","state":"partially_accepted","created_at":%d,"updated_at":%d},`+
+		`{"id":3,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000003","amount":"2000","interest_rate":"4","state":"rejected","created_at":%d,"updated_at":%d},`+
+		`{"id":4,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000004","amount":"3000","interest_rate":"6","state":"rejected","created_at":%d,"updated_at":%d},`+
+		`{"id":5,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"rejected","created_at":%d,"updated_at":%d}],`+
+		`"expires_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), // Order 1 timestamps
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), // Order 2 timestamps
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), // Order 3 timestamps
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), // Order 4 timestamps
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), // Order 5 timestamps
+		time.Now().Unix(), time.Now().Add(5*time.Second).Unix(), // expires_at, maturity_at
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), // created_at, updated_at
+	)
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
+
+	time.Sleep(5 * time.Second)
+
+	settleCrowdfundingInput := []byte(`{"path":"settleCrowdfunding", "payload":{"crowdfunding_id":1}}`)
+	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), creator, big.NewInt(108600), settleCrowdfundingInput)
+	expectedOutput = fmt.Sprintf(
+		`crowdfunding settled - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108600","state":"settled","orders":[`+
+			`{"id":1,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000001","amount":"60000","interest_rate":"9","state":"accepted","created_at":%d,"updated_at":%d},`+
+			`{"id":2,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"40000","interest_rate":"8","state":"partially_accepted","created_at":%d,"updated_at":%d},`+
+			`{"id":3,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000003","amount":"2000","interest_rate":"4","state":"rejected","created_at":%d,"updated_at":%d},`+
+			`{"id":4,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000004","amount":"3000","interest_rate":"6","state":"rejected","created_at":%d,"updated_at":%d},`+
+			`{"id":5,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"rejected","created_at":%d,"updated_at":%d},`+
+			`{"id":6,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"12000","interest_rate":"8","state":"rejected","created_at":%d,"updated_at":%d}],`+
+			`"expires_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
+		time.Now().Add(-10*time.Second).Unix(), time.Now().Add(-5*time.Second).Unix(), // Order 1 timestamps
+		time.Now().Add(-10*time.Second).Unix(), time.Now().Add(-5*time.Second).Unix(), // Order 2 timestamps
+		time.Now().Add(-10*time.Second).Unix(), time.Now().Add(-5*time.Second).Unix(), // Order 3 timestamps
+		time.Now().Add(-10*time.Second).Unix(), time.Now().Add(-5*time.Second).Unix(), // Order 4 timestamps
+		time.Now().Add(-10*time.Second).Unix(), time.Now().Add(-5*time.Second).Unix(), // Order 5 timestamps
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Add(-5*time.Second).Unix(), // Order 6 timestamps
+		time.Now().Add(-5*time.Second).Unix(), time.Now().Unix(), // expires_at, maturity_at
+		time.Now().Add(-10*time.Second).Unix(), time.Now().Unix(), // created_at, updated_at
+	)
+	s.Len(result.Notices, 1)
+	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
 	// creatorWithdrawInput := []byte(`{"path":"withdraw"}`)
 	// expectedWithdrawVoucherPayload := make([]byte, 0, 4+32+32)
@@ -233,9 +274,4 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndFinishdCrowdfundingWithoutPartia
 	// s.Len(withdrawResult.Vouchers, 1)
 	// s.Equal(expectedWithdrawVoucherPayload, withdrawResult.Vouchers[0].Payload)
 	// s.Equal(common.HexToAddress("0x0000000000000000000000000000000000000009"), withdrawResult.Vouchers[0].Destination)
-}
-
-func (s *DAppSuite) checkBalance(expected int64, payload []byte) {
-	balance := new(big.Int).SetBytes(payload)
-	s.Zerof(balance.Cmp(big.NewInt(expected)), "expected %v; got %v", expected, balance)
 }

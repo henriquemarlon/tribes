@@ -48,13 +48,14 @@ type Crowdfunding struct {
 	UpdatedAt       int64             `json:"updated_at,omitempty" gorm:"default:0"`
 }
 
-func NewCrowdfunding(creator common.Address, debt_issued *uint256.Int, maxInterestRate *uint256.Int, expiresAt int64, createdAt int64) (*Crowdfunding, error) {
+func NewCrowdfunding(creator common.Address, debt_issued *uint256.Int, maxInterestRate *uint256.Int, expiresAt int64, maturityAt int64, createdAt int64) (*Crowdfunding, error) {
 	crowdfunding := &Crowdfunding{
 		Creator:         creator,
 		DebtIssued:      debt_issued,
 		MaxInterestRate: maxInterestRate,
-		State:           CrowdfundingStateOngoing,
+		State:           CrowdfundingStateUnderReview,
 		ExpiresAt:       expiresAt,
+		MaturityAt:      maturityAt,
 		CreatedAt:       createdAt,
 	}
 	if err := crowdfunding.Validate(); err != nil {
@@ -84,6 +85,9 @@ func (a *Crowdfunding) Validate() error {
 	}
 	if a.CreatedAt >= a.ExpiresAt {
 		return fmt.Errorf("%w: creation date cannot be greater than or equal to expiration date", ErrInvalidCrowdfunding)
+	}
+	if a.MaturityAt == 0 {
+		return fmt.Errorf("%w: maturity date is missing", ErrInvalidCrowdfunding)
 	}
 	return nil
 }

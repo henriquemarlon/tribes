@@ -20,7 +20,14 @@ machine:
 	@cartesi build --from-image machine:latest
 	$(END_LOG)
 
-.PHONY: local
+.PHONY: dev
+dev:
+	$(START_LOG)
+	@cd ./cmd/tribes-rollup/lib && cargo build --release
+	@cp ./cmd/tribes-rollup/lib/target/release/libverifier.a ./internal/infra/cartesi/middleware/
+	@nonodo -- air
+
+.PHONY: dev-machine
 local:
 	$(START_LOG)
 	@nonodo -- cartesi-machine --network \
@@ -28,24 +35,18 @@ local:
 		--env=ROLLUP_HTTP_SERVER_URL=http://10.0.2.2:5004 \
 		-- /var/opt/cartesi-app/app
 	
-.PHONY: orderings
-orderings:
+.PHONY: generate
+generate:
 	$(START_LOG)
-	@go run ./pkg/rollups_crowdfundings/generate
+	@go run ./pkg/rollups-contracts/generate
 	$(END_LOG)
 
 .PHONY: test
 test:
+	@cd ./cmd/tribes-rollup/lib && cargo build --release
+	@cp ./cmd/tribes-rollup/lib/target/release/libverifier.a ./internal/infra/cartesi/middleware/
 	@go test -p=1 ./... -coverprofile=./coverage.md -v
 
 .PHONY: coverage
 coverage: test
 	@go tool cover -html=./coverage.md
-
-.PHONY: docs
-docs:
-	@cd docs && npm run dev
-
-.PHONY: generate
-generate:
-	@go run ./pkg/rollups_contracts/generate
