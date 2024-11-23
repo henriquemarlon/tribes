@@ -145,7 +145,7 @@ func NewDApp(ah *AdvanceHandlers, ih *InspectHandlers, ms *Middlewares) *router.
 
 	r.HandleInspect("user", ih.UserInspectHandlers.FindAllUsersHandler)
 	r.HandleInspect("user/{address}", ih.UserInspectHandlers.FindUserByAddressHandler)
-	r.HandleInspect("balance/{symbol}/{address}", ih.UserInspectHandlers.BalanceHandler)
+	r.HandleInspect("balance/{address}", ih.UserInspectHandlers.BalanceHandler)
 
 	return r
 }
