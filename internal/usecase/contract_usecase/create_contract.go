@@ -35,7 +35,7 @@ func (s *CreateContractUseCase) Execute(ctx context.Context, input *CreateContra
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.ContractRepository.CreateContract(ctx,contract)
+	res, err := s.ContractRepository.CreateContract(ctx, contract)
 	if err != nil {
 		return nil, err
 	}

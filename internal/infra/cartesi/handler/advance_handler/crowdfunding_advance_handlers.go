@@ -130,7 +130,7 @@ func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.
 	}
 	ctx := context.Background()
 	settleCrowdfunding := crowdfunding_usecase.NewSettleCrowdfundingUseCase(h.UserRepository, h.CrowdfundingRepository, h.ContractRepository)
-	res, err := settleCrowdfunding.Execute(ctx ,input, deposit, metadata)
+	res, err := settleCrowdfunding.Execute(ctx, input, deposit, metadata)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func (h *CrowdfundingAdvanceHandlers) DeleteCrowdfundingHandler(env rollmelette.
 	}
 	ctx := context.Background()
 	deleteCrowdfunding := crowdfunding_usecase.NewDeleteCrowdfundingUseCase(h.CrowdfundingRepository)
-	err := deleteCrowdfunding.Execute(ctx,input)
+	err := deleteCrowdfunding.Execute(ctx, input)
 	if err != nil {
 		return err
 	}

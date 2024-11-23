@@ -61,7 +61,7 @@ func (uc *SettleCrowdfundingUseCase) Execute(ctx context.Context, input *SettleC
 	if err != nil {
 		return nil, fmt.Errorf("error finding crowdfunding campaign: %w", err)
 	}
-	
+
 	if crowdfunding.MaturityAt > metadata.BlockTimestamp {
 		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign is not yet reached")
 	}

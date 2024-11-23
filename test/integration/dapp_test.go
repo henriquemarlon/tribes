@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
-	"math/big"
-	"os"
-	"testing"
-	"time"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/stretchr/testify/suite"
 	"github.com/tribeshq/tribes/cmd/tribes-rollup/root"
 	"github.com/tribeshq/tribes/configs"
+	"log/slog"
+	"math/big"
+	"os"
+	"testing"
+	"time"
 )
 
 func TestAppSuite(t *testing.T) {

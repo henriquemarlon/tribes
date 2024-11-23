@@ -1,9 +1,9 @@
 package entity
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 )
