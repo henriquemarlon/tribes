@@ -1,6 +1,7 @@
 package advance_handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -37,8 +38,9 @@ func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	createCrowdfunding := crowdfunding_usecase.NewCreateCrowdfundingUseCase(h.UserRepository, h.CrowdfundingRepository)
-	res, err := createCrowdfunding.Execute(input, deposit, metadata)
+	res, err := createCrowdfunding.Execute(ctx, input, deposit, metadata)
 	if err != nil {
 		return err
 	}
@@ -68,14 +70,15 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	closeCrowdfunding := crowdfunding_usecase.NewCloseCrowdfundingUseCase(h.CrowdfundingRepository, h.OrderRepository)
-	res, err := closeCrowdfunding.Execute(input, metadata)
+	res, err := closeCrowdfunding.Execute(ctx, input, metadata)
 	if err != nil {
 		return err
 	}
 
 	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-	stablecoin, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
+	stablecoin, err := findContractBySymbol.Execute(ctx, &contract_usecase.FindContractBySymbolInputDTO{
 		Symbol: "STABLECOIN",
 	})
 	if err != nil {
@@ -125,8 +128,9 @@ func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	settleCrowdfunding := crowdfunding_usecase.NewSettleCrowdfundingUseCase(h.UserRepository, h.CrowdfundingRepository, h.ContractRepository)
-	res, err := settleCrowdfunding.Execute(input, deposit, metadata)
+	res, err := settleCrowdfunding.Execute(ctx, input, deposit, metadata)
 	if err != nil {
 		return err
 	}
@@ -135,7 +139,7 @@ func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.
 		return err
 	}
 	findContractBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-	contract, err := findContractBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
+	contract, err := findContractBySymbol.Execute(ctx, &contract_usecase.FindContractBySymbolInputDTO{
 		Symbol: "STABLECOIN",
 	})
 	if err != nil {
@@ -164,8 +168,9 @@ func (h *CrowdfundingAdvanceHandlers) UpdateCrowdfundingHandler(env rollmelette.
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	updateCrowdfunding := crowdfunding_usecase.NewUpdateCrowdfundingUseCase(h.CrowdfundingRepository)
-	res, err := updateCrowdfunding.Execute(input, metadata)
+	res, err := updateCrowdfunding.Execute(ctx, input, metadata)
 	if err != nil {
 		return err
 	}
@@ -182,8 +187,9 @@ func (h *CrowdfundingAdvanceHandlers) DeleteCrowdfundingHandler(env rollmelette.
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	deleteCrowdfunding := crowdfunding_usecase.NewDeleteCrowdfundingUseCase(h.CrowdfundingRepository)
-	err := deleteCrowdfunding.Execute(input)
+	err := deleteCrowdfunding.Execute(ctx, input)
 	if err != nil {
 		return err
 	}

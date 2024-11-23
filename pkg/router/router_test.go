@@ -37,7 +37,7 @@ func (s *RouterSuite) TestAdvance() {
 }
 
 func (s *RouterSuite) TestInspect() {
-	s.router.HandleInspect("inspect/{id}", func(env rollmelette.EnvInspector, ctx context.Context) error {
+	s.router.HandleInspect("inspect/{id}", func(ctx context.Context, env rollmelette.EnvInspector) error {
 		id := PathValue(ctx, "id")
 		s.Equal("123", id)
 		return nil

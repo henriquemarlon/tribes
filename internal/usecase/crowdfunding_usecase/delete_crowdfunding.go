@@ -1,6 +1,8 @@
 package crowdfunding_usecase
 
 import (
+	"context"
+
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
@@ -16,6 +18,6 @@ func NewDeleteCrowdfundingUseCase(crowdfundingRepository entity.CrowdfundingRepo
 	return &DeleteCrowdfundingUseCase{CrowdfundingRepository: crowdfundingRepository}
 }
 
-func (u *DeleteCrowdfundingUseCase) Execute(input *DeleteCrowdfundingInputDTO) error {
-	return u.CrowdfundingRepository.DeleteCrowdfunding(input.Id)
+func (u *DeleteCrowdfundingUseCase) Execute(ctx context.Context, input *DeleteCrowdfundingInputDTO) error {
+	return u.CrowdfundingRepository.DeleteCrowdfunding(ctx, input.Id)
 }

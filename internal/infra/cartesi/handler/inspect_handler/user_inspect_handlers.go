@@ -26,10 +26,10 @@ func NewUserInspectHandlers(userRepository entity.UserRepository, crowdfundingRe
 	}
 }
 
-func (h *UserInspectHandlers) FindUserByAddressHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *UserInspectHandlers) FindUserByAddressHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	address := strings.ToLower(router.PathValue(ctx, "address"))
 	findUserByAddress := user_usecase.NewFindUserByAddressUseCase(h.UserRepository)
-	res, err := findUserByAddress.Execute(&user_usecase.FindUserByAddressInputDTO{
+	res, err := findUserByAddress.Execute(ctx, &user_usecase.FindUserByAddressInputDTO{
 		Address: common.HexToAddress(address),
 	})
 	if err != nil {
@@ -43,9 +43,9 @@ func (h *UserInspectHandlers) FindUserByAddressHandler(env rollmelette.EnvInspec
 	return nil
 }
 
-func (h *UserInspectHandlers) FindAllUsersHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *UserInspectHandlers) FindAllUsersHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	findAllUsers := user_usecase.NewFindAllUsersUseCase(h.UserRepository)
-	res, err := findAllUsers.Execute()
+	res, err := findAllUsers.Execute(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find all Users: %w", err)
 	}
@@ -57,20 +57,47 @@ func (h *UserInspectHandlers) FindAllUsersHandler(env rollmelette.EnvInspector, 
 	return nil
 }
 
-func (h *UserInspectHandlers) BalanceHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *UserInspectHandlers) BalanceHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	findAllContracts := contract_usecase.NewFindAllContractsUseCase(h.ContractRepository)
-	contracts, err := findAllContracts.Execute()
+	contracts, err := findAllContracts.Execute(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find all contracts: %w", err)
 	}
-	balances := make(map[string]string)
-	for _, contract := range contracts {
-		balances[contract.Symbol] = env.ERC20BalanceOf(contract.Address, contract.Address).String()
-	}
-	balanceBytes, err := json.Marshal(balances)
+
+	findUserbyAddress := user_usecase.NewFindUserByAddressUseCase(h.UserRepository)
+	user, err := findUserbyAddress.Execute(ctx, &user_usecase.FindUserByAddressInputDTO{
+		Address: common.HexToAddress(router.PathValue(ctx, "address")),
+	})
 	if err != nil {
-		return fmt.Errorf("failed to marshal balances: %w", err)
+		return fmt.Errorf("failed to find user: %w", err)
 	}
-	env.Report(balanceBytes)
-	return nil
+
+	switch user.Role {
+	case string(entity.UserRoleAdmin):
+		appAddress, isSet := env.AppAddress()
+		if !isSet {
+			return fmt.Errorf("no application address defined yet, contact the Tribes support")
+		}
+		balances := make(map[string]string)
+		for _, contract := range contracts {
+			balances[contract.Symbol] = env.ERC20BalanceOf(contract.Address, appAddress).String()
+		}
+		balanceBytes, err := json.Marshal(balances)
+		if err != nil {
+			return fmt.Errorf("failed to marshal balances: %w", err)
+		}
+		env.Report(balanceBytes)
+		return nil
+	default:
+		balances := make(map[string]string)
+		for _, contract := range contracts {
+			balances[contract.Symbol] = env.ERC20BalanceOf(contract.Address, common.HexToAddress(router.PathValue(ctx, "address"))).String()
+		}
+		balanceBytes, err := json.Marshal(balances)
+		if err != nil {
+			return fmt.Errorf("failed to marshal balances: %w", err)
+		}
+		env.Report(balanceBytes)
+		return nil
+	}
 }

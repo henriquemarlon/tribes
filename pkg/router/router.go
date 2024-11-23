@@ -12,7 +12,7 @@ import (
 type ctxKey string
 
 type AdvanceHandlerFunc func(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error
-type InspectHandlerFunc func(env rollmelette.EnvInspector, ctx context.Context) error
+type InspectHandlerFunc func(ctx context.Context, env rollmelette.EnvInspector) error
 
 type AdvanceRequest struct {
 	Path    string          `json:"path"`
@@ -89,7 +89,7 @@ func (r *Router) Inspect(env rollmelette.EnvInspector, payload []byte) error {
 					ctx = context.WithValue(ctx, ctxKey(name), matches[i])
 				}
 			}
-			return handler.Handler(env, ctx)
+			return handler.Handler(ctx, env)
 		}
 	}
 	return fmt.Errorf("no handler found for request: %s", request)

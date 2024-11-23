@@ -1,6 +1,8 @@
 package contract_usecase
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -30,8 +32,8 @@ func NewUpdateContractUseCase(contractRepository entity.ContractRepository) *Upd
 	}
 }
 
-func (s *UpdateContractUseCase) Execute(input *UpdateContractInputDTO, metadata rollmelette.Metadata) (*UpdateContractOutputDTO, error) {
-	contract, err := s.ContractReposiotry.UpdateContract(&entity.Contract{
+func (s *UpdateContractUseCase) Execute(ctx context.Context, input *UpdateContractInputDTO, metadata rollmelette.Metadata) (*UpdateContractOutputDTO, error) {
+	contract, err := s.ContractReposiotry.UpdateContract(ctx, &entity.Contract{
 		Id:        input.Id,
 		Address:   input.Address,
 		Symbol:    input.Symbol,

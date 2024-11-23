@@ -1,6 +1,7 @@
 package advance_handler
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/rollmelette/rollmelette"
@@ -23,8 +24,9 @@ func (h *ContractAdvanceHandlers) CreateContractHandler(env rollmelette.Env, met
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	createContract := contract_usecase.NewCreateContractUseCase(h.ContractRepository)
-	res, err := createContract.Execute(&input, metadata)
+	res, err := createContract.Execute(ctx, &input, metadata)
 	if err != nil {
 		return err
 	}
@@ -41,8 +43,9 @@ func (h *ContractAdvanceHandlers) UpdateContractHandler(env rollmelette.Env, met
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	updateContract := contract_usecase.NewUpdateContractUseCase(h.ContractRepository)
-	res, err := updateContract.Execute(&input, metadata)
+	res, err := updateContract.Execute(ctx, &input, metadata)
 	if err != nil {
 		return err
 	}
@@ -59,8 +62,9 @@ func (h *ContractAdvanceHandlers) DeleteContractHandler(env rollmelette.Env, met
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
 	}
+	ctx := context.Background()
 	deleteContract := contract_usecase.NewDeleteContractUseCase(h.ContractRepository)
-	err := deleteContract.Execute(&input)
+	err := deleteContract.Execute(ctx, &input)
 	if err != nil {
 		return err
 	}

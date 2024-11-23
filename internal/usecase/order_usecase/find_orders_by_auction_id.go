@@ -1,6 +1,8 @@
 package order_usecase
 
 import (
+	"context"
+
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
@@ -20,8 +22,8 @@ func NewFindOrdersByCrowdfundingIdUseCase(orderRepository entity.OrderRepository
 	}
 }
 
-func (c *FindOrdersByCrowdfundingIdUseCase) Execute(input *FindOrdersByCrowdfundingIdInputDTO) (*FindOrdersByCrowdfundingIdOutputDTO, error) {
-	res, err := c.OrderRepository.FindOrdersByCrowdfundingId(input.CrowdfundingId)
+func (c *FindOrdersByCrowdfundingIdUseCase) Execute(ctx context.Context, input *FindOrdersByCrowdfundingIdInputDTO) (*FindOrdersByCrowdfundingIdOutputDTO, error) {
+	res, err := c.OrderRepository.FindOrdersByCrowdfundingId(ctx, input.CrowdfundingId)
 	if err != nil {
 		return nil, err
 	}

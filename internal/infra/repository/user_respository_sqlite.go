@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -18,7 +20,7 @@ func NewUserRepositorySqlite(db *gorm.DB) *UserRepositorySqlite {
 	}
 }
 
-func (r *UserRepositorySqlite) CreateUser(input *entity.User) (*entity.User, error) {
+func (r *UserRepositorySqlite) CreateUser(ctx context.Context, input *entity.User) (*entity.User, error) {
 	err := r.Db.Raw(`
 		INSERT INTO users (role, address, investment_limit, debt_issuance_limit, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?)
@@ -30,20 +32,20 @@ func (r *UserRepositorySqlite) CreateUser(input *entity.User) (*entity.User, err
 	return input, nil
 }
 
-func (r *UserRepositorySqlite) FindUserByAddress(address common.Address) (*entity.User, error) {
+func (r *UserRepositorySqlite) FindUserByAddress(ctx context.Context, address common.Address) (*entity.User, error) {
 	return r.findUserByQuery("SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at FROM users WHERE address = ? LIMIT 1", address.String())
 }
 
-func (r *UserRepositorySqlite) FindUsersByRole(role string) ([]*entity.User, error) {
+func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string) ([]*entity.User, error) {
 	return r.findUsersByQuery("SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at FROM users WHERE role = ?", role)
 }
 
-func (r *UserRepositorySqlite) FindAllUsers() ([]*entity.User, error) {
+func (r *UserRepositorySqlite) FindAllUsers(ctx context.Context) ([]*entity.User, error) {
 	return r.findUsersByQuery("SELECT id, role, address, investment_limit, debt_issuance_limit, created_at, updated_at FROM users")
 }
 
-func (r *UserRepositorySqlite) UpdateUser(input *entity.User) (*entity.User, error) {
-	existingUser, err := r.FindUserByAddress(input.Address)
+func (r *UserRepositorySqlite) UpdateUser(ctx context.Context, input *entity.User) (*entity.User, error) {
+	existingUser, err := r.FindUserByAddress(ctx, input.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +73,7 @@ func (r *UserRepositorySqlite) UpdateUser(input *entity.User) (*entity.User, err
 	return existingUser, nil
 }
 
-func (r *UserRepositorySqlite) DeleteUser(address common.Address) error {
+func (r *UserRepositorySqlite) DeleteUser(ctx context.Context, address common.Address) error {
 	res := r.Db.Delete(&entity.User{}, "address = ?", address.String())
 	if res.Error != nil {
 		return fmt.Errorf("failed to delete user: %w", res.Error)

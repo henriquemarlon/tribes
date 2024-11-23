@@ -24,13 +24,13 @@ func NewOrderInspectHandlers(orderRepository entity.OrderRepository) *OrderInspe
 	}
 }
 
-func (h *OrderInspectHandlers) FindOrderByIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *OrderInspectHandlers) FindOrderByIdHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	id, err := strconv.Atoi(router.PathValue(ctx, "id"))
 	if err != nil {
 		return fmt.Errorf("failed to parse id into int: %v", router.PathValue(ctx, "id"))
 	}
 	findOrderById := order_usecase.NewFindOrderByIdUseCase(h.OrderRepository)
-	res, err := findOrderById.Execute(&order_usecase.FindOrderByIdInputDTO{
+	res, err := findOrderById.Execute(ctx, &order_usecase.FindOrderByIdInputDTO{
 		Id: uint(id),
 	})
 	if err != nil {
@@ -44,13 +44,13 @@ func (h *OrderInspectHandlers) FindOrderByIdHandler(env rollmelette.EnvInspector
 	return nil
 }
 
-func (h *OrderInspectHandlers) FindBisdByCrowdfundingIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *OrderInspectHandlers) FindBisdByCrowdfundingIdHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	id, err := strconv.Atoi(router.PathValue(ctx, "id"))
 	if err != nil {
 		return fmt.Errorf("failed to parse id into int: %v", router.PathValue(ctx, "id"))
 	}
 	findOrdersByCrowdfundingId := order_usecase.NewFindOrdersByCrowdfundingIdUseCase(h.OrderRepository)
-	res, err := findOrdersByCrowdfundingId.Execute(&order_usecase.FindOrdersByCrowdfundingIdInputDTO{
+	res, err := findOrdersByCrowdfundingId.Execute(ctx, &order_usecase.FindOrdersByCrowdfundingIdInputDTO{
 		CrowdfundingId: uint(id),
 	})
 	if err != nil {
@@ -64,9 +64,9 @@ func (h *OrderInspectHandlers) FindBisdByCrowdfundingIdHandler(env rollmelette.E
 	return nil
 }
 
-func (h *OrderInspectHandlers) FindAllOrdersHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *OrderInspectHandlers) FindAllOrdersHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	findAllOrders := order_usecase.NewFindAllOrdersUseCase(h.OrderRepository)
-	res, err := findAllOrders.Execute()
+	res, err := findAllOrders.Execute(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find all orders: %w", err)
 	}
@@ -78,10 +78,10 @@ func (h *OrderInspectHandlers) FindAllOrdersHandler(env rollmelette.EnvInspector
 	return nil
 }
 
-func (h *OrderInspectHandlers) FindOrdersByInvestorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *OrderInspectHandlers) FindOrdersByInvestorHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	address := strings.ToLower(router.PathValue(ctx, "address"))
 	findOrdersByInvestor := order_usecase.NewFindOrdersByInvestorUseCase(h.OrderRepository)
-	res, err := findOrdersByInvestor.Execute(&order_usecase.FinsOrdersByInvestorInputDTO{
+	res, err := findOrdersByInvestor.Execute(ctx, &order_usecase.FinsOrdersByInvestorInputDTO{
 		Investor: common.HexToAddress(address),
 	})
 	if err != nil {

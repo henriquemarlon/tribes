@@ -1,6 +1,7 @@
 package crowdfunding_usecase
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
@@ -40,9 +41,9 @@ func NewCloseCrowdfundingUseCase(crowdfundingRepository entity.CrowdfundingRepos
 	}
 }
 
-func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, metadata rollmelette.Metadata) (*CloseCrowdfundingOutputDTO, error) {
+func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrowdfundingInputDTO, metadata rollmelette.Metadata) (*CloseCrowdfundingOutputDTO, error) {
 	// Retrieve ongoing crowdfunding by creator
-	crowdfundings, err := u.CrowdfundingRepository.FindCrowdfundingsByCreator(input.Creator)
+	crowdfundings, err := u.CrowdfundingRepository.FindCrowdfundingsByCreator(ctx, input.Creator)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, met
 	}
 
 	// Retrieve all orders related to the crowdfunding
-	orders, err := u.OrderRepository.FindOrdersByCrowdfundingId(ongoingCrowdfunding.Id)
+	orders, err := u.OrderRepository.FindOrdersByCrowdfundingId(ctx, ongoingCrowdfunding.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,7 @@ func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, met
 			// Mark remaining orders as rejected
 			order.State = "rejected"
 			order.UpdatedAt = metadata.BlockTimestamp
-			_, err := u.OrderRepository.UpdateOrder(order)
+			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
 				return nil, err
 			}
@@ -106,7 +107,7 @@ func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, met
 			totalObligation.Add(totalObligation, new(uint256.Int).Add(order.Amount, interest))
 
 			// Update the accepted order in the database
-			_, err := u.OrderRepository.UpdateOrder(order)
+			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
 				return nil, err
 			}
@@ -129,13 +130,13 @@ func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, met
 			totalObligation.Add(totalObligation, new(uint256.Int).Add(acceptedAmount, interest))
 
 			// Update the partially accepted order in the database
-			_, err := u.OrderRepository.UpdateOrder(order)
+			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
 				return nil, err
 			}
 
 			// Create a new order for the rejected portion
-			_, err = u.OrderRepository.CreateOrder(&entity.Order{
+			_, err = u.OrderRepository.CreateOrder(ctx, &entity.Order{
 				CrowdfundingId: order.CrowdfundingId,
 				Investor:       order.Investor,
 				Amount:         rejectedAmount,
@@ -159,7 +160,7 @@ func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, met
 		for _, order := range orders {
 			order.State = "rejected"
 			order.UpdatedAt = metadata.BlockTimestamp
-			_, err := u.OrderRepository.UpdateOrder(order)
+			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
 				return nil, err
 			}
@@ -167,7 +168,7 @@ func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, met
 
 		ongoingCrowdfunding.State = entity.CrowdfundingState("canceled")
 		ongoingCrowdfunding.UpdatedAt = metadata.BlockTimestamp
-		res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ongoingCrowdfunding)
+		res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ctx, ongoingCrowdfunding)
 		if err != nil {
 			return nil, err
 		}
@@ -190,7 +191,7 @@ func (u *CloseCrowdfundingUseCase) Execute(input *CloseCrowdfundingInputDTO, met
 	ongoingCrowdfunding.State = entity.CrowdfundingState("closed")
 	ongoingCrowdfunding.TotalObligation = totalObligation
 	ongoingCrowdfunding.UpdatedAt = metadata.BlockTimestamp
-	res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ongoingCrowdfunding)
+	res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ctx, ongoingCrowdfunding)
 	if err != nil {
 		return nil, err
 	}

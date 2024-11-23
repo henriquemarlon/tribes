@@ -1,6 +1,7 @@
 package order_usecase
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -40,13 +41,13 @@ func NewCreateOrderUseCase(userRepository entity.UserRepository, orderRepository
 	}
 }
 
-func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*CreateOrderOutputDTO, error) {
+func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*CreateOrderOutputDTO, error) {
 	erc20Deposit, ok := deposit.(*rollmelette.ERC20Deposit)
 	if !ok {
 		return nil, fmt.Errorf("invalid deposit type provided for order creation: %T", deposit)
 	}
 
-	user, err := c.UserRepository.FindUserByAddress(erc20Deposit.Sender)
+	user, err := c.UserRepository.FindUserByAddress(ctx, erc20Deposit.Sender)
 	if user == nil {
 		return nil, fmt.Errorf("error finding user: %w", err)
 	}
@@ -62,7 +63,7 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 		return nil, fmt.Errorf("user role not allowed to create order: %v", user.Role)
 	}
 
-	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(input.Creator)
+	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(ctx, input.Creator)
 	if err != nil {
 		return nil, fmt.Errorf("error finding crowdfunding campaigns: %w", err)
 	}
@@ -81,7 +82,7 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 		return nil, fmt.Errorf("no active crowdfunding found for creator: %v", input.Creator)
 	}
 
-	stablecoin, err := c.ContractRepository.FindContractBySymbol("STABLECOIN")
+	stablecoin, err := c.ContractRepository.FindContractBySymbol(ctx, "STABLECOIN")
 	if err != nil {
 		return nil, fmt.Errorf("error finding stablecoin contract: %w", err)
 	}
@@ -98,13 +99,13 @@ func (c *CreateOrderUseCase) Execute(input *CreateOrderInputDTO, deposit rollmel
 		return nil, err
 	}
 
-	res, err := c.OrderRepository.CreateOrder(order)
+	res, err := c.OrderRepository.CreateOrder(ctx, order)
 	if err != nil {
 		return nil, err
 	}
 
 	user.InvestmentLimit.Sub(user.InvestmentLimit, order.Amount)
-	_, err = c.UserRepository.UpdateUser(user)
+	_, err = c.UserRepository.UpdateUser(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("error decreasing creator investment limit: %w", err)
 	}

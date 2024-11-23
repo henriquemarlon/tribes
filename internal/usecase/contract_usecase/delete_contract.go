@@ -1,6 +1,10 @@
 package contract_usecase
 
-import "github.com/tribeshq/tribes/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/tribeshq/tribes/internal/domain/entity"
+)
 
 type DeleteContractInputDTO struct {
 	Symbol string
@@ -16,6 +20,6 @@ func NewDeleteContractUseCase(contractRepository entity.ContractRepository) *Del
 	}
 }
 
-func (s *DeleteContractUseCase) Execute(input *DeleteContractInputDTO) error {
-	return s.ContractReposiotry.DeleteContract(input.Symbol)
+func (s *DeleteContractUseCase) Execute(ctx context.Context, input *DeleteContractInputDTO) error {
+	return s.ContractReposiotry.DeleteContract(ctx, input.Symbol)
 }

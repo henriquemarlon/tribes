@@ -22,9 +22,9 @@ func NewContractInspectHandlers(contractRepository entity.ContractRepository) *C
 	}
 }
 
-func (h *ContractInspectHandlers) FindAllContractsHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *ContractInspectHandlers) FindAllContractsHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	findAllContracts := contract_usecase.NewFindAllContractsUseCase(h.ContractRepository)
-	contracts, err := findAllContracts.Execute()
+	contracts, err := findAllContracts.Execute(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find all contracts: %w", err)
 	}
@@ -36,10 +36,10 @@ func (h *ContractInspectHandlers) FindAllContractsHandler(env rollmelette.EnvIns
 	return nil
 }
 
-func (h *ContractInspectHandlers) FindContractBySymbolHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *ContractInspectHandlers) FindContractBySymbolHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	symbol := strings.ToUpper(router.PathValue(ctx, "symbol"))
 	findOrderBySymbol := contract_usecase.NewFindContractBySymbolUseCase(h.ContractRepository)
-	contract, err := findOrderBySymbol.Execute(&contract_usecase.FindContractBySymbolInputDTO{
+	contract, err := findOrderBySymbol.Execute(ctx, &contract_usecase.FindContractBySymbolInputDTO{
 		Symbol: symbol,
 	})
 	if err != nil {

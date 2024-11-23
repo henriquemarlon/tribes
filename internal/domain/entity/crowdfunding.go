@@ -1,9 +1,9 @@
 package entity
 
 import (
+	"context"
 	"errors"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 )
@@ -25,13 +25,13 @@ const (
 )
 
 type CrowdfundingRepository interface {
-	CreateCrowdfunding(crowdfunding *Crowdfunding) (*Crowdfunding, error)
-	FindCrowdfundingsByCreator(creator common.Address) ([]*Crowdfunding, error)
-	FindCrowdfundingsByInvestor(investor common.Address) ([]*Crowdfunding, error)
-	FindCrowdfundingById(id uint) (*Crowdfunding, error)
-	FindAllCrowdfundings() ([]*Crowdfunding, error)
-	UpdateCrowdfunding(crowdfunding *Crowdfunding) (*Crowdfunding, error)
-	DeleteCrowdfunding(id uint) error
+	CreateCrowdfunding(ctx context.Context, crowdfunding *Crowdfunding) (*Crowdfunding, error)
+	FindCrowdfundingsByCreator(ctx context.Context, creator common.Address) ([]*Crowdfunding, error)
+	FindCrowdfundingsByInvestor(ctx context.Context, investor common.Address) ([]*Crowdfunding, error)
+	FindCrowdfundingById(ctx context.Context, id uint) (*Crowdfunding, error)
+	FindAllCrowdfundings(ctx context.Context) ([]*Crowdfunding, error)
+	UpdateCrowdfunding(ctx context.Context, crowdfunding *Crowdfunding) (*Crowdfunding, error)
+	DeleteCrowdfunding(ctx context.Context, id uint) error
 }
 
 type Crowdfunding struct {

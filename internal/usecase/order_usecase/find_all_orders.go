@@ -1,6 +1,8 @@
 package order_usecase
 
 import (
+	"context"
+
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
 
@@ -16,8 +18,8 @@ func NewFindAllOrdersUseCase(orderRepository entity.OrderRepository) *FindAllOrd
 	}
 }
 
-func (f *FindAllOrdersUseCase) Execute() (*FindAllOrdersOutputDTO, error) {
-	res, err := f.OrderRepository.FindAllOrders()
+func (f *FindAllOrdersUseCase) Execute(ctx context.Context) (*FindAllOrdersOutputDTO, error) {
+	res, err := f.OrderRepository.FindAllOrders(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"gorm.io/gorm"
@@ -17,7 +19,7 @@ func NewContractRepositorySqlite(db *gorm.DB) *ContractRepositorySqlite {
 	}
 }
 
-func (r *ContractRepositorySqlite) CreateContract(input *entity.Contract) (*entity.Contract, error) {
+func (r *ContractRepositorySqlite) CreateContract(ctx context.Context, input *entity.Contract) (*entity.Contract, error) {
 	err := r.Db.Raw(`
 		INSERT INTO contracts (symbol, address, created_at, updated_at)
 		VALUES (?, ?, ?, ?)
@@ -29,11 +31,11 @@ func (r *ContractRepositorySqlite) CreateContract(input *entity.Contract) (*enti
 	return input, nil
 }
 
-func (r *ContractRepositorySqlite) FindAllContracts() ([]*entity.Contract, error) {
+func (r *ContractRepositorySqlite) FindAllContracts(ctx context.Context) ([]*entity.Contract, error) {
 	return r.findContractsByQuery("SELECT id, symbol, address, created_at, updated_at FROM contracts")
 }
 
-func (r *ContractRepositorySqlite) FindContractBySymbol(symbol string) (*entity.Contract, error) {
+func (r *ContractRepositorySqlite) FindContractBySymbol(ctx context.Context, symbol string) (*entity.Contract, error) {
 	var result map[string]interface{}
 	err := r.Db.Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts WHERE symbol = ? LIMIT 1", symbol).Scan(&result).Error
 	if err != nil {
@@ -45,8 +47,8 @@ func (r *ContractRepositorySqlite) FindContractBySymbol(symbol string) (*entity.
 	return r.mapToContractEntity(result), nil
 }
 
-func (r *ContractRepositorySqlite) UpdateContract(input *entity.Contract) (*entity.Contract, error) {
-	existingContract, err := r.FindContractBySymbol(input.Symbol)
+func (r *ContractRepositorySqlite) UpdateContract(ctx context.Context, input *entity.Contract) (*entity.Contract, error) {
+	existingContract, err := r.FindContractBySymbol(ctx, input.Symbol)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +68,7 @@ func (r *ContractRepositorySqlite) UpdateContract(input *entity.Contract) (*enti
 	return existingContract, nil
 }
 
-func (r *ContractRepositorySqlite) DeleteContract(symbol string) error {
+func (r *ContractRepositorySqlite) DeleteContract(ctx context.Context, symbol string) error {
 	res := r.Db.Delete(&entity.Contract{}, "symbol = ?", symbol)
 	if res.Error != nil {
 		return fmt.Errorf("failed to delete contract: %w", res.Error)

@@ -23,13 +23,13 @@ func NewCrowdfundingInspectHandlers(crowdfundingRepository entity.CrowdfundingRe
 	}
 }
 
-func (h *CrowdfundingInspectHandlers) FindCrowdfundingByIdHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *CrowdfundingInspectHandlers) FindCrowdfundingByIdHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	id, err := strconv.Atoi(router.PathValue(ctx, "id"))
 	if err != nil {
 		return fmt.Errorf("failed to parse id into int: %v", router.PathValue(ctx, "id"))
 	}
 	findCrowdfundingById := crowdfunding_usecase.NewFindCrowdfundingByIdUseCase(h.CrowdfundingRepository)
-	res, err := findCrowdfundingById.Execute(&crowdfunding_usecase.FindCrowdfundingByIdInputDTO{
+	res, err := findCrowdfundingById.Execute(ctx, &crowdfunding_usecase.FindCrowdfundingByIdInputDTO{
 		Id: uint(id),
 	})
 	if err != nil {
@@ -43,9 +43,9 @@ func (h *CrowdfundingInspectHandlers) FindCrowdfundingByIdHandler(env rollmelett
 	return nil
 }
 
-func (h *CrowdfundingInspectHandlers) FindAllCrowdfundingsHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *CrowdfundingInspectHandlers) FindAllCrowdfundingsHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	findAllCrowdfundingsUseCase := crowdfunding_usecase.NewFindAllCrowdfundingsUseCase(h.CrowdfundingRepository)
-	res, err := findAllCrowdfundingsUseCase.Execute()
+	res, err := findAllCrowdfundingsUseCase.Execute(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find all crowdfundings: %w", err)
 	}
@@ -57,9 +57,9 @@ func (h *CrowdfundingInspectHandlers) FindAllCrowdfundingsHandler(env rollmelett
 	return nil
 }
 
-func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByInvestorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByInvestorHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	findCrowdfundingsByInvestor := crowdfunding_usecase.NewFindCrowdfundingsByInvestorUseCase(h.CrowdfundingRepository)
-	res, err := findCrowdfundingsByInvestor.Execute(&crowdfunding_usecase.FindCrowdfundingsByInvestorInputDTO{
+	res, err := findCrowdfundingsByInvestor.Execute(ctx, &crowdfunding_usecase.FindCrowdfundingsByInvestorInputDTO{
 		Investor: common.HexToAddress(router.PathValue(ctx, "address")),
 	})
 	if err != nil {
@@ -73,9 +73,9 @@ func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByInvestorHandler(env rol
 	return nil
 }
 
-func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByCreatorHandler(env rollmelette.EnvInspector, ctx context.Context) error {
+func (h *CrowdfundingInspectHandlers) FindCrowdfundingsByCreatorHandler(ctx context.Context, env rollmelette.EnvInspector) error {
 	findCrowdfundingsByCreator := crowdfunding_usecase.NewFindCrowdfundingsByCreatorUseCase(h.CrowdfundingRepository)
-	res, err := findCrowdfundingsByCreator.Execute(&crowdfunding_usecase.FindCrowdfundingsByCreatorInputDTO{
+	res, err := findCrowdfundingsByCreator.Execute(ctx, &crowdfunding_usecase.FindCrowdfundingsByCreatorInputDTO{
 		Creator: common.HexToAddress(router.PathValue(ctx, "address")),
 	})
 	if err != nil {

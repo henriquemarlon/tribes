@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -13,11 +14,11 @@ var (
 )
 
 type ContractRepository interface {
-	CreateContract(contract *Contract) (*Contract, error)
-	FindAllContracts() ([]*Contract, error)
-	FindContractBySymbol(symbol string) (*Contract, error)
-	UpdateContract(contract *Contract) (*Contract, error)
-	DeleteContract(symbol string) error
+	CreateContract(ctx context.Context, contract *Contract) (*Contract, error)
+	FindAllContracts(ctx context.Context) ([]*Contract, error)
+	FindContractBySymbol(ctx context.Context, symbol string) (*Contract, error)
+	UpdateContract(ctx context.Context, contract *Contract) (*Contract, error)
+	DeleteContract(ctx context.Context, symbol string) error
 }
 
 type Contract struct {

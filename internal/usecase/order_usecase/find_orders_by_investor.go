@@ -1,6 +1,8 @@
 package order_usecase
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 )
@@ -21,8 +23,8 @@ func NewFindOrdersByInvestorUseCase(orderRepository entity.OrderRepository) *Fin
 	}
 }
 
-func (o *FindOrdersByInvestorUseCase) Execute(input *FinsOrdersByInvestorInputDTO) (FindOrdersByInvestorOutputDTO, error) {
-	res, err := o.OrderRepository.FindOrdersByInvestor(input.Investor)
+func (o *FindOrdersByInvestorUseCase) Execute(ctx context.Context, input *FinsOrdersByInvestorInputDTO) (FindOrdersByInvestorOutputDTO, error) {
+	res, err := o.OrderRepository.FindOrdersByInvestor(ctx, input.Investor)
 	if err != nil {
 		return nil, err
 	}
