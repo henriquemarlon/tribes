@@ -1,7 +1,6 @@
 <p align="center">
     <img src="https://github.com/user-attachments/assets/275b9ce4-3a4b-4965-82a3-5b6160ea76a5" align="center" width="30%">
 </p>
-<br>
 <div align="center">
     <i>An Typescript example using Cartesi Cli, Nonodo and Deroll as High-Level Framework</i>
 </div>
