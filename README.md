@@ -1,17 +1,14 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/ec559a9f6bfd399b82bb44393651661b08aaf7ba/icons/folder-markdown-open.svg" align="center" width="30%">
+    <img src="https://github.com/user-attachments/assets/275b9ce4-3a4b-4965-82a3-5b6160ea76a5" align="center" width="30%">
 </p>
-<p align="center"><h1 align="center">TRIBES</h1></p>
-<p align="center">
-	<em>What an exciting project! After diving into the context, I've come up with a few slogan ideas that capture the essence of Tribes:
-
-1. **"Unite the Code, Unleash the Power"**: This slogan emphasizes the idea of bringing together different components and libraries (dependencies) to create a powerful software system.
-2. **"Tribes: Where Code Meets Community"**: This phrase highlights the project's focus on collaboration, open-source principles, and the importance of community involvement in shaping the project's direction.
-3. **"Join the Herd, Shape the Future"**: This slogan plays on the idea of "herding" code together to create a cohesive system, while also emphasizing the potential for contributors to shape the project's future.
-4. **"Code Tribes: Where Diversity Meets Unity"**: This phrase celebrates the diversity of open-source libraries and frameworks used in the project, while also highlighting the importance of unity and cohesion in creating a robust software system.
-
-Choose your favorite, or feel free to modify them to best represent the spirit of Tribes!</em>
-</p>
+<br>
+<div align="center">
+    <i>An Typescript example using Cartesi Cli, Nonodo and Deroll as High-Level Framework</i>
+</div>
+<div align="center">
+<b>This example aims to demonstrate the lifecycle of a DApp using Deroll. In addition it serves.</b>
+</div>
+<br>
 <p align="center">
 	<img src="https://img.shields.io/github/license/henriquemarlon/tribes?style=default&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
 	<img src="https://img.shields.io/github/last-commit/henriquemarlon/tribes?style=default&logo=git&logoColor=white&color=0080ff" alt="last-commit">
