@@ -13,6 +13,7 @@ type FindCrowdfundingOutputDTO struct {
 	State           string                          `json:"state"`
 	Orders          []*FindCrowdfundingOutputSubDTO `json:"orders"`
 	ExpiresAt       int64                           `json:"expires_at"`
+	MaturityAt      int64                           `json:"maturity_at"`
 	CreatedAt       int64                           `json:"created_at"`
 	UpdatedAt       int64                           `json:"updated_at"`
 }

@@ -57,12 +57,12 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 	}
 
 	if ongoingCrowdfunding == nil {
-		return nil, fmt.Errorf("no ongoing crowdfunding found, cannot finish crowdfunding")
+		return nil, fmt.Errorf("no ongoing crowdfunding found, cannot close it")
 	}
 
 	// Ensure crowdfunding has expired before closing
 	if metadata.BlockTimestamp < ongoingCrowdfunding.ExpiresAt {
-		return nil, fmt.Errorf("active crowdfunding not expired, you can't finish it yet")
+		return nil, fmt.Errorf("crowdfunding not expired yet, you can't close it")
 	}
 
 	// Retrieve all orders related to the crowdfunding

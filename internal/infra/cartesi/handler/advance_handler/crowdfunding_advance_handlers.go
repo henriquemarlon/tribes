@@ -34,6 +34,11 @@ func NewCrowdfundingAdvanceHandlers(
 }
 
 func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
 	var input *crowdfunding_usecase.CreateCrowdfundingInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
@@ -43,11 +48,6 @@ func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.
 	res, err := createCrowdfunding.Execute(ctx, input, deposit, metadata)
 	if err != nil {
 		return err
-	}
-	// TODO: remove this check when update to V2
-	appAddress, isSet := env.AppAddress()
-	if !isSet {
-		return fmt.Errorf("no application address defined yet, contact the Tribes support")
 	}
 	if err := env.ERC20Transfer(
 		deposit.(*rollmelette.ERC20Deposit).Token,
@@ -66,6 +66,11 @@ func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.
 }
 
 func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
 	var input *crowdfunding_usecase.CloseCrowdfundingInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
@@ -83,11 +88,6 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	})
 	if err != nil {
 		return err
-	}
-	// TODO: remove this check when update to V2
-	appAddress, isSet := env.AppAddress()
-	if !isSet {
-		return fmt.Errorf("no application address defined yet, contact the Tribes support")
 	}
 
 	// Return the funds to the investors who had their orders rejected

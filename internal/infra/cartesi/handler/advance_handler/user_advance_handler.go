@@ -80,6 +80,11 @@ func (h *UserAdvanceHandlers) DeleteUserHandler(env rollmelette.Env, metadata ro
 }
 
 func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
 	var input user_usecase.WithdrawInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
@@ -93,11 +98,6 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 		return err
 	}
 
-	// TODO: remove this check when update to V2
-	appAddress, isSet := env.AppAddress()
-	if !isSet {
-		return fmt.Errorf("no application address defined yet, contact the Tribes support")
-	}
 
 	switch entity.UserRole(res.Role) {
 	case entity.UserRoleAdmin:

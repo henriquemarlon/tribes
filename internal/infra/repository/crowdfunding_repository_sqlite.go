@@ -225,6 +225,7 @@ func (r *CrowdfundingRepositorySqlite) UpdateCrowdfunding(ctx context.Context, i
 	crowdfunding.UpdatedAt = input.UpdatedAt
 
 	res := r.Db.WithContext(ctx).Model(&entity.Crowdfunding{}).Where("id = ?", crowdfunding.Id).Updates(map[string]interface{}{
+		"creator":           crowdfunding.Creator.String(),
 		"debt_issued":       crowdfunding.DebtIssued.Hex(),
 		"max_interest_rate": crowdfunding.MaxInterestRate.Hex(),
 		"total_obligation":  crowdfunding.TotalObligation.Hex(),

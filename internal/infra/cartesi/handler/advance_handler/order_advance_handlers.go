@@ -27,6 +27,11 @@ func NewOrderAdvanceHandlers(userRepository entity.UserRepository, orderReposito
 }
 
 func (h *OrderAdvanceHandlers) CreateOrderHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
 	var input order_usecase.CreateOrderInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
@@ -36,11 +41,6 @@ func (h *OrderAdvanceHandlers) CreateOrderHandler(env rollmelette.Env, metadata 
 	res, err := createOrder.Execute(ctx, &input, deposit, metadata)
 	if err != nil {
 		return err
-	}
-	// TODO: remove this check when update to V2
-	appAddress, isSet := env.AppAddress()
-	if !isSet {
-		return fmt.Errorf("no application address defined yet, contact the Tribes support")
 	}
 	if err := env.ERC20Transfer(
 		deposit.(*rollmelette.ERC20Deposit).Token,
