@@ -120,11 +120,11 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 >
 > 1. Make the `state.sh` script executable:
 >    ```shell
->    chmod +x state.sh
+>    ❯ chmod +x state.sh
 >    ```
 > 2. Run the script to set up the system state:
 >    ```shell
->    ./state.sh
+>    ❯ ./state.sh
 >    ```
 
 ###  Testing
