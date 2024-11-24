@@ -2,18 +2,16 @@
     <img src="https://github.com/user-attachments/assets/275b9ce4-3a4b-4965-82a3-5b6160ea76a5" align="center" width="30%">
 </p>
 <div align="center">
-    <i>The Creator's Economy enabler</i>
+    <i>The new frontier of financial services for the creators' economy</i>
 </div>
 <div align="center">
-<b>Collateralized tokenization of receivables for debt issuance through crowdfunding.</b>
+<b>Collateralized tokenization of receivables for debt issuance through crowdfunding</b>
 </div>
 <br>
 <p align="center">
 	<img src="https://img.shields.io/github/license/henriquemarlon/tribes?style=default&logo=opensourceinitiative&logoColor=white&color=959CD0" alt="license">
 	<img src="https://img.shields.io/github/last-commit/henriquemarlon/tribes?style=default&logo=git&logoColor=white&color=D1DCCB" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/count/henriquemarlon/tribes?style=default&color=323232" alt="repo-language-count">
 </p>
-<br>
 
 ##  Table of Contents
 
@@ -21,11 +19,8 @@
 - [ Getting Started](#-getting-started)
   - [ Prerequisites](#-prerequisites)
   - [ Installation](#-installation)
-  - [ Usage](#-usage)
   - [ Testing](#-testing)
-- [ Project Roadmap](#-project-roadmap)
 - [ Contributors](#-contributors)
-- [ Acknowledgments](#-acknowledgments)
 
 ##  Overview
 
@@ -63,82 +58,61 @@ A crowdfunding platform designed for prominent content creators, enabling them t
     │   ├── rollups_contracts
     │   └── router
     ├── test
-    │   └── integration
     └── website
 ```
 
 ##  Getting Started
 
 ###  Prerequisites
+1. [Install Docker Desktop for your operating system](https://www.docker.com/products/docker-desktop/).
 
-Before getting started with tribes, ensure your runtime environment meets the following requirements:
+    To install Docker RISC-V support without using Docker Desktop, run the following command:
+    
+   ```shell
+   ❯ docker run --privileged --rm tonistiigi/binfmt --install all
+   ```
 
-- **Programming Language:** Go
-- **Package Manager:** Go modules, Cargo
+2. [Download and install the latest version of Node.js](https://nodejs.org/en/download).
 
-###  Installation
+3. Cartesi CLI is an easy-to-use tool to build and deploy your dApps. To install it, run:
 
-Install tribes using one of the following methods:
+   ```shell
+   ❯ npm i -g @cartesi/cli
+   ```
 
-**Build from source:**
+4. [Download and Install the latest version of Golang.](https://go.dev/doc/install)
 
-1. Clone the tribes repository:
+5. Install development node:
+
+   ```shell
+   ❯ npm i -g nonodo
+   ```
+
+6. Install air ( hot reload tool ):
+
+   ```shell
+   ❯ go install github.com/air-verse/air@latest
+   ```
+
+###  Running
+
+**Build rollup from image**
+
 ```sh
-❯ git clone https://github.com/henriquemarlon/tribes
+❯ docker pull ghcr.io/tribeshq/tribes-machine:latest
 ```
 
-2. Navigate to the project directory:
-```sh
-❯ cd tribes
-```
-
-3. Install the project dependencies:
-
-**Using `go modules`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Go-00ADD8.svg?style={badge_style}&logo=go&logoColor=white" />](https://golang.org/)
+**Generate rollup filesystem**
 
 ```sh
-❯ go build
-```
-
-**Using `cargo`** &nbsp; [<img align="center" src="" />]()
-
-```sh
-❯ echo 'INSERT-INSTALL-COMMAND-HERE'
-```
-
-###  Usage
-Run tribes using the following command:
-**Using `go modules`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Go-00ADD8.svg?style={badge_style}&logo=go&logoColor=white" />](https://golang.org/)
-
-```sh
-❯ go run {entrypoint}
-```
-
-**Using `cargo`** &nbsp; [<img align="center" src="" />]()
-
-```sh
-❯ echo 'INSERT-RUN-COMMAND-HERE'
+❯ cartesi build --from-image ghcr.io/henriquemarlon/tribes-machine
 ```
 
 ###  Testing
-Run the test suite using the following command:
-**Using `go modules`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Go-00ADD8.svg?style={badge_style}&logo=go&logoColor=white" />](https://golang.org/)
 
 ```sh
-❯ go test ./...
+❯ make test
 ```
-
-**Using `cargo`** &nbsp; [<img align="center" src="" />]()
-
-```sh
-❯ echo 'INSERT-TEST-COMMAND-HERE'
-```
-
-##  Project Roadmap
-
-- [X] **`Task 1`**: <strike>Implement feature one.</strike>
-- [ ] **`Task 2`**: Implement feature two.
-- [ ] **`Task 3`**: Implement feature three.
 
 ##  Contributors
 
@@ -147,7 +121,3 @@ Run the test suite using the following command:
       <img src="https://contrib.rocks/image?repo=henriquemarlon/tribes">
    </a>
 </p>
-
-##  Acknowledgments
-
-- List any resources, contributors, inspiration, etc. here.
