@@ -116,6 +116,7 @@ A crowdfunding platform designed for prominent content creators, enabling them t
    ```
 
 > [!IMPORTANT]
+>  To run the system in development mode:
 >
 >   ```sh
 >   ❯ make dev
