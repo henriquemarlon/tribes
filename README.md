@@ -99,21 +99,21 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 
 1. Build rollup from image
 
-```sh
-❯ docker pull ghcr.io/tribeshq/tribes-machine:latest
-```
+   ```sh
+   ❯ docker pull ghcr.io/tribeshq/tribes-machine:latest
+   ```
 
 2. Generate rollup filesystem
 
-```sh
-❯ cartesi build --from-image ghcr.io/henriquemarlon/tribes-machine
-```
+   ```sh
+   ❯ cartesi build --from-image ghcr.io/henriquemarlon/tribes-machine
+   ```
 
 3. Run validator node
 
-```sh
-❯ cartesi run
-```
+   ```sh
+   ❯ cartesi run
+   ```
 
 > [!NOTE]
 > - TODO
