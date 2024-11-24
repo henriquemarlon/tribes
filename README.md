@@ -16,12 +16,12 @@
 ##  Table of Contents
 
 - [Overview](#-overview)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#-prerequisites)
-  - [Installation](#-installation)
-  - [Testing](#-testing)
-- [Contributors](#-contributors)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Testing](#testing)
+- [Contributors](#contributors)
 
 ##  Overview
 
