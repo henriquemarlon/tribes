@@ -115,6 +115,12 @@ A crowdfunding platform designed for prominent content creators, enabling them t
    ❯ cartesi run
    ```
 
+4. Running development mode:
+
+   ```sh
+   ❯ make dev
+   ```
+
 > [!NOTE]
 > To reach the final state of the system, follow these steps:
 >
