@@ -109,6 +109,12 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 ❯ cartesi build --from-image ghcr.io/henriquemarlon/tribes-machine
 ```
 
+**Run validator node**
+
+```sh
+❯ cartesi run
+```
+
 ###  Testing
 
 ```sh
