@@ -115,6 +115,9 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 ❯ cartesi run
 ```
 
+> [!NOTE]
+> - TODO
+
 ###  Testing
 
 ```sh
