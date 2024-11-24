@@ -9,7 +9,7 @@ contract Deployer is Script {
     Token public pink;
 
     function run() public {
-        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
+        vm.startBroadcast();
 
         // Deploy USDT Token
         stablecoin = new Token{salt: bytes32("1596")}("Tether", "USDT");
