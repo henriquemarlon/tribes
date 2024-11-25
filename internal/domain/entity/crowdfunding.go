@@ -80,6 +80,9 @@ func (a *Crowdfunding) Validate() error {
 	if a.ExpiresAt == 0 {
 		return fmt.Errorf("%w: expiration date is missing", ErrInvalidCrowdfunding)
 	}
+	if a.ExpiresAt > a.CreatedAt + 15552000 {
+		return fmt.Errorf("%w: expiration date cannot be greater than 6 months", ErrInvalidCrowdfunding)
+	}
 	if a.CreatedAt == 0 {
 		return fmt.Errorf("%w: creation date is missing", ErrInvalidCrowdfunding)
 	}

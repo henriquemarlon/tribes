@@ -203,7 +203,7 @@ wait
 
 # 8. Wait for crowdfunding maturity
 echo "Waiting for crowdfunding maturity..."
-sleep 60
+sleep 30
 
 # 9. Settle crowdfunding (sent by creator using stablecoin)
 echo "Settling crowdfunding..."

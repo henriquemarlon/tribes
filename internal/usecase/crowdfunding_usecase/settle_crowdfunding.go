@@ -74,8 +74,8 @@ func (uc *SettleCrowdfundingUseCase) Execute(
 		return nil, fmt.Errorf("error finding crowdfunding campaign: %w", err)
 	}
 
-	if metadata.BlockTimestamp < crowdfunding.MaturityAt {
-		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign has not yet been reached")
+	if metadata.BlockTimestamp > crowdfunding.MaturityAt {
+		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign has passed")
 	}
 
 	if crowdfunding.State == entity.CrowdfundingStateSettled {
@@ -86,8 +86,8 @@ func (uc *SettleCrowdfundingUseCase) Execute(
 		return nil, fmt.Errorf("crowdfunding campaign not closed")
 	}
 
-	if erc20Deposit.Amount.Cmp(crowdfunding.TotalObligation.ToBig()) != 0 {
-		return nil, fmt.Errorf("deposit amount does not equal the total obligation (sum of amount and interest of all orders)")
+	if erc20Deposit.Amount.Cmp(crowdfunding.TotalObligation.ToBig()) < 0 {
+		return nil, fmt.Errorf("deposit amount is lower than the total obligation (sum of amount and interest of all orders)")
 	}
 
 	for _, order := range crowdfunding.Orders {
