@@ -14,7 +14,7 @@ type FindCrowdfundingOutputDTO struct {
 	TotalObligation *uint256.Int    `json:"total_obligation"`
 	State           string          `json:"state"`
 	Orders          []*entity.Order `json:"orders"`
-	ExpiresAt       int64           `json:"expires_at"`
+	ClosesAt        int64           `json:"closes_at"`
 	MaturityAt      int64           `json:"maturity_at"`
 	CreatedAt       int64           `json:"created_at"`
 	UpdatedAt       int64           `json:"updated_at"`

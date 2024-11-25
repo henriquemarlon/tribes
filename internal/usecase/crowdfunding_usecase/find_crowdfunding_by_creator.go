@@ -48,7 +48,7 @@ func (f *FindCrowdfundingsByCreatorUseCase) Execute(ctx context.Context, input *
 			MaxInterestRate: crowdfunding.MaxInterestRate,
 			State:           string(crowdfunding.State),
 			Orders:          orders,
-			ExpiresAt:       crowdfunding.ExpiresAt,
+			ClosesAt:        crowdfunding.ClosesAt,
 			MaturityAt:      crowdfunding.MaturityAt,
 			CreatedAt:       crowdfunding.CreatedAt,
 			UpdatedAt:       crowdfunding.UpdatedAt,

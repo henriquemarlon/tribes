@@ -160,14 +160,14 @@ done
 # Create crowdfunding
 echo "Creating crowdfunding..."
 current_timestamp=$(date +%s)
-expires_at=$((current_timestamp + 60))
+closes_at=$((current_timestamp + 60))
 maturity_at=$((current_timestamp + 120))
-crowdfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","expires_at":'"$expires_at"',"maturity_at":'"$maturity_at"'}}'
+crowdfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","closes_at":'"$closes_at"',"maturity_at":'"$maturity_at"'}}'
 approveTokens $TOKENIZED_RECEIVABLE_ADDRESS $PORTAL_ADDRESS 10000 $CREATOR_PRIVATE_KEY
 sleep 1
 depositERC20Tokens $TOKENIZED_RECEIVABLE_ADDRESS $DAPP_ADDRESS 10000 "$crowdfundingPayload" $CREATOR_PRIVATE_KEY
 sleep 1
-dfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","expires_at":'"$expires_at"',"maturity_at":'"$maturity_at"'}}'
+dfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","closes_at":'"$closes_at"',"maturity_at":'"$maturity_at"'}}'
 
 
 # 4. Update crowdfunding to ongoing (sent by admin)

@@ -14,12 +14,12 @@ func TestNewCrowdfunding(t *testing.T) {
 	creator := common.HexToAddress("0x123")
 	debtIssued := uint256.NewInt(1000000000)
 	maxInterestRate := uint256.NewInt(50000000)
-	expiresAt := time.Now().Add(24 * time.Hour).Unix()
+	closesAt := time.Now().Add(24 * time.Hour).Unix()
 	maturityAt := time.Now().Add(48 * time.Hour).Unix() // Adiciona MaturityAt válido
 	createdAt := time.Now().Unix()
 
 	t.Run("Valid Crowdfunding", func(t *testing.T) {
-		crowdfunding, err := NewCrowdfunding(creator, debtIssued, maxInterestRate, expiresAt, maturityAt, createdAt)
+		crowdfunding, err := NewCrowdfunding(creator, debtIssued, maxInterestRate, closesAt, maturityAt, createdAt)
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
@@ -30,34 +30,34 @@ func TestNewCrowdfunding(t *testing.T) {
 		assert.Equal(t, debtIssued, crowdfunding.DebtIssued, "DebtIssued mismatch")
 		assert.Equal(t, maxInterestRate, crowdfunding.MaxInterestRate, "MaxInterestRate mismatch")
 		assert.Equal(t, CrowdfundingStateUnderReview, crowdfunding.State, "State mismatch")
-		assert.Equal(t, expiresAt, crowdfunding.ExpiresAt, "ExpiresAt mismatch")
+		assert.Equal(t, closesAt, crowdfunding.ClosesAt, "ClosesAt mismatch")
 		assert.Equal(t, maturityAt, crowdfunding.MaturityAt, "MaturityAt mismatch")
 		assert.Equal(t, createdAt, crowdfunding.CreatedAt, "CreatedAt mismatch")
 	})
 
 	t.Run("Invalid Creator", func(t *testing.T) {
-		_, err := NewCrowdfunding(common.Address{}, debtIssued, maxInterestRate, expiresAt, maturityAt, createdAt)
+		_, err := NewCrowdfunding(common.Address{}, debtIssued, maxInterestRate, closesAt, maturityAt, createdAt)
 		assert.Error(t, err, "Error expected for invalid creator address")
 		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
 		assert.Contains(t, err.Error(), "invalid creator address", "Error message should mention invalid creator")
 	})
 
 	t.Run("Invalid Debt Issued", func(t *testing.T) {
-		_, err := NewCrowdfunding(creator, uint256.NewInt(0), maxInterestRate, expiresAt, maturityAt, createdAt)
+		_, err := NewCrowdfunding(creator, uint256.NewInt(0), maxInterestRate, closesAt, maturityAt, createdAt)
 		assert.Error(t, err, "Error expected for zero DebtIssued")
 		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
 		assert.Contains(t, err.Error(), "debt issued cannot be zero", "Error message should mention DebtIssued")
 	})
 
 	t.Run("Debt Issued Exceeds Maximum", func(t *testing.T) {
-		_, err := NewCrowdfunding(creator, uint256.NewInt(15000000001), maxInterestRate, expiresAt, maturityAt, createdAt)
+		_, err := NewCrowdfunding(creator, uint256.NewInt(15000000001), maxInterestRate, closesAt, maturityAt, createdAt)
 		assert.Error(t, err, "Error expected for exceeding max DebtIssued")
 		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
 		assert.Contains(t, err.Error(), "debt issued exceeds the maximum allowed value", "Error message should mention maximum allowed value")
 	})
 
 	t.Run("Invalid Max Interest Rate", func(t *testing.T) {
-		_, err := NewCrowdfunding(creator, debtIssued, uint256.NewInt(0), expiresAt, maturityAt, createdAt)
+		_, err := NewCrowdfunding(creator, debtIssued, uint256.NewInt(0), closesAt, maturityAt, createdAt)
 		assert.Error(t, err, "Error expected for zero MaxInterestRate")
 		assert.True(t, errors.Is(err, ErrInvalidCrowdfunding), "Error should be ErrInvalidCrowdfunding")
 		assert.Contains(t, err.Error(), "max interest rate cannot be zero", "Error message should mention MaxInterestRate")
@@ -82,7 +82,7 @@ func TestCrowdfunding_Validate(t *testing.T) {
 	creator := common.HexToAddress("0x123")
 	debtIssued := uint256.NewInt(1000000000)
 	maxInterestRate := uint256.NewInt(50000000)
-	expiresAt := time.Now().Add(24 * time.Hour).Unix()
+	closesAt := time.Now().Add(24 * time.Hour).Unix()
 	maturityAt := time.Now().Add(48 * time.Hour).Unix() // Adiciona MaturityAt válido
 	createdAt := time.Now().Unix()
 
@@ -91,7 +91,7 @@ func TestCrowdfunding_Validate(t *testing.T) {
 			Creator:         creator,
 			DebtIssued:      debtIssued,
 			MaxInterestRate: maxInterestRate,
-			ExpiresAt:       expiresAt,
+			ClosesAt:        closesAt,
 			MaturityAt:      maturityAt,
 			CreatedAt:       createdAt,
 		}
@@ -104,7 +104,7 @@ func TestCrowdfunding_Validate(t *testing.T) {
 			Creator:         common.Address{},
 			DebtIssued:      debtIssued,
 			MaxInterestRate: maxInterestRate,
-			ExpiresAt:       expiresAt,
+			ClosesAt:        closesAt,
 			MaturityAt:      maturityAt,
 			CreatedAt:       createdAt,
 		}
@@ -118,7 +118,7 @@ func TestCrowdfunding_Validate(t *testing.T) {
 			Creator:         creator,
 			DebtIssued:      uint256.NewInt(0),
 			MaxInterestRate: maxInterestRate,
-			ExpiresAt:       expiresAt,
+			ClosesAt:        closesAt,
 			MaturityAt:      maturityAt,
 			CreatedAt:       createdAt,
 		}
@@ -132,7 +132,7 @@ func TestCrowdfunding_Validate(t *testing.T) {
 			Creator:         creator,
 			DebtIssued:      debtIssued,
 			MaxInterestRate: maxInterestRate,
-			ExpiresAt:       0,
+			ClosesAt:        0,
 			MaturityAt:      maturityAt,
 			CreatedAt:       createdAt,
 		}

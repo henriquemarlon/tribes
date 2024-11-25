@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/rollmelette/rollmelette"
-	"github.com/stretchr/testify/suite"
-	"github.com/tribeshq/tribes/cmd/tribes-rollup/root"
-	"github.com/tribeshq/tribes/configs"
 	"log/slog"
 	"math/big"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/rollmelette/rollmelette"
+	"github.com/stretchr/testify/suite"
+	"github.com/tribeshq/tribes/cmd/tribes-rollup/root"
+	"github.com/tribeshq/tribes/configs"
 )
 
 func TestAppSuite(t *testing.T) {
@@ -97,12 +98,12 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	result = s.tester.Advance(admin, createContractInput)
 	s.Len(result.Notices, 1)
 
-	// Set expiresAt and maturityAt to future timestamps
-	expiresAt := baseTime + 5
+	// Set closesAt and maturityAt to future timestamps
+	closesAt := baseTime + 5
 	maturityAt := baseTime + 10
 
 	// Create crowdfunding
-	createCrowdfundingInput := []byte(fmt.Sprintf(`{"path":"createCrowdfunding","payload":{"max_interest_rate":"10", "debt_issued":"100000", "expires_at":%d,"maturity_at":%d}}`, expiresAt, maturityAt))
+	createCrowdfundingInput := []byte(fmt.Sprintf(`{"path":"createCrowdfunding","payload":{"max_interest_rate":"10", "debt_issued":"100000", "closes_at":%d,"maturity_at":%d}}`, closesAt, maturityAt))
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), creator, big.NewInt(10000), createCrowdfundingInput)
 	s.Len(result.Notices, 1)
 
@@ -150,15 +151,15 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 		`{"id":4,"crowdfunding_id":1,"investor":"%s","amount":"3000","interest_rate":"6","state":"accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":5,"crowdfunding_id":1,"investor":"%s","amount":"400","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":6,"crowdfunding_id":1,"investor":"%s","amount":"17400","interest_rate":"9","state":"rejected","created_at":%d,"updated_at":%d}],`+
-		`"expires_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
+		`"closes_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
 		creator.Hex(),
 		investor01.Hex(), orderCreatedAt, updatedAt, // Order 1
 		investor02.Hex(), orderCreatedAt, updatedAt, // Order 2
 		investor03.Hex(), orderCreatedAt, updatedAt, // Order 3
 		investor04.Hex(), orderCreatedAt, updatedAt, // Order 4
 		investor05.Hex(), orderCreatedAt, updatedAt, // Order 5
-		investor01.Hex(), updatedAt, updatedAt,      // Order 6 (rejected portion)
-		expiresAt, maturityAt, baseTime, updatedAt,
+		investor01.Hex(), updatedAt, updatedAt, // Order 6 (rejected portion)
+		closesAt, maturityAt, baseTime, updatedAt,
 	)
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))
 
@@ -177,7 +178,7 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 		`{"id":4,"crowdfunding_id":1,"investor":"%s","amount":"3000","interest_rate":"6","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":5,"crowdfunding_id":1,"investor":"%s","amount":"400","interest_rate":"4","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":6,"crowdfunding_id":1,"investor":"%s","amount":"17400","interest_rate":"9","state":"rejected","created_at":%d,"updated_at":%d}],`+
-		`"expires_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
+		`"closes_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
 		creator.Hex(),
 		investor01.Hex(), orderCreatedAt, settledAt,
 		investor02.Hex(), orderCreatedAt, settledAt,
@@ -185,7 +186,7 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 		investor04.Hex(), orderCreatedAt, settledAt,
 		investor05.Hex(), orderCreatedAt, settledAt,
 		investor01.Hex(), updatedAt, updatedAt, // Order 6 remains rejected with previous updatedAt
-		expiresAt, maturityAt, baseTime, settledAt,
+		closesAt, maturityAt, baseTime, settledAt,
 	)
 
 	s.Equal(expectedOutput, string(result.Notices[0].Payload))

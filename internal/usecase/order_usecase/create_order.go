@@ -71,7 +71,7 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 	var activeCrowdfunding *entity.Crowdfunding
 	for _, crowdfunding := range crowdfundings {
 		if crowdfunding.State == entity.CrowdfundingStateOngoing {
-			if metadata.BlockTimestamp > crowdfunding.ExpiresAt {
+			if metadata.BlockTimestamp > crowdfunding.ClosesAt {
 				return nil, fmt.Errorf("active crowdfunding expired, cannot create order")
 			}
 			activeCrowdfunding = crowdfunding

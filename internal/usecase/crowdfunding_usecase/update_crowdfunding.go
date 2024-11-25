@@ -15,7 +15,7 @@ type UpdateCrowdfundingInputDTO struct {
 	MaxInterestRate *uint256.Int `json:"max_interest_rate"`
 	TotalObligation *uint256.Int `json:"total_obligation"`
 	State           string       `json:"state"`
-	ExpiresAt       int64        `json:"expires_at"`
+	ClosesAt        int64        `json:"closes_at"`
 	MaturityAt      int64        `json:"maturity_at"`
 }
 
@@ -27,7 +27,7 @@ type UpdateCrowdfundingOutputDTO struct {
 	TotalObligation *uint256.Int    `json:"total_obligation"`
 	State           string          `json:"state"`
 	Orders          []*entity.Order `json:"orders"`
-	ExpiresAt       int64           `json:"expires_at"`
+	ClosesAt        int64           `json:"closes_at"`
 	MaturityAt      int64           `json:"maturity_at"`
 	CreatedAt       int64           `json:"created_at"`
 	UpdatedAt       int64           `json:"updated_at"`
@@ -50,8 +50,8 @@ func (uc *UpdateCrowdfundingUsecase) Execute(ctx context.Context, input UpdateCr
 		MaxInterestRate: input.MaxInterestRate,
 		TotalObligation: input.TotalObligation,
 		State:           entity.CrowdfundingState(input.State),
-		ExpiresAt:       input.ExpiresAt,
-		MaturityAt:      input.ExpiresAt,
+		ClosesAt:        input.ClosesAt,
+		MaturityAt:      input.ClosesAt,
 		UpdatedAt:       metadata.BlockTimestamp,
 	})
 	if err != nil {
@@ -65,7 +65,7 @@ func (uc *UpdateCrowdfundingUsecase) Execute(ctx context.Context, input UpdateCr
 		TotalObligation: crowdfunding.TotalObligation,
 		State:           string(crowdfunding.State),
 		Orders:          crowdfunding.Orders,
-		ExpiresAt:       crowdfunding.ExpiresAt,
+		ClosesAt:        crowdfunding.ClosesAt,
 		MaturityAt:      crowdfunding.MaturityAt,
 		CreatedAt:       crowdfunding.CreatedAt,
 		UpdatedAt:       crowdfunding.UpdatedAt,

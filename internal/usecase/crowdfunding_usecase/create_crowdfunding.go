@@ -13,7 +13,7 @@ import (
 type CreateCrowdfundingInputDTO struct {
 	DebitIssued     *uint256.Int `json:"debt_issued"`
 	MaxInterestRate *uint256.Int `json:"max_interest_rate"`
-	ExpiresAt       int64        `json:"expires_at"`
+	ClosesAt        int64        `json:"closes_at"`
 	MaturityAt      int64        `json:"maturity_at"`
 }
 
@@ -24,7 +24,7 @@ type CreateCrowdfundingOutputDTO struct {
 	MaxInterestRate *uint256.Int    `json:"max_interest_rate"`
 	State           string          `json:"state"`
 	Orders          []*entity.Order `json:"orders"`
-	ExpiresAt       int64           `json:"expires_at"`
+	ClosesAt        int64           `json:"closes_at"`
 	MaturityAt      int64           `json:"maturity_at"`
 	CreatedAt       int64           `json:"created_at"`
 }
@@ -69,7 +69,7 @@ func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCr
 		}
 	}
 
-	crowdfunding, err := entity.NewCrowdfunding(creator.Address, input.DebitIssued, input.MaxInterestRate, input.ExpiresAt, input.MaturityAt, metadata.BlockTimestamp)
+	crowdfunding, err := entity.NewCrowdfunding(creator.Address, input.DebitIssued, input.MaxInterestRate, input.ClosesAt, input.MaturityAt, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
 	}
@@ -91,7 +91,7 @@ func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCr
 		MaxInterestRate: res.MaxInterestRate,
 		State:           string(res.State),
 		Orders:          res.Orders,
-		ExpiresAt:       res.ExpiresAt,
+		ClosesAt:        res.ClosesAt,
 		MaturityAt:      res.MaturityAt,
 		CreatedAt:       res.CreatedAt,
 	}, nil

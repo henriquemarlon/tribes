@@ -23,7 +23,7 @@ type CloseCrowdfundingOutputDTO struct {
 	TotalObligation *uint256.Int    `json:"total_obligation,omitempty"`
 	State           string          `json:"state,omitempty"`
 	Orders          []*entity.Order `json:"orders,omitempty"`
-	ExpiresAt       int64           `json:"expires_at,omitempty"`
+	ClosesAt        int64           `json:"closes_at,omitempty"`
 	MaturityAt      int64           `json:"maturity_at,omitempty"`
 	CreatedAt       int64           `json:"created_at,omitempty"`
 	UpdatedAt       int64           `json:"updated_at,omitempty"`
@@ -60,7 +60,7 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 	}
 
 	// Ensure crowdfunding has expired before closing
-	if metadata.BlockTimestamp < ongoingCrowdfunding.ExpiresAt {
+	if metadata.BlockTimestamp < ongoingCrowdfunding.ClosesAt {
 		return nil, fmt.Errorf("crowdfunding not expired yet, you can't close it")
 	}
 
@@ -184,7 +184,7 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 		TotalObligation: res.TotalObligation,
 		State:           string(res.State),
 		Orders:          res.Orders,
-		ExpiresAt:       res.ExpiresAt,
+		ClosesAt:        res.ClosesAt,
 		MaturityAt:      res.MaturityAt,
 		CreatedAt:       res.CreatedAt,
 		UpdatedAt:       res.UpdatedAt,

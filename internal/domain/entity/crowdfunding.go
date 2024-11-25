@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 )
@@ -42,19 +43,19 @@ type Crowdfunding struct {
 	TotalObligation *uint256.Int      `json:"total_obligation,omitempty" gorm:"type:text;not null;default:0"`
 	State           CrowdfundingState `json:"state,omitempty" gorm:"type:text;not null"`
 	Orders          []*Order          `json:"orders,omitempty" gorm:"foreignKey:CrowdfundingId;constraint:OnDelete:CASCADE"`
-	ExpiresAt       int64             `json:"expires_at,omitempty" gorm:"not null"`
+	ClosesAt        int64             `json:"closes_at,omitempty" gorm:"not null"`
 	MaturityAt      int64             `json:"maturity_at,omitempty" gorm:"not null"`
 	CreatedAt       int64             `json:"created_at,omitempty" gorm:"not null"`
 	UpdatedAt       int64             `json:"updated_at,omitempty" gorm:"default:0"`
 }
 
-func NewCrowdfunding(creator common.Address, debt_issued *uint256.Int, maxInterestRate *uint256.Int, expiresAt int64, maturityAt int64, createdAt int64) (*Crowdfunding, error) {
+func NewCrowdfunding(creator common.Address, debt_issued *uint256.Int, maxInterestRate *uint256.Int, closesAt int64, maturityAt int64, createdAt int64) (*Crowdfunding, error) {
 	crowdfunding := &Crowdfunding{
 		Creator:         creator,
 		DebtIssued:      debt_issued,
 		MaxInterestRate: maxInterestRate,
 		State:           CrowdfundingStateUnderReview,
-		ExpiresAt:       expiresAt,
+		ClosesAt:        closesAt,
 		MaturityAt:      maturityAt,
 		CreatedAt:       createdAt,
 	}
@@ -77,16 +78,16 @@ func (a *Crowdfunding) Validate() error {
 	if a.MaxInterestRate.Sign() == 0 {
 		return fmt.Errorf("%w: max interest rate cannot be zero", ErrInvalidCrowdfunding)
 	}
-	if a.ExpiresAt == 0 {
+	if a.ClosesAt == 0 {
 		return fmt.Errorf("%w: expiration date is missing", ErrInvalidCrowdfunding)
 	}
-	if a.ExpiresAt > a.CreatedAt + 15552000 {
+	if a.ClosesAt > a.CreatedAt+15552000 {
 		return fmt.Errorf("%w: expiration date cannot be greater than 6 months", ErrInvalidCrowdfunding)
 	}
 	if a.CreatedAt == 0 {
 		return fmt.Errorf("%w: creation date is missing", ErrInvalidCrowdfunding)
 	}
-	if a.CreatedAt >= a.ExpiresAt {
+	if a.CreatedAt >= a.ClosesAt {
 		return fmt.Errorf("%w: creation date cannot be greater than or equal to expiration date", ErrInvalidCrowdfunding)
 	}
 	if a.MaturityAt == 0 {

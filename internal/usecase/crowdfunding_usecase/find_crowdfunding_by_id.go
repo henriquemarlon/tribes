@@ -44,7 +44,7 @@ func (f *FindCrowdfundingByIdUseCase) Execute(ctx context.Context, input *FindCr
 		TotalObligation: res.TotalObligation,
 		State:           string(res.State),
 		Orders:          orders,
-		ExpiresAt:       res.ExpiresAt,
+		ClosesAt:        res.ClosesAt,
 		MaturityAt:      res.MaturityAt,
 		CreatedAt:       res.CreatedAt,
 		UpdatedAt:       res.UpdatedAt,
