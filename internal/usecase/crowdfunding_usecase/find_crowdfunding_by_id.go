@@ -23,15 +23,15 @@ func (f *FindCrowdfundingByIdUseCase) Execute(ctx context.Context, input *FindCr
 	if err != nil {
 		return nil, err
 	}
-	var orders []*FindCrowdfundingOutputSubDTO
+	var orders []*entity.Order
 	for _, order := range res.Orders {
-		orders = append(orders, &FindCrowdfundingOutputSubDTO{
+		orders = append(orders, &entity.Order{
 			Id:             order.Id,
 			CrowdfundingId: order.CrowdfundingId,
 			Investor:       order.Investor,
 			Amount:         order.Amount,
 			InterestRate:   order.InterestRate,
-			State:          string(order.State),
+			State:          order.State,
 			CreatedAt:      order.CreatedAt,
 			UpdatedAt:      order.UpdatedAt,
 		})
@@ -41,6 +41,7 @@ func (f *FindCrowdfundingByIdUseCase) Execute(ctx context.Context, input *FindCr
 		Creator:         res.Creator,
 		DebtIssued:      res.DebtIssued,
 		MaxInterestRate: res.MaxInterestRate,
+		TotalObligation: res.TotalObligation,
 		State:           string(res.State),
 		Orders:          orders,
 		ExpiresAt:       res.ExpiresAt,

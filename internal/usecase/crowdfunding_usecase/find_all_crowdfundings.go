@@ -23,15 +23,15 @@ func (f *FindAllCrowdfundingsUseCase) Execute(ctx context.Context) (*FindAllCrow
 	}
 	output := make(FindAllCrowdfundingsOutputDTO, len(res))
 	for i, crowdfunding := range res {
-		orders := make([]*FindCrowdfundingOutputSubDTO, len(crowdfunding.Orders))
+		orders := make([]*entity.Order, len(crowdfunding.Orders))
 		for j, order := range crowdfunding.Orders {
-			orders[j] = &FindCrowdfundingOutputSubDTO{
+			orders[j] = &entity.Order{
 				Id:             order.Id,
 				CrowdfundingId: order.CrowdfundingId,
 				Investor:       order.Investor,
 				Amount:         order.Amount,
 				InterestRate:   order.InterestRate,
-				State:          string(order.State),
+				State:          order.State,
 				CreatedAt:      order.CreatedAt,
 				UpdatedAt:      order.UpdatedAt,
 			}
@@ -41,6 +41,7 @@ func (f *FindAllCrowdfundingsUseCase) Execute(ctx context.Context) (*FindAllCrow
 			Creator:         crowdfunding.Creator,
 			DebtIssued:      crowdfunding.DebtIssued,
 			MaxInterestRate: crowdfunding.MaxInterestRate,
+			TotalObligation: crowdfunding.TotalObligation,
 			State:           string(crowdfunding.State),
 			Orders:          orders,
 			ExpiresAt:       crowdfunding.ExpiresAt,

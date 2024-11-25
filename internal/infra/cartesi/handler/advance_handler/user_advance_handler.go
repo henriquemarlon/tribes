@@ -98,7 +98,6 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 		return err
 	}
 
-
 	switch entity.UserRole(res.Role) {
 	case entity.UserRoleAdmin:
 		// The Admin role can withdraw the entire Application Balance if wanted

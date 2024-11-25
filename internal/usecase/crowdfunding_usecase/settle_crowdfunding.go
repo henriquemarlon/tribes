@@ -32,17 +32,29 @@ type SettleCrowdfundingUseCase struct {
 	UserRepository         entity.UserRepository
 	ContractRepository     entity.ContractRepository
 	CrowdfundingRepository entity.CrowdfundingRepository
+	OrderRepository        entity.OrderRepository
 }
 
-func NewSettleCrowdfundingUseCase(userRepository entity.UserRepository, crowdfundingRepository entity.CrowdfundingRepository, contractRepository entity.ContractRepository) *SettleCrowdfundingUseCase {
+func NewSettleCrowdfundingUseCase(
+	userRepository entity.UserRepository,
+	crowdfundingRepository entity.CrowdfundingRepository,
+	contractRepository entity.ContractRepository,
+	orderRepository entity.OrderRepository,
+) *SettleCrowdfundingUseCase {
 	return &SettleCrowdfundingUseCase{
 		UserRepository:         userRepository,
 		ContractRepository:     contractRepository,
 		CrowdfundingRepository: crowdfundingRepository,
+		OrderRepository:        orderRepository,
 	}
 }
 
-func (uc *SettleCrowdfundingUseCase) Execute(ctx context.Context, input *SettleCrowdfundingInputDTO, deposit rollmelette.Deposit, metadata rollmelette.Metadata) (*SettleCrowdfundingOutputDTO, error) {
+func (uc *SettleCrowdfundingUseCase) Execute(
+	ctx context.Context,
+	input *SettleCrowdfundingInputDTO,
+	deposit rollmelette.Deposit,
+	metadata rollmelette.Metadata,
+) (*SettleCrowdfundingOutputDTO, error) {
 	erc20Deposit, ok := deposit.(*rollmelette.ERC20Deposit)
 	if !ok {
 		return nil, fmt.Errorf("invalid deposit type: %T", deposit)
@@ -54,75 +66,69 @@ func (uc *SettleCrowdfundingUseCase) Execute(ctx context.Context, input *SettleC
 	}
 
 	if erc20Deposit.Token != stablecoin.Address {
-		return nil, fmt.Errorf("token deposit is not the same as the stablecoin %v, cannot settle crowdfunding", stablecoin.Address)
+		return nil, fmt.Errorf("token deposit is not the stablecoin %v, cannot settle crowdfunding", stablecoin.Address)
 	}
 
 	crowdfunding, err := uc.CrowdfundingRepository.FindCrowdfundingById(ctx, input.CrowdfundingId)
 	if err != nil {
 		return nil, fmt.Errorf("error finding crowdfunding campaign: %w", err)
 	}
-	if crowdfunding.MaturityAt > metadata.BlockTimestamp {
-		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign is not yet reached")
+
+	if metadata.BlockTimestamp < crowdfunding.MaturityAt {
+		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign has not yet been reached")
 	}
 
 	if crowdfunding.State == entity.CrowdfundingStateSettled {
-		return nil, fmt.Errorf("crowdfunding campaign not found")
-	}
-
-	if crowdfunding.MaturityAt > metadata.BlockTimestamp {
-		return nil, fmt.Errorf("the maturity date of the crowdfunding campaign is not yet reached")
-	}
-
-	if crowdfunding.State == entity.CrowdfundingStateSettled {
-		return nil, fmt.Errorf("crowdfunding campaign not found")
-	}
-
-	switch crowdfunding.State {
-	case entity.CrowdfundingStateSettled:
 		return nil, fmt.Errorf("crowdfunding campaign already settled")
-	case entity.CrowdfundingStateClosed:
-		if erc20Deposit.Amount.Cmp(crowdfunding.TotalObligation.ToBig()) != 0 {
-			return nil, fmt.Errorf("cannot settle crowdfunding because the deposit amount is not equal to the Total Obligation (sum of amount + interest of all orders)")
-		}
+	}
 
-		for _, order := range crowdfunding.Orders {
-			if order.State == entity.OrderStateAccepted || order.State == entity.OrderStatePartiallyAccepted {
-				order.State = entity.OrderStateSettled
-			}
-		}
-
-		crowdfunding.State = entity.CrowdfundingStateSettled
-		crowdfunding.UpdatedAt = metadata.BlockTimestamp
-		res, err := uc.CrowdfundingRepository.UpdateCrowdfunding(ctx, crowdfunding)
-		if err != nil {
-			return nil, fmt.Errorf("error updating crowdfunding campaign: %w", err)
-		}
-
-		creator, err := uc.UserRepository.FindUserByAddress(ctx, crowdfunding.Creator)
-		if err != nil {
-			return nil, fmt.Errorf("error finding creator: %w", err)
-		}
-
-		creator.DebtIssuanceLimit = new(uint256.Int).Sub(creator.DebtIssuanceLimit, crowdfunding.DebtIssued)
-		_, err = uc.UserRepository.UpdateUser(ctx, creator)
-		if err != nil {
-			return nil, fmt.Errorf("error updating creator debt issuance limit: %w", err)
-		}
-
-		return &SettleCrowdfundingOutputDTO{
-			Id:              res.Id,
-			Creator:         res.Creator,
-			DebtIssued:      res.DebtIssued,
-			MaxInterestRate: res.MaxInterestRate,
-			TotalObligation: res.TotalObligation,
-			State:           string(res.State),
-			Orders:          res.Orders,
-			ExpiresAt:       res.ExpiresAt,
-			MaturityAt:      res.MaturityAt,
-			CreatedAt:       res.CreatedAt,
-			UpdatedAt:       res.UpdatedAt,
-		}, nil
-	default:
+	if crowdfunding.State != entity.CrowdfundingStateClosed {
 		return nil, fmt.Errorf("crowdfunding campaign not closed")
 	}
+
+	if erc20Deposit.Amount.Cmp(crowdfunding.TotalObligation.ToBig()) != 0 {
+		return nil, fmt.Errorf("deposit amount does not equal the total obligation (sum of amount and interest of all orders)")
+	}
+
+	for _, order := range crowdfunding.Orders {
+		if order.State == entity.OrderStateAccepted || order.State == entity.OrderStatePartiallyAccepted {
+			order.State = entity.OrderStateSettled
+			_, err := uc.OrderRepository.UpdateOrder(ctx, order)
+			if err != nil {
+				return nil, fmt.Errorf("error updating order: %w", err)
+			}
+		}
+	}
+
+	crowdfunding.State = entity.CrowdfundingStateSettled
+	crowdfunding.UpdatedAt = metadata.BlockTimestamp
+	res, err := uc.CrowdfundingRepository.UpdateCrowdfunding(ctx, crowdfunding)
+	if err != nil {
+		return nil, fmt.Errorf("error updating crowdfunding campaign: %w", err)
+	}
+
+	creator, err := uc.UserRepository.FindUserByAddress(ctx, crowdfunding.Creator)
+	if err != nil {
+		return nil, fmt.Errorf("error finding creator: %w", err)
+	}
+
+	creator.DebtIssuanceLimit = new(uint256.Int).Sub(creator.DebtIssuanceLimit, crowdfunding.DebtIssued)
+	_, err = uc.UserRepository.UpdateUser(ctx, creator)
+	if err != nil {
+		return nil, fmt.Errorf("error updating creator's debt issuance limit: %w", err)
+	}
+
+	return &SettleCrowdfundingOutputDTO{
+		Id:              res.Id,
+		Creator:         res.Creator,
+		DebtIssued:      res.DebtIssued,
+		MaxInterestRate: res.MaxInterestRate,
+		TotalObligation: res.TotalObligation,
+		State:           string(res.State),
+		Orders:          res.Orders,
+		ExpiresAt:       res.ExpiresAt,
+		MaturityAt:      res.MaturityAt,
+		CreatedAt:       res.CreatedAt,
+		UpdatedAt:       res.UpdatedAt,
+	}, nil
 }

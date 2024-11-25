@@ -42,7 +42,6 @@ func NewCloseCrowdfundingUseCase(crowdfundingRepository entity.CrowdfundingRepos
 }
 
 func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrowdfundingInputDTO, metadata rollmelette.Metadata) (*CloseCrowdfundingOutputDTO, error) {
-	// Retrieve ongoing crowdfunding by creator
 	crowdfundings, err := u.CrowdfundingRepository.FindCrowdfundingsByCreator(ctx, input.Creator)
 	if err != nil {
 		return nil, err
@@ -50,7 +49,7 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 
 	var ongoingCrowdfunding *entity.Crowdfunding
 	for _, crowdfunding := range crowdfundings {
-		if crowdfunding.State == entity.CrowdfundingState("ongoing") {
+		if crowdfunding.State == entity.CrowdfundingStateOngoing {
 			ongoingCrowdfunding = crowdfunding
 			break
 		}
@@ -71,22 +70,21 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 		return nil, err
 	}
 
-	// Sort orders by the best interest-to-amount ratio (ascending)
+	// Sort orders by InterestRate ascending, Amount descending
 	sort.Slice(orders, func(i, j int) bool {
-		ratioI := new(uint256.Int).Div(orders[i].InterestRate, orders[i].Amount)
-		ratioJ := new(uint256.Int).Div(orders[j].InterestRate, orders[j].Amount)
-		return ratioI.Cmp(ratioJ) < 0
+		if orders[i].InterestRate.Cmp(orders[j].InterestRate) == 0 {
+			return orders[i].Amount.Cmp(orders[j].Amount) > 0 // larger amounts first
+		}
+		return orders[i].InterestRate.Cmp(orders[j].InterestRate) < 0
 	})
 
 	debtIssuedRemaining := new(uint256.Int).Set(ongoingCrowdfunding.DebtIssued)
 	totalCollected := uint256.NewInt(0)
-	totalObligation := uint256.NewInt(0) // Initialize the total obligation
+	totalObligation := uint256.NewInt(0)
 
-	// Process each order
 	for _, order := range orders {
 		if debtIssuedRemaining.IsZero() {
-			// Mark remaining orders as rejected
-			order.State = "rejected"
+			order.State = entity.OrderStateRejected
 			order.UpdatedAt = metadata.BlockTimestamp
 			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
@@ -95,18 +93,16 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 			continue
 		}
 
-		if debtIssuedRemaining.Gt(order.Amount) {
-			// Fully accept the order
-			order.State = "accepted"
+		if debtIssuedRemaining.Gt(order.Amount) || debtIssuedRemaining.Eq(order.Amount) {
+			order.State = entity.OrderStateAccepted
 			order.UpdatedAt = metadata.BlockTimestamp
 			totalCollected.Add(totalCollected, order.Amount)
 
-			// Calculate interest and add to total obligation
 			interest := new(uint256.Int).Mul(order.Amount, order.InterestRate)
 			interest.Div(interest, uint256.NewInt(100)) // Interest = (amount * rate) / 100
-			totalObligation.Add(totalObligation, new(uint256.Int).Add(order.Amount, interest))
+			orderObligation := new(uint256.Int).Add(order.Amount, interest)
+			totalObligation.Add(totalObligation, orderObligation)
 
-			// Update the accepted order in the database
 			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
 				return nil, err
@@ -114,34 +110,30 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 
 			debtIssuedRemaining.Sub(debtIssuedRemaining, order.Amount)
 		} else {
-			// Partially accept the order
 			acceptedAmount := new(uint256.Int).Set(debtIssuedRemaining)
 			rejectedAmount := new(uint256.Int).Sub(order.Amount, acceptedAmount)
 
-			// Update the order with the accepted portion
 			order.Amount = acceptedAmount
-			order.State = "partially_accepted"
+			order.State = entity.OrderStatePartiallyAccepted
 			order.UpdatedAt = metadata.BlockTimestamp
 			totalCollected.Add(totalCollected, acceptedAmount)
 
-			// Calculate interest for the accepted portion and add to total obligation
 			interest := new(uint256.Int).Mul(acceptedAmount, order.InterestRate)
 			interest.Div(interest, uint256.NewInt(100)) // Interest = (amount * rate) / 100
-			totalObligation.Add(totalObligation, new(uint256.Int).Add(acceptedAmount, interest))
+			orderObligation := new(uint256.Int).Add(acceptedAmount, interest)
+			totalObligation.Add(totalObligation, orderObligation)
 
-			// Update the partially accepted order in the database
 			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
 				return nil, err
 			}
 
-			// Create a new order for the rejected portion
 			_, err = u.OrderRepository.CreateOrder(ctx, &entity.Order{
 				CrowdfundingId: order.CrowdfundingId,
 				Investor:       order.Investor,
 				Amount:         rejectedAmount,
 				InterestRate:   order.InterestRate,
-				State:          "rejected",
+				State:          entity.OrderStateRejected,
 				CreatedAt:      metadata.BlockTimestamp,
 				UpdatedAt:      metadata.BlockTimestamp,
 			})
@@ -153,12 +145,12 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 		}
 	}
 
-	// Check if total collected meets the minimum threshold (2/3 of DebtIssued)
-	twoThirdsTarget := new(uint256.Int).Mul(ongoingCrowdfunding.DebtIssued, uint256.NewInt(2)).Div(ongoingCrowdfunding.DebtIssued, uint256.NewInt(3))
+	twoThirdsTarget := new(uint256.Int).Mul(ongoingCrowdfunding.DebtIssued, uint256.NewInt(2))
+	twoThirdsTarget.Div(twoThirdsTarget, uint256.NewInt(3))
 	if totalCollected.Lt(twoThirdsTarget) {
 		// Cancel crowdfunding and mark all orders as rejected
 		for _, order := range orders {
-			order.State = "rejected"
+			order.State = entity.OrderStateRejected
 			order.UpdatedAt = metadata.BlockTimestamp
 			_, err := u.OrderRepository.UpdateOrder(ctx, order)
 			if err != nil {
@@ -166,29 +158,17 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 			}
 		}
 
-		ongoingCrowdfunding.State = entity.CrowdfundingState("canceled")
+		ongoingCrowdfunding.State = entity.CrowdfundingStateCanceled
 		ongoingCrowdfunding.UpdatedAt = metadata.BlockTimestamp
-		res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ctx, ongoingCrowdfunding)
+		_, err := u.CrowdfundingRepository.UpdateCrowdfunding(ctx, ongoingCrowdfunding)
 		if err != nil {
 			return nil, err
 		}
 
-		return &CloseCrowdfundingOutputDTO{
-			Id:              res.Id,
-			Creator:         res.Creator,
-			DebtIssued:      res.DebtIssued,
-			MaxInterestRate: res.MaxInterestRate,
-			State:           string(res.State),
-			Orders:          orders,
-			ExpiresAt:       res.ExpiresAt,
-			MaturityAt:      res.MaturityAt,
-			CreatedAt:       res.CreatedAt,
-			UpdatedAt:       res.UpdatedAt,
-		}, nil
+		return nil, fmt.Errorf("crowdfunding canceled due to insufficient funds collected")
 	}
 
-	// Close crowdfunding if threshold is met
-	ongoingCrowdfunding.State = entity.CrowdfundingState("closed")
+	ongoingCrowdfunding.State = entity.CrowdfundingStateClosed
 	ongoingCrowdfunding.TotalObligation = totalObligation
 	ongoingCrowdfunding.UpdatedAt = metadata.BlockTimestamp
 	res, err := u.CrowdfundingRepository.UpdateCrowdfunding(ctx, ongoingCrowdfunding)
@@ -196,7 +176,6 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 		return nil, err
 	}
 
-	// Return the final state of the crowdfunding
 	return &CloseCrowdfundingOutputDTO{
 		Id:              res.Id,
 		Creator:         res.Creator,
@@ -204,7 +183,7 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 		MaxInterestRate: res.MaxInterestRate,
 		TotalObligation: res.TotalObligation,
 		State:           string(res.State),
-		Orders:          orders,
+		Orders:          res.Orders,
 		ExpiresAt:       res.ExpiresAt,
 		MaturityAt:      res.MaturityAt,
 		CreatedAt:       res.CreatedAt,

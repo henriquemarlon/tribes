@@ -48,6 +48,7 @@ A crowdfunding platform designed for prominent content creators, enabling them t
     │   └── tribes-web3-provider
     ├── configs
     │   └── sqlite.go
+    ├── contracts
     ├── coverage.md
     ├── go.mod
     ├── go.sum

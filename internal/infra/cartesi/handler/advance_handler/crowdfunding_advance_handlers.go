@@ -69,7 +69,7 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	// TODO: remove this check when update to V2
 	appAddress, isSet := env.AppAddress()
 	if !isSet {
-		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+		return fmt.Errorf("no application address defined yet, contact Tribes support")
 	}
 	var input *crowdfunding_usecase.CloseCrowdfundingInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
@@ -78,7 +78,7 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	ctx := context.Background()
 	closeCrowdfunding := crowdfunding_usecase.NewCloseCrowdfundingUseCase(h.CrowdfundingRepository, h.OrderRepository)
 	res, err := closeCrowdfunding.Execute(ctx, input, metadata)
-	if err != nil {
+	if err != nil && res == nil {
 		return err
 	}
 
@@ -90,7 +90,7 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 		return err
 	}
 
-	// Return the funds to the investors who had their orders rejected
+	// Return the funds to investors with rejected orders
 	for _, order := range res.Orders {
 		if order.State == entity.OrderStateRejected {
 			if err = env.ERC20Transfer(
@@ -104,17 +104,15 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 		}
 	}
 
-	if res.State == string(entity.CrowdfundingStateClosed) {
-		// Transfer the raised funds to the creator
-		if err = env.ERC20Transfer(
-			stablecoin.Address,
-			appAddress,
-			res.Creator,
-			res.DebtIssued.ToBig(),
-		); err != nil {
-			return err
-		}
+	if err = env.ERC20Transfer(
+		stablecoin.Address,
+		appAddress,
+		res.Creator,
+		res.DebtIssued.ToBig(),
+	); err != nil {
+		return err
 	}
+
 	crowdfunding, err := json.Marshal(res)
 	if err != nil {
 		return err
@@ -129,7 +127,7 @@ func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.
 		return err
 	}
 	ctx := context.Background()
-	settleCrowdfunding := crowdfunding_usecase.NewSettleCrowdfundingUseCase(h.UserRepository, h.CrowdfundingRepository, h.ContractRepository)
+	settleCrowdfunding := crowdfunding_usecase.NewSettleCrowdfundingUseCase(h.UserRepository, h.CrowdfundingRepository, h.ContractRepository, h.OrderRepository)
 	res, err := settleCrowdfunding.Execute(ctx, input, deposit, metadata)
 	if err != nil {
 		return err

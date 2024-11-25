@@ -8,14 +8,6 @@ cleanup() {
 }
 trap cleanup SIGINT
 
-# Deploy tokens using Forge
-forge script ./contracts/script/Token.s.sol \
-    --private-key ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
-    --rpc-url http://localhost:8545 \
-    --broadcast \
-    --root ./contracts \
-    -vv &  # Inicia em segundo plano
-
 # Helper function to convert string to hex
 stringToHex() {
     echo -n "$1" | xxd -p | tr -d '\n' | sed 's/^/0x/'
@@ -25,14 +17,10 @@ stringToHex() {
 INPUT_BOX="0x59b22D57D4f067708AB0c00552767405926dc768"
 DAPP_ADDRESS="0xab7528bb862fb57e8a2bcd567a2e929a0be56a5e"
 PORTAL_ADDRESS="0x9C21AEb2093C32DDbC53eEF24B873BDCd1aDa1DB"
-STABLECOIN_ADDRESS="0x368B8A7D8A2247489582CC83b502d0A9A185E4E9"
-TOKENIZED_RECEIVABLE_ADDRESS="0x8C3dADb62dec908515049dE39A52828681cc4912"
 ADMIN_ADDRESS="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 ADMIN_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 CREATOR_ADDRESS="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 CREATOR_PRIVATE_KEY="0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-
-DAPP_ADDRESS_RELAY="0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE"
 
 INVESTOR_ADDRESSES=(
     "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
@@ -50,79 +38,143 @@ INVESTOR_PRIVATE_KEYS=(
     "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e"
 )
 
-# Function to relay DApp address to InputBox
+# Deploy the Token contract and capture the deployed address
+deployToken() {
+    local tokenName="$1"
+    local tokenSymbol="$2"    
+    # Execute the forge create command and capture the output
+    result=$(forge create ./src/Token.sol:Token \
+        --private-key $ADMIN_PRIVATE_KEY \
+        --rpc-url http://localhost:8545 \
+        --root ./contracts \
+        --constructor-args "$tokenName" "$tokenSymbol" 2>&1)
+    
+    # Extract the deployed address from the output
+    deployedAddress=$(echo "$result" | grep "Deployed to:" | awk '{print $3}')
+    
+    # Check if the deployed address was extracted
+    if [[ -z "$deployedAddress" ]]; then
+        echo "Error: Failed to deploy contract for $tokenName ($tokenSymbol)."
+        echo "$result"
+        exit 1
+    fi
+    echo "$deployedAddress"
+}
+
+# Relay the DApp address
 relayDAppAddress() {
     local dappAddress="$1"
-    local senderPrivateKey="$2"
-    cast send $DAPP_ADDRESS_RELAY "relayDAppAddress(address)" $dappAddress --private-key $senderPrivateKey --rpc-url http://localhost:8545
+    cast send 0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE "relayDAppAddress(address)" $dappAddress --private-key $ADMIN_PRIVATE_KEY --rpc-url http://localhost:8545
 }
 
-# Function to send an input to the INPUT_BOX contract
+# Send input to the INPUT_BOX contract
 sendInput() {
     local payload="$1"
-    local senderPrivateKey="$2"
-    local hexPayload
     hexPayload=$(stringToHex "$payload")
-    cast send $INPUT_BOX "addInput(address,bytes)(bytes32)" $DAPP_ADDRESS $hexPayload --private-key $senderPrivateKey --rpc-url http://localhost:8545
+    cast send $INPUT_BOX "addInput(address,bytes)(bytes32)" $DAPP_ADDRESS $hexPayload --private-key $ADMIN_PRIVATE_KEY --rpc-url http://localhost:8545
 }
 
-# Function to approve ERC20 tokens
+# Mint tokens to a specified address
+mintTokens() {
+    local tokenAddress="$1"
+    local recipient="$2"
+    local amount="$3"
+    cast send $tokenAddress "mint(address,uint256)" $recipient $amount --private-key $ADMIN_PRIVATE_KEY --rpc-url http://localhost:8545
+    echo "Minted $amount tokens to $recipient on $tokenAddress"
+}
+
+# Approve ERC20 tokens
 approveTokens() {
     local token="$1"
     local spender="$2"
     local amount="$3"
     local privateKey="$4"
-    cast send $token "approve(address,uint256)" $spender $amount --private-key $privateKey --rpc-url http://localhost:8545
+    echo "Approving $amount tokens for spender ($spender)..."
+    cast send $token \
+        "approve(address,uint256)" \
+        $spender $amount \
+        --private-key $privateKey \
+        --rpc-url http://localhost:8545
 }
 
 # Function to deposit ERC20 tokens
-depositTokens() {
+depositERC20Tokens() {
     local token="$1"
     local dapp="$2"
     local amount="$3"
     local execLayerData="$4"
     local privateKey="$5"
-    cast send $PORTAL_ADDRESS "depositERC20Tokens(address,address,uint256,bytes)" $token $dapp $amount $execLayerData --private-key $privateKey --rpc-url http://localhost:8545
+    echo "Depositing $amount of token ($token) to DApp ($dapp)..."
+    cast send $PORTAL_ADDRESS \
+        "depositERC20Tokens(address,address,uint256,bytes)" \
+        $token $dapp $amount "$(stringToHex "$execLayerData")" \
+        --private-key $privateKey \
+        --rpc-url http://localhost:8545
 }
 
-# 0. Relay the DApp address (required before sending inputs)
 echo "Relaying DApp address..."
-relayDAppAddress $DAPP_ADDRESS $ADMIN_PRIVATE_KEY &
+relayDAppAddress $DAPP_ADDRESS
+sleep 1
 
-# 1. Create users (sent by admin)
+echo "Deploying contracts..."
+STABLECOIN_ADDRESS=$(deployToken "Stablecoin" "STABLECOIN")
+sleep 1
+
+TOKENIZED_RECEIVABLE_ADDRESS=$(deployToken "Pink" "PINK")
+sleep 1
+
+echo "Deployed contracts:"
+echo "STABLECOIN_ADDRESS=$STABLECOIN_ADDRESS"
+echo "TOKENIZED_RECEIVABLE_ADDRESS=$TOKENIZED_RECEIVABLE_ADDRESS"
+
+echo "Minting tokens to investors and creator..."
+mintTokens $TOKENIZED_RECEIVABLE_ADDRESS $CREATOR_ADDRESS 10000000
+sleep 1
+
+mintTokens $STABLECOIN_ADDRESS $CREATOR_ADDRESS 10000000
+sleep 1
+
+for investor in "${INVESTOR_ADDRESSES[@]}"; do
+    mintTokens $STABLECOIN_ADDRESS $investor 10000000
+    sleep 1
+done
+
+# Create contracts
+echo "Creating contracts..."
+sendInput '{"path":"createContract","payload":{"symbol":"STABLECOIN","address":"'"$STABLECOIN_ADDRESS"'"}}'
+sleep 1
+sendInput '{"path":"createContract","payload":{"symbol":"TOKENIZED_RECEIVABLE","address":"'"$TOKENIZED_RECEIVABLE_ADDRESS"'"}}'
+sleep 1
+
+# Create users
 echo "Creating users..."
-sendInput '{"path":"createUser","payload":{"address":"'"$CREATOR_ADDRESS"'","role":"creator"}}' $ADMIN_PRIVATE_KEY &
+sendInput '{"path":"createUser","payload":{"address":"'"$CREATOR_ADDRESS"'","role":"creator"}}'
+sleep 1
 for i in "${!INVESTOR_ADDRESSES[@]}"; do
     role="non_qualified_investor"
     [ "$i" -lt 2 ] && role="qualified_investor"
-    sendInput '{"path":"createUser","payload":{"address":"'"${INVESTOR_ADDRESSES[$i]}"'","role":"'"$role"'"}}' $ADMIN_PRIVATE_KEY &
-    sleep 0.5
+    sendInput '{"path":"createUser","payload":{"address":"'"${INVESTOR_ADDRESSES[$i]}"'","role":"'"$role"'"}}'
+    sleep 1
 done
-wait 
-# 2. Create contracts
-echo "Creating contracts..."
-createContractPayload='{"path":"createContract","payload":{"symbol":"STABLECOIN","address":"'"$STABLECOIN_ADDRESS"'"}}'
-sendInput "$createContractPayload" $ADMIN_PRIVATE_KEY &
 
-createContractPayload='{"path":"createContract","payload":{"symbol":"TOKENIZED_RECEIVABLE","address":"'"$TOKENIZED_RECEIVABLE_ADDRESS"'"}}'
-sendInput "$createContractPayload" $ADMIN_PRIVATE_KEY &
-wait
-
-# 3. Create crowdfunding (sent by creator)
+# Create crowdfunding
 echo "Creating crowdfunding..."
 current_timestamp=$(date +%s)
-expires_at=$((current_timestamp + 60))  # Expiração em 60 segundos
-maturity_at=$((current_timestamp + 120)) # Maturidade em 120 segundos
-
+expires_at=$((current_timestamp + 60))
+maturity_at=$((current_timestamp + 120))
 crowdfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","expires_at":'"$expires_at"',"maturity_at":'"$maturity_at"'}}'
-approveTokens $TOKENIZED_RECEIVABLE_ADDRESS $PORTAL_ADDRESS 10000 $CREATOR_PRIVATE_KEY &
-depositTokens $TOKENIZED_RECEIVABLE_ADDRESS $DAPP_ADDRESS 10000 "$(stringToHex "$crowdfundingPayload")" $CREATOR_PRIVATE_KEY &
-wait
+approveTokens $TOKENIZED_RECEIVABLE_ADDRESS $PORTAL_ADDRESS 10000 $CREATOR_PRIVATE_KEY
+sleep 1
+depositERC20Tokens $TOKENIZED_RECEIVABLE_ADDRESS $DAPP_ADDRESS 10000 "$crowdfundingPayload" $CREATOR_PRIVATE_KEY
+sleep 1
+dfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","expires_at":'"$expires_at"',"maturity_at":'"$maturity_at"'}}'
+
 
 # 4. Update crowdfunding to ongoing (sent by admin)
 echo "Updating crowdfunding state to 'ongoing'..."
 updatePayload='{"path":"updateCrowdfunding","payload":{"id":1,"state":"ongoing"}}'
 sendInput "$updatePayload" $ADMIN_PRIVATE_KEY &
+sleep 1
 wait
 
 # 5. Create orders from investors (sent by each investor)
@@ -132,10 +184,13 @@ INTEREST_RATES=("9" "8" "4" "6" "4")
 for i in "${!INVESTOR_ADDRESSES[@]}"; do
     orderPayload='{"path":"createOrder","payload":{"creator":"'"$CREATOR_ADDRESS"'","interest_rate":"'"${INTEREST_RATES[$i]}"'"}}'
     approveTokens $STABLECOIN_ADDRESS $PORTAL_ADDRESS "${ORDER_AMOUNTS[$i]}" "${INVESTOR_PRIVATE_KEYS[$i]}" &
-    depositTokens $STABLECOIN_ADDRESS $DAPP_ADDRESS "${ORDER_AMOUNTS[$i]}" "$(stringToHex "$orderPayload")" "${INVESTOR_PRIVATE_KEYS[$i]}" &
-    sleep 0.5
+    sleep 1
+    depositERC20Tokens $STABLECOIN_ADDRESS $DAPP_ADDRESS "${ORDER_AMOUNTS[$i]}" "$orderPayload" "${INVESTOR_PRIVATE_KEYS[$i]}" &
+    sleep 1
 done
+sleep 1
 wait
+
 # 6. Wait for crowdfunding expiration
 echo "Waiting for crowdfunding to expire..."
 sleep 60
@@ -153,8 +208,9 @@ sleep 60
 # 9. Settle crowdfunding (sent by creator using stablecoin)
 echo "Settling crowdfunding..."
 settlePayload='{"path":"settleCrowdfunding","payload":{"crowdfunding_id":1}}'
-approveTokens $STABLECOIN_ADDRESS $PORTAL_ADDRESS 108600 $CREATOR_PRIVATE_KEY &
-depositTokens $STABLECOIN_ADDRESS $DAPP_ADDRESS 108600 "$(stringToHex "$settlePayload")" $CREATOR_PRIVATE_KEY &
+approveTokens $STABLECOIN_ADDRESS $PORTAL_ADDRESS 108270 $CREATOR_PRIVATE_KEY &
+sleep 1
+depositERC20Tokens $STABLECOIN_ADDRESS $DAPP_ADDRESS 108270 "$settlePayload" $CREATOR_PRIVATE_KEY &
 wait
 
-echo "All transactions completed successfully!"
+# echo "All transactions completed successfully!"

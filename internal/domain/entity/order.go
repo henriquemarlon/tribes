@@ -21,7 +21,7 @@ const (
 	OrderStateAccepted          OrderState = "accepted"
 	OrderStatePartiallyAccepted OrderState = "partially_accepted"
 	OrderStateRejected          OrderState = "rejected"
-	OrderStateSettled           OrderState = "paid"
+	OrderStateSettled           OrderState = "settled"
 )
 
 type OrderRepository interface {

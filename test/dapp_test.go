@@ -179,7 +179,7 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	expectedOutput = fmt.Sprintf(
 		`crowdfunding settled - {"id":1,"creator":"0x0000000000000000000000000000000000000007","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108600","state":"settled","orders":[`+
 			`{"id":1,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000001","amount":"60000","interest_rate":"9","state":"accepted","created_at":%d,"updated_at":%d},`+
-			`{"id":2,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"40000","interest_rate":"8","state":"partially_accepted","created_at":%d,"updated_at":%d},`+
+			`{"id":2,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000002","amount":"40000","interest_rate":"8","state":"settled","created_at":%d,"updated_at":%d},`+
 			`{"id":3,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000003","amount":"2000","interest_rate":"4","state":"rejected","created_at":%d,"updated_at":%d},`+
 			`{"id":4,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000004","amount":"3000","interest_rate":"6","state":"rejected","created_at":%d,"updated_at":%d},`+
 			`{"id":5,"crowdfunding_id":1,"investor":"0x0000000000000000000000000000000000000005","amount":"400","interest_rate":"4","state":"rejected","created_at":%d,"updated_at":%d},`+

@@ -34,7 +34,7 @@ func (h *OrderAdvanceHandlers) CreateOrderHandler(env rollmelette.Env, metadata 
 	}
 	var input order_usecase.CreateOrderInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal input: %w, payload: %s", err, string(payload))
 	}
 	ctx := context.Background()
 	createOrder := order_usecase.NewCreateOrderUseCase(h.UserRepository, h.OrderRepository, h.ContractRepository, h.CrowdfundingRepository)
