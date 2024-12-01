@@ -19,6 +19,7 @@ type OrderState string
 const (
 	OrderStatePending           OrderState = "pending"
 	OrderStateAccepted          OrderState = "accepted"
+	OrderCancelled              OrderState = "cancelled"
 	OrderStatePartiallyAccepted OrderState = "partially_accepted"
 	OrderStateRejected          OrderState = "rejected"
 	OrderStateSettled           OrderState = "settled"
