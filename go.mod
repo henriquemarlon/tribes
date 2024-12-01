@@ -3,7 +3,7 @@ module github.com/tribeshq/tribes
 go 1.22.5
 
 require (
-	github.com/ethereum/go-ethereum v1.13.14
+	github.com/ethereum/go-ethereum v1.13.15
 	github.com/google/wire v0.6.0
 	github.com/holiman/uint256 v1.2.4
 	github.com/rollmelette/rollmelette v0.2.0
