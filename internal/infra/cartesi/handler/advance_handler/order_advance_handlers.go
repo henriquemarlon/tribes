@@ -57,3 +57,39 @@ func (h *OrderAdvanceHandlers) CreateOrderHandler(env rollmelette.Env, metadata 
 	env.Notice(append([]byte("order created - "), order...))
 	return nil
 }
+
+func (h *OrderAdvanceHandlers) CancelOrderHandler(env rollmelette.Env, metadata rollmelette.Metadata, deposit rollmelette.Deposit, payload []byte) error {
+	var input order_usecase.CancelOrderInputDTO
+	if err := json.Unmarshal(payload, &input); err != nil {
+		return err
+	}
+	ctx := context.Background()
+	cancelOrder := order_usecase.NewCancelOrderUseCase(h.UserRepository, h.OrderRepository, h.CrowdfundingRepository)
+	res, err := cancelOrder.Execute(ctx, &input, metadata)
+	if err != nil {
+		return err
+	}
+	// TODO: remove this check when update to V2
+	appAddress, isSet := env.AppAddress()
+	if !isSet {
+		return fmt.Errorf("no application address defined yet, contact the Tribes support")
+	}
+	contract, err := h.ContractRepository.FindContractBySymbol(ctx, "STABLECOIN")
+	if err != nil {
+		return err
+	}
+	if err := env.ERC20Transfer(
+		contract.Address,
+		appAddress,
+		metadata.MsgSender,
+		res.Amount.ToBig(),
+	); err != nil {
+		return err
+	}
+	order, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+	env.Notice(append([]byte("order canceled - "), order...))
+	return nil
+}
