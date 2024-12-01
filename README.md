@@ -104,7 +104,7 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 2. Generate rollup filesystem:
 
    ```sh
-   ❯ cartesi build --from-image ghcr.io/henriquemarlon/tribes-machine
+   ❯ cartesi build --from-image ghcr.io/tribeshq/tribes-machine
    ```
 
 3. Run validator node:
