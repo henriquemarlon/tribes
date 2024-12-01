@@ -42,10 +42,7 @@ A crowdfunding platform designed for prominent content creators, enabling them t
     ├── build
     │   └── Dockerfile.machine
     ├── cmd
-    │   ├── tribes-auth
-    │   ├── tribes-ramp
     │   ├── tribes-rollup
-    │   └── tribes-web3-provider
     ├── configs
     │   └── sqlite.go
     ├── contracts
