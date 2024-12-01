@@ -5,7 +5,7 @@
     <i>The new frontier of financial services for the creators' economy</i>
 </div>
 <div align="center">
-<b>Collateralized tokenization of receivables for debt issuance through crowdfunding</b>
+<b>Debt issuance through crowdfunding w/ collateralized tokenization of receivables</b>
 </div>
 <br>
 <p align="center">
