@@ -15,11 +15,11 @@
 
 ##  Table of Contents
 
-- [Overview](#-overview)
+- [Overview](#overview)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
+  - [Running](#running)
   - [Testing](#testing)
 - [Contributors](#contributors)
 
@@ -28,6 +28,16 @@
 <div align="justify">
 A crowdfunding platform designed for prominent content creators, enabling them to monetize their influence by issuing tokenized debt instruments collateralized exclusively by their tokenized future receivables. Based on Resolution No. 88 of the Brazilian Securities and Exchange Commission (CVM), the Brazilian SEC, the platform connects creators with a network of investors, offering a structured and transparent alternative to finance scalable businesses while leveraging the economic potential of their audiences, ensuring legal compliance and attractive returns for investors.
 </div>
+<br>
+
+[![Docs]][Link-docs] [![Deck]][Link-deck]
+	
+[Docs]: https://img.shields.io/badge/Documentation-959CD0?style=for-the-badge
+[Link-docs]: https://docs.google.com/document/d/1l5D6sn9DBbaJFtTCfIM1gxoH7-10fVi9t2tsNr942Rw/edit?tab=t.0#heading=h.dfmi5re7vy34
+
+[Deck]: https://img.shields.io/badge/Pitch%20Deck-D1DCCB?style=for-the-badge
+[Link-deck]: https://www.canva.com/design/DAGVvlTnNpM/GsV9c1XuhYRYCrPK5811GA/view?utm_content=DAGVvlTnNpM&utm_campaign=designshare&utm_medium=link&utm_source=editor
+
 
 ##  Project Structure
 
@@ -79,19 +89,20 @@ A crowdfunding platform designed for prominent content creators, enabling them t
    ❯ npm i -g @cartesi/cli
    ```
 
-4. [Download and Install the latest version of Golang.](https://go.dev/doc/install)
-
-5. Install development node:
-
-   ```shell
-   ❯ npm i -g nonodo
-   ```
-
-6. Install air ( hot reload tool ):
-
-   ```shell
-   ❯ go install github.com/air-verse/air@latest
-   ```
+> [!IMPORTANT]
+>  To run the system in development mode, it is required to install:
+>
+> 1. [Download and Install the latest version of Golang.](https://go.dev/doc/install)
+> 2. Install development node:
+>
+>   ```shell
+>   ❯ npm i -g nonodo
+>   ```
+> 3. Install air ( hot reload tool ):
+>
+>   ```shell
+>   ❯ go install github.com/air-verse/air@latest
+>   ```
 
 ###  Running
 
@@ -107,18 +118,18 @@ A crowdfunding platform designed for prominent content creators, enabling them t
    ❯ cartesi build --from-image ghcr.io/tribeshq/tribes-machine
    ```
 
-3. Run validator node:
-
-   ```sh
-   ❯ cartesi run
-   ```
-
-> [!IMPORTANT]
+> [!NOTE]
 >  To run the system in development mode:
 >
 >   ```sh
 >   ❯ make dev
 >   ```
+
+3. Run validator node:
+
+   ```sh
+   ❯ cartesi run
+   ```
 
 > [!NOTE]
 > To reach the final state of the system, follow these steps:
