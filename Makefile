@@ -23,8 +23,8 @@ build:
 .PHONY: dev
 dev:
 	$(START_LOG)
-	@cd ./cmd/tribes-rollup/lib && cargo build --release
-	@cp ./cmd/tribes-rollup/lib/target/release/libverifier.a ./internal/infra/cartesi/middleware/
+	@cd ./tools/tlsnotary/verifier && cargo build --release
+	@cp ./tools/tlsnotary/verifier/target/release/libverifier.a ./internal/usecase/crowdfunding_usecase/
 	@nonodo -- air
 	
 .PHONY: generate
@@ -35,10 +35,15 @@ generate:
 
 .PHONY: test
 test:
-	@cd ./cmd/tribes-rollup/lib && cargo build --release
-	@cp ./cmd/tribes-rollup/lib/target/release/libverifier.a ./internal/infra/cartesi/middleware/
+	@cd ./tools/tlsnotary/verifier && cargo build --release
+	@cp ./tools/tlsnotary/verifier/target/release/libverifier.a ./internal/usecase/crowdfunding_usecase/
 	@go test -p=1 ./... -coverprofile=./coverage.md -v
 
 .PHONY: coverage
 coverage: test
 	@go tool cover -html=./coverage.md
+
+.PHONY: state
+state:
+	@chmod +x ./tools/state.sh
+	@./tools/state.sh

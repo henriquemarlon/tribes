@@ -16,17 +16,18 @@ type CloseCrowdfundingInputDTO struct {
 }
 
 type CloseCrowdfundingOutputDTO struct {
-	Id              uint            `json:"id"`
-	Creator         common.Address  `json:"creator,omitempty"`
-	DebtIssued      *uint256.Int    `json:"debt_issued,omitempty"`
-	MaxInterestRate *uint256.Int    `json:"max_interest_rate,omitempty"`
-	TotalObligation *uint256.Int    `json:"total_obligation,omitempty"`
-	State           string          `json:"state,omitempty"`
-	Orders          []*entity.Order `json:"orders,omitempty"`
-	ClosesAt        int64           `json:"closes_at,omitempty"`
-	MaturityAt      int64           `json:"maturity_at,omitempty"`
-	CreatedAt       int64           `json:"created_at,omitempty"`
-	UpdatedAt       int64           `json:"updated_at,omitempty"`
+	Id                  uint            `json:"id"`
+	Creator             common.Address  `json:"creator,omitempty"`
+	DebtIssued          *uint256.Int    `json:"debt_issued,omitempty"`
+	MaxInterestRate     *uint256.Int    `json:"max_interest_rate,omitempty"`
+	TotalObligation     *uint256.Int    `json:"total_obligation,omitempty"`
+	Orders              []*entity.Order `json:"orders,omitempty"`
+	State               string          `json:"state,omitempty"`
+	FundraisingDuration int64           `json:"fundraising_duration,omitempty"`
+	ClosesAt            int64           `json:"closes_at,omitempty"`
+	MaturityAt          int64           `json:"maturity_at,omitempty"`
+	CreatedAt           int64           `json:"created_at,omitempty"`
+	UpdatedAt           int64           `json:"updated_at,omitempty"`
 }
 
 type CloseCrowdfundingUseCase struct {
@@ -177,16 +178,17 @@ func (u *CloseCrowdfundingUseCase) Execute(ctx context.Context, input *CloseCrow
 	}
 
 	return &CloseCrowdfundingOutputDTO{
-		Id:              res.Id,
-		Creator:         res.Creator,
-		DebtIssued:      res.DebtIssued,
-		MaxInterestRate: res.MaxInterestRate,
-		TotalObligation: res.TotalObligation,
-		State:           string(res.State),
-		Orders:          res.Orders,
-		ClosesAt:        res.ClosesAt,
-		MaturityAt:      res.MaturityAt,
-		CreatedAt:       res.CreatedAt,
-		UpdatedAt:       res.UpdatedAt,
+		Id:                  res.Id,
+		Creator:             res.Creator,
+		DebtIssued:          res.DebtIssued,
+		MaxInterestRate:     res.MaxInterestRate,
+		TotalObligation:     res.TotalObligation,
+		Orders:              res.Orders,
+		State:               string(res.State),
+		FundraisingDuration: res.FundraisingDuration,
+		ClosesAt:            res.ClosesAt,
+		MaturityAt:          res.MaturityAt,
+		CreatedAt:           res.CreatedAt,
+		UpdatedAt:           res.UpdatedAt,
 	}, nil
 }

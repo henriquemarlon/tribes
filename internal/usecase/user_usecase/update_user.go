@@ -17,13 +17,14 @@ type UpdateUserInputDTO struct {
 }
 
 type UpdateUserOutputDTO struct {
-	Id                uint           `json:"id"`
-	Role              string         `json:"role"`
-	Address           common.Address `json:"address"`
-	InvestmentLimit   *uint256.Int   `json:"investment_limit,omitempty" gorm:"type:bigint"`
-	DebtIssuanceLimit *uint256.Int   `json:"debt_issuance_limit,omitempty" gorm:"type:bigint"`
-	CreatedAt         int64          `json:"created_at"`
-	UpdatedAt         int64          `json:"updated_at"`
+	Id                uint                    `json:"id"`
+	Role              string                  `json:"role"`
+	Address           common.Address          `json:"address"`
+	SocialAccounts    []*entity.SocialAccount `json:"social_accounts"`
+	InvestmentLimit   *uint256.Int            `json:"investment_limit,omitempty" gorm:"type:bigint"`
+	DebtIssuanceLimit *uint256.Int            `json:"debt_issuance_limit,omitempty" gorm:"type:bigint"`
+	CreatedAt         int64                   `json:"created_at"`
+	UpdatedAt         int64                   `json:"updated_at"`
 }
 
 type UpdateUserUseCase struct {
@@ -51,6 +52,7 @@ func (u *UpdateUserUseCase) Execute(ctx context.Context, input *UpdateUserInputD
 		Id:                user.Id,
 		Role:              string(user.Role),
 		Address:           user.Address,
+		SocialAccounts:    user.SocialAccounts,
 		InvestmentLimit:   user.InvestmentLimit,
 		DebtIssuanceLimit: user.DebtIssuanceLimit,
 		CreatedAt:         user.CreatedAt,

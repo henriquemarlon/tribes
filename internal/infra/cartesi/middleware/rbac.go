@@ -2,8 +2,6 @@ package middleware
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -38,9 +36,6 @@ func (m *RBACMiddleware) Middleware(handlerFunc router.AdvanceHandlerFunc, roles
 			Address: address,
 		})
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("user not found during RBAC middleware check")
-			}
 			return err
 		}
 		var hasRole bool

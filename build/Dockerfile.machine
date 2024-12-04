@@ -29,8 +29,8 @@ RUN rustup target add riscv64gc-unknown-linux-gnu
 # Leverage a bind mount to the src directory to avoid having to copy the
 # source code into the container. Once built, copy the executable to an
 # output directory before the cache mounted /app/target is unmounted.
-RUN --mount=type=bind,source=./cmd/tribes-rollup/lib/src,target=src \
-  --mount=type=bind,source=./cmd/tribes-rollup/lib/Cargo.toml,target=Cargo.toml \
+RUN --mount=type=bind,source=./tools/tlsnotary/verifier/src,target=src \
+  --mount=type=bind,source=./tools/tlsnotary/verifier/Cargo.toml,target=Cargo.toml \
   --mount=type=cache,target=/app/target/ \
   --mount=type=cache,target=/usr/local/cargo/git/db \
   --mount=type=cache,target=/usr/local/cargo/registry/ \

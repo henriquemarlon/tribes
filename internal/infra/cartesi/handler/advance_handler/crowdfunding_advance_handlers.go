@@ -13,23 +13,26 @@ import (
 )
 
 type CrowdfundingAdvanceHandlers struct {
-	OrderRepository        entity.OrderRepository
-	UserRepository         entity.UserRepository
-	CrowdfundingRepository entity.CrowdfundingRepository
-	ContractRepository     entity.ContractRepository
+	OrderRepository         entity.OrderRepository
+	UserRepository          entity.UserRepository
+	SocialAccountRepository entity.SocialAccountRepository
+	CrowdfundingRepository  entity.CrowdfundingRepository
+	ContractRepository      entity.ContractRepository
 }
 
 func NewCrowdfundingAdvanceHandlers(
 	orderRepository entity.OrderRepository,
 	userRepository entity.UserRepository,
+	socialAccountRepository entity.SocialAccountRepository,
 	crowdfundingRepository entity.CrowdfundingRepository,
 	contractRepository entity.ContractRepository,
 ) *CrowdfundingAdvanceHandlers {
 	return &CrowdfundingAdvanceHandlers{
-		OrderRepository:        orderRepository,
-		UserRepository:         userRepository,
-		CrowdfundingRepository: crowdfundingRepository,
-		ContractRepository:     contractRepository,
+		OrderRepository:         orderRepository,
+		UserRepository:          userRepository,
+		SocialAccountRepository: socialAccountRepository,
+		CrowdfundingRepository:  crowdfundingRepository,
+		ContractRepository:      contractRepository,
 	}
 }
 
@@ -44,7 +47,7 @@ func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.
 		return err
 	}
 	ctx := context.Background()
-	createCrowdfunding := crowdfunding_usecase.NewCreateCrowdfundingUseCase(h.UserRepository, h.CrowdfundingRepository)
+	createCrowdfunding := crowdfunding_usecase.NewCreateCrowdfundingUseCase(h.UserRepository, h.SocialAccountRepository, h.CrowdfundingRepository)
 	res, err := createCrowdfunding.Execute(ctx, input, deposit, metadata)
 	if err != nil {
 		return err

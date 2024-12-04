@@ -29,6 +29,7 @@ func (u *FindAllUsersUseCase) Execute(ctx context.Context) (*FindAllUsersOutputD
 			Id:                user.Id,
 			Role:              string(user.Role),
 			Address:           user.Address,
+			SocialAccounts:    user.SocialAccounts,
 			InvestmentLimit:   user.InvestmentLimit,
 			DebtIssuanceLimit: user.DebtIssuanceLimit,
 			CreatedAt:         user.CreatedAt,

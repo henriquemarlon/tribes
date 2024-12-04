@@ -35,6 +35,7 @@ func SetupSQlite(path string) (*gorm.DB, error) {
 		entity.Order{},
 		entity.Contract{},
 		entity.Crowdfunding{},
+		entity.SocialAccount{},
 	); err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}

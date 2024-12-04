@@ -45,7 +45,7 @@ func (r *UserRepositorySqlite) FindUserByAddress(ctx context.Context, address co
 		return nil, fmt.Errorf("failed to find user by address: %w", err)
 	}
 
-	return &entity.User{
+	user := &entity.User{
 		Id:                uint(result["id"].(int64)),
 		Role:              entity.UserRole(result["role"].(string)),
 		Address:           common.HexToAddress(result["address"].(string)),
@@ -53,7 +53,30 @@ func (r *UserRepositorySqlite) FindUserByAddress(ctx context.Context, address co
 		DebtIssuanceLimit: uint256.MustFromHex(result["debt_issuance_limit"].(string)),
 		CreatedAt:         result["created_at"].(int64),
 		UpdatedAt:         result["updated_at"].(int64),
-	}, nil
+	}
+
+	var socialResults []map[string]interface{}
+	err = r.Db.WithContext(ctx).Raw(`
+		SELECT id, user_id, username, followers, platform, created_at, updated_at
+		FROM social_accounts
+		WHERE user_id = ?
+	`, user.Id).Scan(&socialResults).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to find social accounts for user: %w", err)
+	}
+
+	for _, data := range socialResults {
+		user.SocialAccounts = append(user.SocialAccounts, &entity.SocialAccount{
+			Id:        uint(data["id"].(int64)),
+			UserId:    uint(data["user_id"].(int64)),
+			Username:  data["username"].(string),
+			Followers: uint(data["followers"].(int64)),
+			Platform:  entity.Platform(data["platform"].(string)),
+			CreatedAt: data["created_at"].(int64),
+			UpdatedAt: data["updated_at"].(int64),
+		})
+	}
+	return user, nil
 }
 
 func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string) ([]*entity.User, error) {
@@ -68,7 +91,7 @@ func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string)
 
 	var users []*entity.User
 	for _, data := range results {
-		users = append(users, &entity.User{
+		user := &entity.User{
 			Id:                uint(data["id"].(int64)),
 			Role:              entity.UserRole(data["role"].(string)),
 			Address:           common.HexToAddress(data["address"].(string)),
@@ -76,7 +99,30 @@ func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string)
 			DebtIssuanceLimit: uint256.MustFromHex(data["debt_issuance_limit"].(string)),
 			CreatedAt:         data["created_at"].(int64),
 			UpdatedAt:         data["updated_at"].(int64),
-		})
+		}
+
+		var socialResults []map[string]interface{}
+		err := r.Db.WithContext(ctx).Raw(`
+			SELECT id, user_id, username, followers, platform, created_at, updated_at
+			FROM social_accounts
+			WHERE user_id = ?
+		`, user.Id).Scan(&socialResults).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to find social accounts for user %d: %w", user.Id, err)
+		}
+
+		for _, data := range socialResults {
+			user.SocialAccounts = append(user.SocialAccounts, &entity.SocialAccount{
+				Id:        uint(data["id"].(int64)),
+				UserId:    uint(data["user_id"].(int64)),
+				Username:  data["username"].(string),
+				Followers: uint(data["followers"].(int64)),
+				Platform:  entity.Platform(data["platform"].(string)),
+				CreatedAt: data["created_at"].(int64),
+				UpdatedAt: data["updated_at"].(int64),
+			})
+		}
+		users = append(users, user)
 	}
 	return users, nil
 }
@@ -93,7 +139,7 @@ func (r *UserRepositorySqlite) FindAllUsers(ctx context.Context) ([]*entity.User
 
 	var users []*entity.User
 	for _, data := range results {
-		users = append(users, &entity.User{
+		user := &entity.User{
 			Id:                uint(data["id"].(int64)),
 			Role:              entity.UserRole(data["role"].(string)),
 			Address:           common.HexToAddress(data["address"].(string)),
@@ -101,7 +147,31 @@ func (r *UserRepositorySqlite) FindAllUsers(ctx context.Context) ([]*entity.User
 			DebtIssuanceLimit: uint256.MustFromHex(data["debt_issuance_limit"].(string)),
 			CreatedAt:         data["created_at"].(int64),
 			UpdatedAt:         data["updated_at"].(int64),
-		})
+		}
+
+		var socialResults []map[string]interface{}
+		err := r.Db.WithContext(ctx).Raw(`
+			SELECT id, user_id, username, followers, platform, created_at, updated_at
+			FROM social_accounts
+			WHERE user_id = ?
+		`, user.Id).Scan(&socialResults).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to find social accounts for user %d: %w", user.Id, err)
+		}
+
+		for _, data := range socialResults {
+			user.SocialAccounts = append(user.SocialAccounts, &entity.SocialAccount{
+				Id:        uint(data["id"].(int64)),
+				UserId:    uint(data["user_id"].(int64)),
+				Username:  data["username"].(string),
+				Followers: uint(data["followers"].(int64)),
+				Platform:  entity.Platform(data["platform"].(string)),
+				CreatedAt: data["created_at"].(int64),
+				UpdatedAt: data["updated_at"].(int64),
+			})
+		}
+
+		users = append(users, user)
 	}
 	return users, nil
 }
