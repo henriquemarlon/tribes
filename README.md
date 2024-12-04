@@ -159,4 +159,5 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 
 - [ ] References for the resolution 88 from CVM;
 - [ ] Refactor of the database layer;
+- [ ] Remove business rules from the entity validation;
 - [ ] Tokens distribution for selected bids and deposit for withdraw investments;
