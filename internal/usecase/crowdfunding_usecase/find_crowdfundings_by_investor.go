@@ -42,17 +42,18 @@ func (f *FindCrowdfundingsByInvestorUseCase) Execute(ctx context.Context, input 
 			}
 		}
 		output[i] = &FindCrowdfundingOutputDTO{
-			Id:              crowdfunding.Id,
-			Creator:         crowdfunding.Creator,
-			DebtIssued:      crowdfunding.DebtIssued,
-			MaxInterestRate: crowdfunding.MaxInterestRate,
-			TotalObligation: crowdfunding.TotalObligation,
-			State:           string(crowdfunding.State),
-			Orders:          orders,
-			ClosesAt:        crowdfunding.ClosesAt,
-			MaturityAt:      crowdfunding.MaturityAt,
-			CreatedAt:       crowdfunding.CreatedAt,
-			UpdatedAt:       crowdfunding.UpdatedAt,
+			Id:                  crowdfunding.Id,
+			Creator:             crowdfunding.Creator,
+			DebtIssued:          crowdfunding.DebtIssued,
+			MaxInterestRate:     crowdfunding.MaxInterestRate,
+			TotalObligation:     crowdfunding.TotalObligation,
+			Orders:              orders,
+			State:               string(crowdfunding.State),
+			FundraisingDuration: crowdfunding.FundraisingDuration,
+			ClosesAt:            crowdfunding.ClosesAt,
+			MaturityAt:          crowdfunding.MaturityAt,
+			CreatedAt:           crowdfunding.CreatedAt,
+			UpdatedAt:           crowdfunding.UpdatedAt,
 		}
 	}
 	return &output, nil

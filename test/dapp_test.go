@@ -103,7 +103,7 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	maturityAt := baseTime + 10
 
 	// Create crowdfunding
-	createCrowdfundingInput := []byte(fmt.Sprintf(`{"path":"createCrowdfunding","payload":{"max_interest_rate":"10", "debt_issued":"100000", "closes_at":%d,"maturity_at":%d}}`, closesAt, maturityAt))
+	createCrowdfundingInput := []byte(fmt.Sprintf(`{"path":"createCrowdfunding","payload":{"max_interest_rate":"10", "debt_issued":"100000", "fundraising_duration":10, "closes_at":%d,"maturity_at":%d}}`, closesAt, maturityAt))
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000009"), creator, big.NewInt(10000), createCrowdfundingInput)
 	s.Len(result.Notices, 1)
 
@@ -115,23 +115,23 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	orderCreatedAt := baseTime
 
 	// Investors create orders
-	createOrderInput := []byte(fmt.Sprintf(`{"path": "createOrder", "payload": {"creator": "%s","interest_rate":"9"}}`, creator))
+	createOrderInput := []byte(`{"path": "createOrder", "payload": {"crowdfunding_id":1,"interest_rate":"9"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor01, big.NewInt(60000), createOrderInput)
 	s.Len(result.Notices, 1)
 
-	createOrderInput = []byte(fmt.Sprintf(`{"path": "createOrder", "payload": {"creator": "%s","interest_rate":"8"}}`, creator))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"crowdfunding_id":1,"interest_rate":"8"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor02, big.NewInt(52000), createOrderInput)
 	s.Len(result.Notices, 1)
 
-	createOrderInput = []byte(fmt.Sprintf(`{"path": "createOrder", "payload": {"creator": "%s","interest_rate":"4"}}`, creator))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"crowdfunding_id":1,"interest_rate":"4"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor03, big.NewInt(2000), createOrderInput)
 	s.Len(result.Notices, 1)
 
-	createOrderInput = []byte(fmt.Sprintf(`{"path": "createOrder", "payload": {"creator": "%s","interest_rate":"6"}}`, creator))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"crowdfunding_id":1,"interest_rate":"6"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor04, big.NewInt(3000), createOrderInput)
 	s.Len(result.Notices, 1)
 
-	createOrderInput = []byte(fmt.Sprintf(`{"path": "createOrder", "payload": {"creator": "%s","interest_rate":"4"}}`, creator))
+	createOrderInput = []byte(`{"path": "createOrder", "payload": {"crowdfunding_id":1,"interest_rate":"4"}}`)
 	result = s.tester.DepositERC20(common.HexToAddress("0x0000000000000000000000000000000000000008"), investor05, big.NewInt(400), createOrderInput)
 	s.Len(result.Notices, 1)
 
@@ -144,14 +144,14 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	updatedAt := baseTime + 5 // baseTime + sleep duration
 
 	// Expected output for closing crowdfunding
-	expectedOutput := fmt.Sprintf(`crowdfunding closed - {"id":1,"creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","state":"closed","orders":[`+
+	expectedOutput := fmt.Sprintf(`crowdfunding closed - {"id":1,"creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","orders":[`+
 		`{"id":1,"crowdfunding_id":1,"investor":"%s","amount":"42600","interest_rate":"9","state":"partially_accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":2,"crowdfunding_id":1,"investor":"%s","amount":"52000","interest_rate":"8","state":"accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":3,"crowdfunding_id":1,"investor":"%s","amount":"2000","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":4,"crowdfunding_id":1,"investor":"%s","amount":"3000","interest_rate":"6","state":"accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":5,"crowdfunding_id":1,"investor":"%s","amount":"400","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":6,"crowdfunding_id":1,"investor":"%s","amount":"17400","interest_rate":"9","state":"rejected","created_at":%d,"updated_at":%d}],`+
-		`"closes_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
+		`"state":"closed","fundraising_duration":10,"closes_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
 		creator.Hex(),
 		investor01.Hex(), orderCreatedAt, updatedAt, // Order 1
 		investor02.Hex(), orderCreatedAt, updatedAt, // Order 2
@@ -171,14 +171,14 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	settledAt := updatedAt // baseTime
 
 	// Expected output for settling crowdfunding
-	expectedOutput = fmt.Sprintf(`crowdfunding settled - {"id":1,"creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","state":"settled","orders":[`+
+	expectedOutput = fmt.Sprintf(`crowdfunding settled - {"id":1,"creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","orders":[`+
 		`{"id":1,"crowdfunding_id":1,"investor":"%s","amount":"42600","interest_rate":"9","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":2,"crowdfunding_id":1,"investor":"%s","amount":"52000","interest_rate":"8","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":3,"crowdfunding_id":1,"investor":"%s","amount":"2000","interest_rate":"4","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":4,"crowdfunding_id":1,"investor":"%s","amount":"3000","interest_rate":"6","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":5,"crowdfunding_id":1,"investor":"%s","amount":"400","interest_rate":"4","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":6,"crowdfunding_id":1,"investor":"%s","amount":"17400","interest_rate":"9","state":"rejected","created_at":%d,"updated_at":%d}],`+
-		`"closes_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
+		`"state":"settled","fundraising_duration":10,"closes_at":%d,"maturity_at":%d,"created_at":%d,"updated_at":%d}`,
 		creator.Hex(),
 		investor01.Hex(), orderCreatedAt, settledAt,
 		investor02.Hex(), orderCreatedAt, settledAt,

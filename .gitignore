@@ -74,3 +74,6 @@ pnpm-debug.log*
 bytecode.txt
 
 .air/
+
+Cargo.lock
+target

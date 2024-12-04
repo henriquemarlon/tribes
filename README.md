@@ -132,15 +132,10 @@ A crowdfunding platform designed for prominent content creators, enabling them t
    ```
 
 > [!NOTE]
-> To reach the final state of the system, follow these steps:
+> To reach the final state of the system, run the command bellow:
 >
-> 1. Make the `state.sh` script executable:
 >    ```shell
->    ❯ chmod +x state.sh
->    ```
-> 2. Run the script to set up the system state:
->    ```shell
->    ❯ ./state.sh
+>    ❯ make state
 >    ```
 
 ###  Testing

@@ -11,8 +11,8 @@ import (
 )
 
 type CreateOrderInputDTO struct {
-	Creator      common.Address `json:"creator"`
-	InterestRate *uint256.Int   `json:"interest_rate"`
+	CrowndfundingId uint         `json:"crowdfunding_id"`
+	InterestRate    *uint256.Int `json:"interest_rate"`
 }
 
 type CreateOrderOutputDTO struct {
@@ -63,23 +63,13 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 		return nil, fmt.Errorf("user role not allowed to create order: %v", user.Role)
 	}
 
-	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(ctx, input.Creator)
+	crowdfunding, err := c.CrowdfundingRepository.FindCrowdfundingById(ctx, input.CrowndfundingId)
 	if err != nil {
 		return nil, fmt.Errorf("error finding crowdfunding campaigns: %w", err)
 	}
 
-	var activeCrowdfunding *entity.Crowdfunding
-	for _, crowdfunding := range crowdfundings {
-		if crowdfunding.State == entity.CrowdfundingStateOngoing {
-			if metadata.BlockTimestamp > crowdfunding.ClosesAt {
-				return nil, fmt.Errorf("active crowdfunding expired, cannot create order")
-			}
-			activeCrowdfunding = crowdfunding
-			break
-		}
-	}
-	if activeCrowdfunding == nil {
-		return nil, fmt.Errorf("no active crowdfunding found for creator: %v", input.Creator)
+	if crowdfunding.ClosesAt < metadata.BlockTimestamp {
+		return nil, fmt.Errorf("crowdfunding campaign closed, order cannot be placed")
 	}
 
 	stablecoin, err := c.ContractRepository.FindContractBySymbol(ctx, "STABLECOIN")
@@ -90,15 +80,14 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 		return nil, fmt.Errorf("invalid contract address provided for order creation: %v", erc20Deposit.Token)
 	}
 
-	if input.InterestRate.Gt(activeCrowdfunding.MaxInterestRate) {
+	if input.InterestRate.Gt(crowdfunding.MaxInterestRate) {
 		return nil, fmt.Errorf("order interest rate exceeds active crowdfunding max interest rate")
 	}
 
-	order, err := entity.NewOrder(activeCrowdfunding.Id, erc20Deposit.Sender, depositAmount, input.InterestRate, metadata.BlockTimestamp)
+	order, err := entity.NewOrder(crowdfunding.Id, erc20Deposit.Sender, depositAmount, input.InterestRate, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
-
 	res, err := c.OrderRepository.CreateOrder(ctx, order)
 	if err != nil {
 		return nil, err

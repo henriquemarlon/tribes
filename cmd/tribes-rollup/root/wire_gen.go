@@ -20,10 +20,8 @@ import (
 
 func NewMiddlewares(gormDB *gorm.DB) (*Middlewares, error) {
 	userRepositorySqlite := repository.NewUserRepositorySqlite(gormDB)
-	tlsnMiddleware := middleware.NewTLSNMiddleware(userRepositorySqlite)
 	rbacMiddleware := middleware.NewRBACMiddleware(userRepositorySqlite)
 	middlewares := &Middlewares{
-		TLSN: tlsnMiddleware,
 		RBAC: rbacMiddleware,
 	}
 	return middlewares, nil
@@ -36,11 +34,14 @@ func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	crowdfundingRepositorySqlite := repository.NewCrowdfundingRepositorySqlite(gormDB)
 	orderAdvanceHandlers := advance_handler.NewOrderAdvanceHandlers(userRepositorySqlite, orderRepositorySqlite, contractRepositorySqlite, crowdfundingRepositorySqlite)
 	userAdvanceHandlers := advance_handler.NewUserAdvanceHandlers(userRepositorySqlite, contractRepositorySqlite)
-	crowdfundingAdvanceHandlers := advance_handler.NewCrowdfundingAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, crowdfundingRepositorySqlite, contractRepositorySqlite)
+	socialAccountRepositorySqlite := repository.NewSocialAccountRepositorySqlite(gormDB)
+	socialAccountAdvanceHandlers := advance_handler.NewSocialAccountAdvanceHandlers(socialAccountRepositorySqlite)
+	crowdfundingAdvanceHandlers := advance_handler.NewCrowdfundingAdvanceHandlers(orderRepositorySqlite, userRepositorySqlite, socialAccountRepositorySqlite, crowdfundingRepositorySqlite, contractRepositorySqlite)
 	contractAdvanceHandlers := advance_handler.NewContractAdvanceHandlers(contractRepositorySqlite)
 	advanceHandlers := &AdvanceHandlers{
 		OrderAdvanceHandlers:        orderAdvanceHandlers,
 		UserAdvanceHandlers:         userAdvanceHandlers,
+		SocialAccountsHandlers:      socialAccountAdvanceHandlers,
 		CrowdfundingAdvanceHandlers: crowdfundingAdvanceHandlers,
 		ContractAdvanceHandlers:     contractAdvanceHandlers,
 	}
@@ -53,12 +54,15 @@ func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
 	userRepositorySqlite := repository.NewUserRepositorySqlite(gormDB)
 	contractRepositorySqlite := repository.NewContractRepositorySqlite(gormDB)
 	userInspectHandlers := inspect_handler.NewUserInspectHandlers(userRepositorySqlite, contractRepositorySqlite)
+	socialAccountRepositorySqlite := repository.NewSocialAccountRepositorySqlite(gormDB)
+	socialAccountInspectHandlers := inspect_handler.NewSocialAccountInspectHandlers(socialAccountRepositorySqlite)
 	crowdfundingRepositorySqlite := repository.NewCrowdfundingRepositorySqlite(gormDB)
 	crowdfundingInspectHandlers := inspect_handler.NewCrowdfundingInspectHandlers(crowdfundingRepositorySqlite)
 	contractInspectHandlers := inspect_handler.NewContractInspectHandlers(contractRepositorySqlite)
 	inspectHandlers := &InspectHandlers{
 		OrderInspectHandlers:        orderInspectHandlers,
 		UserInspectHandlers:         userInspectHandlers,
+		SocialAccountHandlers:       socialAccountInspectHandlers,
 		CrowdfundingInspectHandlers: crowdfundingInspectHandlers,
 		ContractInspectHandlers:     contractInspectHandlers,
 	}
@@ -75,20 +79,22 @@ var setContractRepositoryDependency = wire.NewSet(repository.NewContractReposito
 
 var setUserRepositoryDependency = wire.NewSet(repository.NewUserRepositorySqlite, wire.Bind(new(entity.UserRepository), new(*repository.UserRepositorySqlite)))
 
-var setAdvanceHandlers = wire.NewSet(advance_handler.NewOrderAdvanceHandlers, advance_handler.NewUserAdvanceHandlers, advance_handler.NewCrowdfundingAdvanceHandlers, advance_handler.NewContractAdvanceHandlers)
+var setSocialAccountDependecy = wire.NewSet(repository.NewSocialAccountRepositorySqlite, wire.Bind(new(entity.SocialAccountRepository), new(*repository.SocialAccountRepositorySqlite)))
 
-var setInspectHandlers = wire.NewSet(inspect_handler.NewOrderInspectHandlers, inspect_handler.NewUserInspectHandlers, inspect_handler.NewCrowdfundingInspectHandlers, inspect_handler.NewContractInspectHandlers)
+var setAdvanceHandlers = wire.NewSet(advance_handler.NewOrderAdvanceHandlers, advance_handler.NewUserAdvanceHandlers, advance_handler.NewSocialAccountAdvanceHandlers, advance_handler.NewCrowdfundingAdvanceHandlers, advance_handler.NewContractAdvanceHandlers)
 
-var setMiddleware = wire.NewSet(middleware.NewTLSNMiddleware, middleware.NewRBACMiddleware)
+var setInspectHandlers = wire.NewSet(inspect_handler.NewOrderInspectHandlers, inspect_handler.NewUserInspectHandlers, inspect_handler.NewSocialAccountInspectHandlers, inspect_handler.NewCrowdfundingInspectHandlers, inspect_handler.NewContractInspectHandlers)
+
+var setMiddleware = wire.NewSet(middleware.NewRBACMiddleware)
 
 type Middlewares struct {
-	TLSN *middleware.TLSNMiddleware
 	RBAC *middleware.RBACMiddleware
 }
 
 type AdvanceHandlers struct {
 	OrderAdvanceHandlers        *advance_handler.OrderAdvanceHandlers
 	UserAdvanceHandlers         *advance_handler.UserAdvanceHandlers
+	SocialAccountsHandlers      *advance_handler.SocialAccountAdvanceHandlers
 	CrowdfundingAdvanceHandlers *advance_handler.CrowdfundingAdvanceHandlers
 	ContractAdvanceHandlers     *advance_handler.ContractAdvanceHandlers
 }
@@ -96,6 +102,7 @@ type AdvanceHandlers struct {
 type InspectHandlers struct {
 	OrderInspectHandlers        *inspect_handler.OrderInspectHandlers
 	UserInspectHandlers         *inspect_handler.UserInspectHandlers
+	SocialAccountHandlers       *inspect_handler.SocialAccountInspectHandlers
 	CrowdfundingInspectHandlers *inspect_handler.CrowdfundingInspectHandlers
 	ContractInspectHandlers     *inspect_handler.ContractInspectHandlers
 }

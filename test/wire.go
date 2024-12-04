@@ -33,9 +33,15 @@ var setUserRepositoryDependency = wire.NewSet(
 	wire.Bind(new(entity.UserRepository), new(*repository.UserRepositorySqlite)),
 )
 
+var setSocialAccountDependecy = wire.NewSet(
+	repository.NewSocialAccountRepositorySqlite,
+	wire.Bind(new(entity.SocialAccountRepository), new(*repository.SocialAccountRepositorySqlite)),
+)
+
 var setAdvanceHandlers = wire.NewSet(
 	advance_handler.NewOrderAdvanceHandlers,
 	advance_handler.NewUserAdvanceHandlers,
+	advance_handler.NewSocialAccountAdvanceHandlers,
 	advance_handler.NewCrowdfundingAdvanceHandlers,
 	advance_handler.NewContractAdvanceHandlers,
 )
@@ -43,12 +49,12 @@ var setAdvanceHandlers = wire.NewSet(
 var setInspectHandlers = wire.NewSet(
 	inspect_handler.NewOrderInspectHandlers,
 	inspect_handler.NewUserInspectHandlers,
+	inspect_handler.NewSocialAccountInspectHandlers,
 	inspect_handler.NewCrowdfundingInspectHandlers,
 	inspect_handler.NewContractInspectHandlers,
 )
 
 var setMiddleware = wire.NewSet(
-	middleware.NewTLSNMiddleware,
 	middleware.NewRBACMiddleware,
 )
 
@@ -65,6 +71,7 @@ func NewAdvanceHandlers(gormDB *gorm.DB) (*AdvanceHandlers, error) {
 	wire.Build(
 		setOrderRepositoryDependency,
 		setUserRepositoryDependency,
+		setSocialAccountDependecy,
 		setCrowdfundingRepositoryDependency,
 		setContractRepositoryDependency,
 		setAdvanceHandlers,
@@ -77,6 +84,7 @@ func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
 	wire.Build(
 		setOrderRepositoryDependency,
 		setUserRepositoryDependency,
+		setSocialAccountDependecy,
 		setCrowdfundingRepositoryDependency,
 		setContractRepositoryDependency,
 		setInspectHandlers,
@@ -86,13 +94,13 @@ func NewInspectHandlers(gormDB *gorm.DB) (*InspectHandlers, error) {
 }
 
 type Middlewares struct {
-	TLSN *middleware.TLSNMiddleware
 	RBAC *middleware.RBACMiddleware
 }
 
 type AdvanceHandlers struct {
 	OrderAdvanceHandlers        *advance_handler.OrderAdvanceHandlers
 	UserAdvanceHandlers         *advance_handler.UserAdvanceHandlers
+	SocialAccountsHandlers *advance_handler.SocialAccountAdvanceHandlers
 	CrowdfundingAdvanceHandlers *advance_handler.CrowdfundingAdvanceHandlers
 	ContractAdvanceHandlers     *advance_handler.ContractAdvanceHandlers
 }
@@ -100,6 +108,7 @@ type AdvanceHandlers struct {
 type InspectHandlers struct {
 	OrderInspectHandlers        *inspect_handler.OrderInspectHandlers
 	UserInspectHandlers         *inspect_handler.UserInspectHandlers
+	SocialAccountHandlers			 	*inspect_handler.SocialAccountInspectHandlers
 	CrowdfundingInspectHandlers *inspect_handler.CrowdfundingInspectHandlers
 	ContractInspectHandlers     *inspect_handler.ContractInspectHandlers
 }

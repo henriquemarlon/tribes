@@ -162,7 +162,7 @@ echo "Creating crowdfunding..."
 current_timestamp=$(date +%s)
 closes_at=$((current_timestamp + 60))
 maturity_at=$((current_timestamp + 120))
-crowdfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","closes_at":'"$closes_at"',"maturity_at":'"$maturity_at"'}}'
+crowdfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","fundraising_duration":10,"closes_at":'"$closes_at"',"maturity_at":'"$maturity_at"'}}'
 approveTokens $TOKENIZED_RECEIVABLE_ADDRESS $PORTAL_ADDRESS 10000 $CREATOR_PRIVATE_KEY
 sleep 1
 depositERC20Tokens $TOKENIZED_RECEIVABLE_ADDRESS $DAPP_ADDRESS 10000 "$crowdfundingPayload" $CREATOR_PRIVATE_KEY
@@ -182,7 +182,7 @@ echo "Creating orders from investors..."
 ORDER_AMOUNTS=(60000 52000 2000 3000 400)
 INTEREST_RATES=("9" "8" "4" "6" "4")
 for i in "${!INVESTOR_ADDRESSES[@]}"; do
-    orderPayload='{"path":"createOrder","payload":{"creator":"'"$CREATOR_ADDRESS"'","interest_rate":"'"${INTEREST_RATES[$i]}"'"}}'
+    orderPayload='{"path":"createOrder","payload":{"crowdfunding_id":1,"interest_rate":"'"${INTEREST_RATES[$i]}"'"}}'
     approveTokens $STABLECOIN_ADDRESS $PORTAL_ADDRESS "${ORDER_AMOUNTS[$i]}" "${INVESTOR_PRIVATE_KEYS[$i]}" &
     sleep 1
     depositERC20Tokens $STABLECOIN_ADDRESS $DAPP_ADDRESS "${ORDER_AMOUNTS[$i]}" "$orderPayload" "${INVESTOR_PRIVATE_KEYS[$i]}" &
@@ -191,7 +191,7 @@ done
 sleep 1
 wait
 
-# 6. Wait for crowdfunding expiration
+# 6. Wait for crowdfunding close
 echo "Waiting for crowdfunding to expire..."
 sleep 60
 
