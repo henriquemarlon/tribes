@@ -43,34 +43,34 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 
 ```sh
 └── tribes/
-    ├── .github
-    │   ├── dependabot.yaml
-    │   └── workflows
-    ├── LICENSE
-    ├── Makefile
-    ├── README.md
-    ├── build
-    │   └── Dockerfile.machine
-    ├── cmd
-    │   ├── tribes-rollup
-    ├── configs
-    │   └── sqlite.go
-    ├── contracts
-    ├── coverage.md
-    ├── go.mod
-    ├── go.sum
-    ├── internal
-    │   ├── domain
-    │   ├── infra
-    │   └── usecase
-    ├── pkg
-    │   ├── rollups_contracts
-    │   └── router
-    ├── test
-    ├── tools
-    │   ├── tlsnotary
-    │   └── state.sh
-    └── website
+   ├── .github
+   │   ├── dependabot.yaml
+   │   └── workflows
+   ├── LICENSE
+   ├── Makefile
+   ├── README.md
+   ├── build
+   │   └── Dockerfile.machine
+   ├── cmd
+   │   ├── tribes-rollup
+   ├── configs
+   │   └── sqlite.go
+   ├── contracts
+   ├── coverage.md
+   ├── go.mod
+   ├── go.sum
+   ├── internal
+   │   ├── domain
+   │   ├── infra
+   │   └── usecase
+   ├── pkg
+   │   ├── rollups_contracts
+   │   └── router
+   ├── test
+   ├── tools
+   │   ├── tlsnotary
+   │   └── state.sh
+   └── website
 ```
 
 ##  Getting Started
@@ -154,3 +154,9 @@ A crowdfunding platform designed for prominent content creators, enabling them t
       <img src="https://contrib.rocks/image?repo=henriquemarlon/tribes">
    </a>
 </p>
+
+## TODO:
+
+- [ ] References for the resolution 88 from CVM;
+- [ ] Refactor of the database layer;
+- [ ] Tokens distribution for selected bids and deposit for withdraw investments;
