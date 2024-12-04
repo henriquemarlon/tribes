@@ -100,7 +100,7 @@ type Middlewares struct {
 type AdvanceHandlers struct {
 	OrderAdvanceHandlers        *advance_handler.OrderAdvanceHandlers
 	UserAdvanceHandlers         *advance_handler.UserAdvanceHandlers
-	SocialAccountsHandlers *advance_handler.SocialAccountAdvanceHandlers
+	SocialAccountsHandlers      *advance_handler.SocialAccountAdvanceHandlers
 	CrowdfundingAdvanceHandlers *advance_handler.CrowdfundingAdvanceHandlers
 	ContractAdvanceHandlers     *advance_handler.ContractAdvanceHandlers
 }
@@ -108,7 +108,7 @@ type AdvanceHandlers struct {
 type InspectHandlers struct {
 	OrderInspectHandlers        *inspect_handler.OrderInspectHandlers
 	UserInspectHandlers         *inspect_handler.UserInspectHandlers
-	SocialAccountHandlers			 	*inspect_handler.SocialAccountInspectHandlers
+	SocialAccountHandlers       *inspect_handler.SocialAccountInspectHandlers
 	CrowdfundingInspectHandlers *inspect_handler.CrowdfundingInspectHandlers
 	ContractInspectHandlers     *inspect_handler.ContractInspectHandlers
 }

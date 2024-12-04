@@ -127,7 +127,6 @@ func (r *UserRepositorySqlite) FindUsersByRole(ctx context.Context, role string)
 	return users, nil
 }
 
-
 func (r *UserRepositorySqlite) FindAllUsers(ctx context.Context) ([]*entity.User, error) {
 	var results []map[string]interface{}
 	err := r.Db.WithContext(ctx).Raw(`
@@ -176,7 +175,6 @@ func (r *UserRepositorySqlite) FindAllUsers(ctx context.Context) ([]*entity.User
 	}
 	return users, nil
 }
-
 
 func (r *UserRepositorySqlite) UpdateUser(ctx context.Context, input *entity.User) (*entity.User, error) {
 	user, err := r.FindUserByAddress(ctx, input.Address)
