@@ -85,6 +85,9 @@ func (a *Crowdfunding) Validate() error {
 	if a.ClosesAt > a.CreatedAt+15552000 {
 		return fmt.Errorf("%w: close date cannot be greater than 6 months", ErrInvalidCrowdfunding)
 	}
+	if a.ClosesAt > a.MaturityAt {
+		return fmt.Errorf("%w: close data connot be grater than maturity date", ErrInvalidCrowdfunding)
+	}
 	// TODO: Add this when in production
 	// if a.FundraisingDuration < 604800 {
 	// 	return fmt.Errorf("%w: cannot create crowndfunding campaign without at least 7 days for the fundraising", ErrInvalidCrowdfunding)
