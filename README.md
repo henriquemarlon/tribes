@@ -157,6 +157,5 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 
 ## TODO:
 
-- [ ] References for the resolution 88 from CVM;
 - [ ] Refactor of the database layer;
 - [ ] Remove business rules from the entity validation;
