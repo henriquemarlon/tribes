@@ -22,6 +22,8 @@ type UpdateCrowdfundingInputDTO struct {
 
 type UpdateCrowdfundingOutputDTO struct {
 	Id                  uint            `json:"id"`
+	Token               common.Address  `json:"token"`
+	Amount              *uint256.Int    `json:"amount"`
 	Creator             common.Address  `json:"creator"`
 	DebtIssued          *uint256.Int    `json:"debt_issued"`
 	MaxInterestRate     *uint256.Int    `json:"max_interest_rate"`
@@ -62,6 +64,8 @@ func (uc *UpdateCrowdfundingUsecase) Execute(ctx context.Context, input UpdateCr
 	}
 	return &UpdateCrowdfundingOutputDTO{
 		Id:                  crowdfunding.Id,
+		Token:               crowdfunding.Token,
+		Amount:              crowdfunding.Amount,
 		Creator:             crowdfunding.Creator,
 		DebtIssued:          crowdfunding.DebtIssued,
 		MaxInterestRate:     crowdfunding.MaxInterestRate,

@@ -36,6 +36,8 @@ type CrowdfundingRepository interface {
 
 type Crowdfunding struct {
 	Id                  uint              `json:"id" gorm:"primaryKey"`
+	Token               common.Address    `json:"token,omitempty" gorm:"type:text;not null"`
+	Amount              *uint256.Int      `json:"amount,omitempty" gorm:"type:text;not null"`
 	Creator             common.Address    `json:"creator,omitempty" gorm:"type:text;not null"`
 	DebtIssued          *uint256.Int      `json:"debt_issued,omitempty" gorm:"type:text;not null"`
 	MaxInterestRate     *uint256.Int      `json:"max_interest_rate,omitempty" gorm:"type:text;not null"`
@@ -49,8 +51,10 @@ type Crowdfunding struct {
 	UpdatedAt           int64             `json:"updated_at,omitempty" gorm:"default:0"`
 }
 
-func NewCrowdfunding(creator common.Address, debt_issued *uint256.Int, maxInterestRate *uint256.Int, fundraisingDuration int64, closesAt int64, maturityAt int64, createdAt int64) (*Crowdfunding, error) {
+func NewCrowdfunding(token common.Address, amount *uint256.Int, creator common.Address, debt_issued *uint256.Int, maxInterestRate *uint256.Int, fundraisingDuration int64, closesAt int64, maturityAt int64, createdAt int64) (*Crowdfunding, error) {
 	crowdfunding := &Crowdfunding{
+		Token:               token,
+		Amount:              amount,
 		Creator:             creator,
 		DebtIssued:          debt_issued,
 		MaxInterestRate:     maxInterestRate,
@@ -67,6 +71,12 @@ func NewCrowdfunding(creator common.Address, debt_issued *uint256.Int, maxIntere
 }
 
 func (a *Crowdfunding) Validate() error {
+	if a.Token == (common.Address{}) {
+		return fmt.Errorf("%w: invalid token address", ErrInvalidCrowdfunding)
+	}
+	if a.Amount.Sign() == 0 {
+		return fmt.Errorf("%w: amount cannot be zero", ErrInvalidCrowdfunding)
+	}
 	if a.Creator == (common.Address{}) {
 		return fmt.Errorf("%w: invalid creator address", ErrInvalidCrowdfunding)
 	}

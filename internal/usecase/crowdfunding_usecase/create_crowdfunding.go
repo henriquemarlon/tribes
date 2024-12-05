@@ -31,6 +31,8 @@ type CreateCrowdfundingInputDTO struct {
 
 type CreateCrowdfundingOutputDTO struct {
 	Id                  uint            `json:"id"`
+	Token               common.Address  `json:"token,omitempty"`
+	Amount              *uint256.Int    `json:"amount,omitempty"`
 	Creator             common.Address  `json:"creator,omitempty"`
 	DebtIssued          *uint256.Int    `json:"debt_issued"`
 	MaxInterestRate     *uint256.Int    `json:"max_interest_rate"`
@@ -44,13 +46,15 @@ type CreateCrowdfundingOutputDTO struct {
 
 type CreateCrowdfundingUseCase struct {
 	UserRepository          entity.UserRepository
+	ContractRepository      entity.ContractRepository
 	SocialAccountRepository entity.SocialAccountRepository
 	CrowdfundingRepository  entity.CrowdfundingRepository
 }
 
-func NewCreateCrowdfundingUseCase(userRepository entity.UserRepository, socialAccountRepository entity.SocialAccountRepository, crowdfundingRepository entity.CrowdfundingRepository) *CreateCrowdfundingUseCase {
+func NewCreateCrowdfundingUseCase(userRepository entity.UserRepository, contractRepository entity.ContractRepository, socialAccountRepository entity.SocialAccountRepository, crowdfundingRepository entity.CrowdfundingRepository) *CreateCrowdfundingUseCase {
 	return &CreateCrowdfundingUseCase{
 		UserRepository:          userRepository,
+		ContractRepository:      contractRepository,
 		SocialAccountRepository: socialAccountRepository,
 		CrowdfundingRepository:  crowdfundingRepository,
 	}
@@ -65,6 +69,10 @@ func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCr
 	creator, err := c.UserRepository.FindUserByAddress(ctx, erc20Deposit.Sender)
 	if err != nil {
 		return nil, fmt.Errorf("error finding creator: %w", err)
+	}
+
+	if _, err = c.ContractRepository.FindContractByAddress(ctx, erc20Deposit.Token); err != nil {
+		return nil, fmt.Errorf("token unknown, cannot create crowdfunding: %w", err)
 	}
 
 	// TODO: Replace the logic bellow to validate a notary signature and return the verified values to create a social account.
@@ -98,7 +106,7 @@ func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCr
 		}
 	}
 
-	crowdfunding, err := entity.NewCrowdfunding(creator.Address, input.DebitIssued, input.MaxInterestRate, input.FundraisingDuration, input.ClosesAt, input.MaturityAt, metadata.BlockTimestamp)
+	crowdfunding, err := entity.NewCrowdfunding(erc20Deposit.Token, uint256.MustFromBig(erc20Deposit.Amount), creator.Address, input.DebitIssued, input.MaxInterestRate, input.FundraisingDuration, input.ClosesAt, input.MaturityAt, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
 	}
@@ -115,6 +123,8 @@ func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCr
 
 	return &CreateCrowdfundingOutputDTO{
 		Id:                  res.Id,
+		Token:               res.Token,
+		Amount:              res.Amount,
 		Creator:             res.Creator,
 		DebtIssued:          res.DebtIssued,
 		MaxInterestRate:     res.MaxInterestRate,

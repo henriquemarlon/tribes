@@ -144,7 +144,7 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	updatedAt := baseTime + 5 // baseTime + sleep duration
 
 	// Expected output for closing crowdfunding
-	expectedOutput := fmt.Sprintf(`crowdfunding closed - {"id":1,"creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","orders":[`+
+	expectedOutput := fmt.Sprintf(`crowdfunding closed - {"id":1,"token":"0x0000000000000000000000000000000000000009","amount":"10000","creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","orders":[`+
 		`{"id":1,"crowdfunding_id":1,"investor":"%s","amount":"42600","interest_rate":"9","state":"partially_accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":2,"crowdfunding_id":1,"investor":"%s","amount":"52000","interest_rate":"8","state":"accepted","created_at":%d,"updated_at":%d},`+
 		`{"id":3,"crowdfunding_id":1,"investor":"%s","amount":"2000","interest_rate":"4","state":"accepted","created_at":%d,"updated_at":%d},`+
@@ -171,7 +171,7 @@ func (s *DAppSuite) TestItCreatedCrowdfundingAndSettle() {
 	settledAt := updatedAt // baseTime
 
 	// Expected output for settling crowdfunding
-	expectedOutput = fmt.Sprintf(`crowdfunding settled - {"id":1,"creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","orders":[`+
+	expectedOutput = fmt.Sprintf(`crowdfunding settled - {"id":1,"token":"0x0000000000000000000000000000000000000009","amount":"10000","creator":"%s","debt_issued":"100000","max_interest_rate":"10","total_obligation":"108270","orders":[`+
 		`{"id":1,"crowdfunding_id":1,"investor":"%s","amount":"42600","interest_rate":"9","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":2,"crowdfunding_id":1,"investor":"%s","amount":"52000","interest_rate":"8","state":"settled","created_at":%d,"updated_at":%d},`+
 		`{"id":3,"crowdfunding_id":1,"investor":"%s","amount":"2000","interest_rate":"4","state":"settled","created_at":%d,"updated_at":%d},`+
