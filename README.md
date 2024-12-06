@@ -146,11 +146,3 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 ```sh
 ❯ make test
 ```
-
-##  Contributors
-
-<p align="left">
-   <a href="https://github.com{/henriquemarlon/tribes/}graphs/contributors">
-      <img src="https://contrib.rocks/image?repo=henriquemarlon/tribes">
-   </a>
-</p>
