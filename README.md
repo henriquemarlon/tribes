@@ -21,7 +21,6 @@
   - [Prerequisites](#prerequisites)
   - [Running](#running)
   - [Testing](#testing)
-- [Contributors](#contributors)
 
 ##  Overview
 
