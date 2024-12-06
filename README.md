@@ -154,7 +154,3 @@ A crowdfunding platform designed for prominent content creators, enabling them t
       <img src="https://contrib.rocks/image?repo=henriquemarlon/tribes">
    </a>
 </p>
-
-## TODO:
-
-- [ ] Refactor of the database layer;
