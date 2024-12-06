@@ -78,9 +78,13 @@ func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCr
 	if metadata.BlockTimestamp >= input.ClosesAt {
 		return nil, fmt.Errorf("%w: creation date cannot be greater than or equal to close date", entity.ErrInvalidCrowdfunding)
 	}
-	if input.FundraisingDuration < 604800 {
-		return nil, fmt.Errorf("%w: fundraising duration must be at least 7 days", entity.ErrInvalidCrowdfunding)
-	}
+	// TODO: Add this when in prod
+	// if input.FundraisingDuration < 604800 {
+	// 	return nil, fmt.Errorf("%w: fundraising duration must be at least 7 days", entity.ErrInvalidCrowdfunding)
+	// }
+	// if (metadata.BlockTimestamp-input.FundraisingDuration)-metadata.BlockTimestamp < 604800 {
+	// 	return nil, fmt.Errorf("%w: cannot create crowndfunding campaign without at least 7 days for the approval process", entity.ErrInvalidCrowdfunding)
+	// }
 
 	creator, err := c.UserRepository.FindUserByAddress(ctx, erc20Deposit.Sender)
 	if err != nil {

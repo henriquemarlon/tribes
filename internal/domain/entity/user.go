@@ -61,12 +61,6 @@ func (u *User) Validate() error {
 	if u.Role == "" {
 		return fmt.Errorf("%w: role cannot be empty", ErrInvalidUser)
 	}
-	if u.InvestmentLimit.Sign() < 0 {
-		return fmt.Errorf("%w: investment limit cannot be empty or negative", ErrInvalidUser)
-	}
-	if u.DebtIssuanceLimit.Sign() < 0 {
-		return fmt.Errorf("%w: debt issuance limit cannot be empty or negative", ErrInvalidUser)
-	}
 	if u.Address == (common.Address{}) {
 		return fmt.Errorf("%w: address cannot be empty", ErrInvalidUser)
 	}
