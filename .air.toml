@@ -3,9 +3,9 @@ testdata_dir = "testdata"
 tmp_dir = ".air"
 
 [build]
-  args_bin = ["--memory-db"]
-  bin = "./.air/main"
-  cmd = "go build -o ./.air/main ./cmd/tribes-rollup"
+  args_bin = []
+  bin = "./.air/tribes-rollup"
+  cmd = "rm tribes.db; go build -o ./.air/tribes-rollup ./cmd/tribes-rollup"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "website"]
   exclude_file = []

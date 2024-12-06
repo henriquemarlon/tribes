@@ -69,6 +69,24 @@ func (r *ContractRepositorySqlite) FindContractBySymbol(ctx context.Context, sym
 	}, nil
 }
 
+func (r *ContractRepositorySqlite) FindContractByAddress(ctx context.Context, address common.Address) (*entity.Contract, error) {
+	var result map[string]interface{}
+	err := r.Db.WithContext(ctx).Raw("SELECT id, symbol, address, created_at, updated_at FROM contracts WHERE address = ? LIMIT 1", address.String()).Scan(&result).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, entity.ErrContractNotFound
+		}
+		return nil, fmt.Errorf("failed to find contract by symbol: %w", err)
+	}
+	return &entity.Contract{
+		Id:        uint(result["id"].(int64)),
+		Symbol:    result["symbol"].(string),
+		Address:   common.HexToAddress(result["address"].(string)),
+		CreatedAt: result["created_at"].(int64),
+		UpdatedAt: result["updated_at"].(int64),
+	}, nil
+}
+
 func (r *ContractRepositorySqlite) UpdateContract(ctx context.Context, input *entity.Contract) (*entity.Contract, error) {
 	existingContract, err := r.FindContractBySymbol(ctx, input.Symbol)
 	if err != nil {

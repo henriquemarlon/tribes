@@ -43,34 +43,34 @@ A crowdfunding platform designed for prominent content creators, enabling them t
 
 ```sh
 └── tribes/
-    ├── .github
-    │   ├── dependabot.yaml
-    │   └── workflows
-    ├── LICENSE
-    ├── Makefile
-    ├── README.md
-    ├── build
-    │   └── Dockerfile.machine
-    ├── cmd
-    │   ├── tribes-rollup
-    ├── configs
-    │   └── sqlite.go
-    ├── contracts
-    ├── coverage.md
-    ├── go.mod
-    ├── go.sum
-    ├── internal
-    │   ├── domain
-    │   ├── infra
-    │   └── usecase
-    ├── pkg
-    │   ├── rollups_contracts
-    │   └── router
-    ├── test
-    ├── tools
-    │   ├── tlsnotary
-    │   └── state.sh
-    └── website
+   ├── .github
+   │   ├── dependabot.yaml
+   │   └── workflows
+   ├── LICENSE
+   ├── Makefile
+   ├── README.md
+   ├── build
+   │   └── Dockerfile.machine
+   ├── cmd
+   │   ├── tribes-rollup
+   ├── configs
+   │   └── sqlite.go
+   ├── contracts
+   ├── coverage.md
+   ├── go.mod
+   ├── go.sum
+   ├── internal
+   │   ├── domain
+   │   ├── infra
+   │   └── usecase
+   ├── pkg
+   │   ├── rollups_contracts
+   │   └── router
+   ├── test
+   ├── tools
+   │   ├── tlsnotary
+   │   └── state.sh
+   └── website
 ```
 
 ##  Getting Started

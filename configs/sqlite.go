@@ -66,6 +66,5 @@ func SetupSQlite(path string) (*gorm.DB, error) {
 	if err := db.Table("users").Create(users).Error; err != nil {
 		return nil, fmt.Errorf("failed to create users: %w", err)
 	}
-
 	return db, nil
 }

@@ -47,7 +47,7 @@ func (h *CrowdfundingAdvanceHandlers) CreateCrowdfundingHandler(env rollmelette.
 		return err
 	}
 	ctx := context.Background()
-	createCrowdfunding := crowdfunding_usecase.NewCreateCrowdfundingUseCase(h.UserRepository, h.SocialAccountRepository, h.CrowdfundingRepository)
+	createCrowdfunding := crowdfunding_usecase.NewCreateCrowdfundingUseCase(h.UserRepository, h.ContractRepository, h.SocialAccountRepository, h.CrowdfundingRepository)
 	res, err := createCrowdfunding.Execute(ctx, input, deposit, metadata)
 	if err != nil {
 		return err
@@ -74,6 +74,7 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	if !isSet {
 		return fmt.Errorf("no application address defined yet, contact Tribes support")
 	}
+
 	var input *crowdfunding_usecase.CloseCrowdfundingInputDTO
 	if err := json.Unmarshal(payload, &input); err != nil {
 		return err
@@ -101,6 +102,16 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 				appAddress,
 				order.Investor,
 				order.Amount.ToBig(),
+			); err != nil {
+				return err
+			}
+		} else {
+			quotes := new(uint256.Int).Div(new(uint256.Int).Mul(res.Amount, order.Amount), res.DebtIssued)
+			if err = env.ERC20Transfer(
+				res.Token,
+				appAddress,
+				order.Investor,
+				quotes.ToBig(),
 			); err != nil {
 				return err
 			}

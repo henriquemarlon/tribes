@@ -12,6 +12,53 @@ import (
 	"gorm.io/gorm"
 )
 
+// *************************************************************************************
+// *                           PLATFORM FUNCTIONAL REQUIREMENTS                        *
+// *************************************************************************************
+
+// 1. Registration of Small Business Entities:
+//    1.1 Ensure that entities are legally constituted and meet the regulatory requirements.
+
+// 2. Management of Public Offerings:
+//    2.1 Define minimum and maximum target amounts for fundraising (maximum of R$ 15 million).
+//    2.2 Set fundraising duration to no more than 180 days.
+//    2.3 Guarantee a 5-day withdrawal period for investors after confirming their participation.
+//    2.4 A company must wait 120 days after the close of a successful crowdfunding campaign
+//        before starting a new campaign.
+
+// 3. Investor Control:
+//    3.1 Verify investor profiles (e.g., lead investors or qualified investors).
+//    3.2 Limit the annual investment amount to R$ 20,000, except for higher income or qualified investors.
+
+// 4. Publication of Essential Information:
+//    4.1 Maintain a dedicated page for offers with clear and objective investment details.
+//    4.2 Publish relevant documents, such as:
+//        4.2.1 The corporate charter.
+//        4.2.2 Investment agreements.
+//        4.2.3 Financial statements.
+
+// 5. Investment Processing:
+//    5.1 Transfer collected funds directly to the small business's accounts after the offer closes.
+//    5.2 Prohibit fund transit through accounts linked to the platform or its stakeholders.
+
+// 6. Reporting and Audits:
+//    6.1 Provide monthly reports on transaction volumes and prices.
+//    6.2 Ensure financial statements are audited for offerings above R$ 10 million.
+
+// 7. Promotion and Disclosure:
+//    7.1 Allow wide promotion with content and language restrictions.
+//    7.2 Enable events and interactions with investors, adhering to regulatory guidelines.
+
+// 8. Intermediation of Subsequent Transactions:
+//    8.1 Ensure secure transfer of security ownership.
+//    8.2 Support buying and selling of already issued securities when authorized.
+
+// 9. Regulatory Compliance:
+//    9.1 Fulfill CVM registration requirements, including a minimum capital of R$ 200,000.
+//    9.2 Develop a code of conduct addressing conflicts of interest for partners and administrators.
+
+// *************************************************************************************
+
 const (
 	CMD_NAME = "tribes-rollup"
 )

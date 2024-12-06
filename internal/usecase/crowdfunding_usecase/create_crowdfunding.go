@@ -21,7 +21,7 @@ import (
 )
 
 type CreateCrowdfundingInputDTO struct {
-	DebitIssued         *uint256.Int `json:"debt_issued"`
+	DebtIssued          *uint256.Int `json:"debt_issued"`
 	MaxInterestRate     *uint256.Int `json:"max_interest_rate"`
 	FundraisingDuration int64        `json:"fundraising_duration"`
 	ClosesAt            int64        `json:"closes_at"`
@@ -31,6 +31,8 @@ type CreateCrowdfundingInputDTO struct {
 
 type CreateCrowdfundingOutputDTO struct {
 	Id                  uint            `json:"id"`
+	Token               common.Address  `json:"token,omitempty"`
+	Amount              *uint256.Int    `json:"amount,omitempty"`
 	Creator             common.Address  `json:"creator,omitempty"`
 	DebtIssued          *uint256.Int    `json:"debt_issued"`
 	MaxInterestRate     *uint256.Int    `json:"max_interest_rate"`
@@ -44,14 +46,16 @@ type CreateCrowdfundingOutputDTO struct {
 
 type CreateCrowdfundingUseCase struct {
 	UserRepository          entity.UserRepository
+	ContractRepository      entity.ContractRepository
 	SocialAccountRepository entity.SocialAccountRepository
 	CrowdfundingRepository  entity.CrowdfundingRepository
 }
 
-func NewCreateCrowdfundingUseCase(userRepository entity.UserRepository, socialAccountRepository entity.SocialAccountRepository, crowdfundingRepository entity.CrowdfundingRepository) *CreateCrowdfundingUseCase {
+func NewCreateCrowdfundingUseCase(userRepository entity.UserRepository, contractRepository entity.ContractRepository, socialRepository entity.SocialAccountRepository, crowdfundingRepository entity.CrowdfundingRepository) *CreateCrowdfundingUseCase {
 	return &CreateCrowdfundingUseCase{
 		UserRepository:          userRepository,
-		SocialAccountRepository: socialAccountRepository,
+		ContractRepository:      contractRepository,
+		SocialAccountRepository: socialRepository,
 		CrowdfundingRepository:  crowdfundingRepository,
 	}
 }
@@ -62,67 +66,86 @@ func (c *CreateCrowdfundingUseCase) Execute(ctx context.Context, input *CreateCr
 		return nil, fmt.Errorf("invalid deposit type: %T", deposit)
 	}
 
+	if input.DebtIssued.Cmp(uint256.NewInt(15000000)) > 0 {
+		return nil, fmt.Errorf("%w: debt issued exceeds the maximum allowed value", entity.ErrInvalidCrowdfunding)
+	}
+	if input.ClosesAt > metadata.BlockTimestamp+15552000 {
+		return nil, fmt.Errorf("%w: close date cannot be greater than 6 months", entity.ErrInvalidCrowdfunding)
+	}
+	if input.ClosesAt > input.MaturityAt {
+		return nil, fmt.Errorf("%w: close date cannot be greater than maturity date", entity.ErrInvalidCrowdfunding)
+	}
+	if metadata.BlockTimestamp >= input.ClosesAt {
+		return nil, fmt.Errorf("%w: creation date cannot be greater than or equal to close date", entity.ErrInvalidCrowdfunding)
+	}
+	// TODO: Add this when in prod
+	// if input.FundraisingDuration < 604800 {
+	// 	return nil, fmt.Errorf("%w: fundraising duration must be at least 7 days", entity.ErrInvalidCrowdfunding)
+	// }
+	// if (metadata.BlockTimestamp-input.FundraisingDuration)-metadata.BlockTimestamp < 604800 {
+	// 	return nil, fmt.Errorf("%w: cannot create crowndfunding campaign without at least 7 days for the approval process", entity.ErrInvalidCrowdfunding)
+	// }
+
 	creator, err := c.UserRepository.FindUserByAddress(ctx, erc20Deposit.Sender)
 	if err != nil {
 		return nil, fmt.Errorf("error finding creator: %w", err)
 	}
-
-	// TODO: Replace the logic bellow to validate a notary signature and return the verified values to create a social account.
-	a := C.int32_t(3)
-	b := C.int32_t(4)
-	result := C.add_numbers(a, b)
-	slog.Info("TLSN verifier result", "result", result)
-	mock, err := entity.NewSocialAccount(creator.Id, "vitalik", 1000, "twitter", metadata.BlockTimestamp)
-	if err != nil {
-		return nil, err
-	}
-	_, err = c.SocialAccountRepository.CreateSocialAccount(ctx, mock)
-	if err != nil {
-		return nil, err
+	if creator.DebtIssuanceLimit.Cmp(input.DebtIssued) < 0 {
+		return nil, fmt.Errorf("creator's debt issuance limit exceeded")
 	}
 
-	// Validate debt issuance limit
-	if creator.DebtIssuanceLimit.Cmp(input.DebitIssued) < 0 {
-		return nil, fmt.Errorf("creator debt issuance limit exceeded")
+	if _, err = c.ContractRepository.FindContractByAddress(ctx, erc20Deposit.Token); err != nil {
+		return nil, fmt.Errorf("unknown token: %w", err)
 	}
 
 	crowdfundings, err := c.CrowdfundingRepository.FindCrowdfundingsByCreator(ctx, creator.Address)
 	if err != nil {
-		return nil, fmt.Errorf("error finding crowdfunding campaigns: %w", err)
+		return nil, fmt.Errorf("error retrieving crowdfundings: %w", err)
 	}
-
-	// Check for active crowdfunding campaigns within the last 120 days
 	for _, crowdfunding := range crowdfundings {
 		if crowdfunding.State != entity.CrowdfundingStateSettled && metadata.BlockTimestamp-crowdfunding.CreatedAt < 120*24*60*60 {
-			return nil, fmt.Errorf("creator already has an active crowdfunding within the last 120 days")
+			return nil, fmt.Errorf("active crowdfunding exists within the last 120 days")
 		}
 	}
 
-	crowdfunding, err := entity.NewCrowdfunding(creator.Address, input.DebitIssued, input.MaxInterestRate, input.FundraisingDuration, input.ClosesAt, input.MaturityAt, metadata.BlockTimestamp)
+	// TODO: replace logic bellow with a call to the TLSN verifier
+	a, b := C.int32_t(3), C.int32_t(4)
+	result := C.add_numbers(a, b)
+	slog.Info("TLSN verifier result", "result", result)
+	mockAccount, err := entity.NewSocialAccount(creator.Id, "vitalik", 1000, "twitter", metadata.BlockTimestamp)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = c.SocialAccountRepository.CreateSocialAccount(ctx, mockAccount); err != nil {
+		return nil, err
+	}
+
+	crowdfunding, err := entity.NewCrowdfunding(erc20Deposit.Token, uint256.MustFromBig(erc20Deposit.Amount), creator.Address, input.DebtIssued, input.MaxInterestRate, input.FundraisingDuration, input.ClosesAt, input.MaturityAt, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
 	}
-	res, err := c.CrowdfundingRepository.CreateCrowdfunding(ctx, crowdfunding)
+	createdCrowdfunding, err := c.CrowdfundingRepository.CreateCrowdfunding(ctx, crowdfunding)
 	if err != nil {
 		return nil, fmt.Errorf("error creating crowdfunding: %w", err)
 	}
 
-	// Decrease creator's debt issuance limit
-	creator.DebtIssuanceLimit.Sub(creator.DebtIssuanceLimit, input.DebitIssued)
+	creator.DebtIssuanceLimit.Sub(creator.DebtIssuanceLimit, input.DebtIssued)
 	if _, err = c.UserRepository.UpdateUser(ctx, creator); err != nil {
 		return nil, fmt.Errorf("error updating creator debt issuance limit: %w", err)
 	}
 
 	return &CreateCrowdfundingOutputDTO{
-		Id:                  res.Id,
-		Creator:             res.Creator,
-		DebtIssued:          res.DebtIssued,
-		MaxInterestRate:     res.MaxInterestRate,
-		Orders:              res.Orders,
-		State:               string(res.State),
-		FundraisingDuration: res.FundraisingDuration,
-		ClosesAt:            res.ClosesAt,
-		MaturityAt:          res.MaturityAt,
-		CreatedAt:           res.CreatedAt,
+		Id:                  createdCrowdfunding.Id,
+		Token:               createdCrowdfunding.Token,
+		Amount:              createdCrowdfunding.Amount,
+		Creator:             createdCrowdfunding.Creator,
+		DebtIssued:          createdCrowdfunding.DebtIssued,
+		MaxInterestRate:     createdCrowdfunding.MaxInterestRate,
+		Orders:              createdCrowdfunding.Orders,
+		State:               string(createdCrowdfunding.State),
+		FundraisingDuration: createdCrowdfunding.FundraisingDuration,
+		ClosesAt:            createdCrowdfunding.ClosesAt,
+		MaturityAt:          createdCrowdfunding.MaturityAt,
+		CreatedAt:           createdCrowdfunding.CreatedAt,
 	}, nil
 }

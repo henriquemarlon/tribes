@@ -16,6 +16,8 @@ type SettleCrowdfundingInputDTO struct {
 
 type SettleCrowdfundingOutputDTO struct {
 	Id                  uint            `json:"id"`
+	Token               common.Address  `json:"token"`
+	Amount              *uint256.Int    `json:"amount"`
 	Creator             common.Address  `json:"creator"`
 	DebtIssued          *uint256.Int    `json:"debt_issued"`
 	MaxInterestRate     *uint256.Int    `json:"max_interest_rate"`
@@ -121,6 +123,8 @@ func (uc *SettleCrowdfundingUseCase) Execute(
 
 	return &SettleCrowdfundingOutputDTO{
 		Id:                  res.Id,
+		Token:               res.Token,
+		Amount:              res.Amount,
 		Creator:             res.Creator,
 		DebtIssued:          res.DebtIssued,
 		MaxInterestRate:     res.MaxInterestRate,

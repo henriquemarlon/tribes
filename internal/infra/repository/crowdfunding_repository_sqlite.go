@@ -23,10 +23,10 @@ func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(ctx context.Context, i
 		input.TotalObligation = uint256.NewInt(0)
 	}
 	err := r.Db.WithContext(ctx).Raw(`
-		INSERT INTO crowdfundings (creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO crowdfundings (token, amount, creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
-	`, input.Creator.String(), input.DebtIssued.Hex(), input.MaxInterestRate.Hex(),
+	`, input.Token.String(), input.Amount.Hex(), input.Creator.String(), input.DebtIssued.Hex(), input.MaxInterestRate.Hex(),
 		input.TotalObligation.Hex(), input.State, input.FundraisingDuration, input.ClosesAt,
 		input.MaturityAt, input.CreatedAt, input.UpdatedAt).Scan(&input.Id).Error
 	if err != nil {
@@ -38,7 +38,7 @@ func (r *CrowdfundingRepositorySqlite) CreateCrowdfunding(ctx context.Context, i
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context, id uint) (*entity.Crowdfunding, error) {
 	var result map[string]interface{}
 	err := r.Db.WithContext(ctx).Raw(`
-		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at
+		SELECT id, token, amount, creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at
 		FROM crowdfundings WHERE id = ? LIMIT 1
 	`, id).Scan(&result).Error
 	if err != nil {
@@ -50,6 +50,8 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context,
 
 	crowdfunding := &entity.Crowdfunding{
 		Id:                  uint(result["id"].(int64)),
+		Token:               common.HexToAddress(result["token"].(string)),
+		Amount:              uint256.MustFromHex(result["amount"].(string)),
 		Creator:             common.HexToAddress(result["creator"].(string)),
 		DebtIssued:          uint256.MustFromHex(result["debt_issued"].(string)),
 		MaxInterestRate:     uint256.MustFromHex(result["max_interest_rate"].(string)),
@@ -90,7 +92,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingById(ctx context.Context,
 func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings(ctx context.Context) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
 	err := r.Db.WithContext(ctx).Raw(`
-		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at
+		SELECT id, token, amount, creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at
 		FROM crowdfundings
 	`).Scan(&results).Error
 	if err != nil {
@@ -101,6 +103,8 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings(ctx context.Context)
 	for _, data := range results {
 		crowdfundings = append(crowdfundings, &entity.Crowdfunding{
 			Id:                  uint(data["id"].(int64)),
+			Token:               common.HexToAddress(data["token"].(string)),
+			Amount:              uint256.MustFromHex(data["amount"].(string)),
 			Creator:             common.HexToAddress(data["creator"].(string)),
 			DebtIssued:          uint256.MustFromHex(data["debt_issued"].(string)),
 			MaxInterestRate:     uint256.MustFromHex(data["max_interest_rate"].(string)),
@@ -119,7 +123,7 @@ func (r *CrowdfundingRepositorySqlite) FindAllCrowdfundings(ctx context.Context)
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.Context, investor common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
 	err := r.Db.WithContext(ctx).Raw(`
-		SELECT DISTINCT c.id, c.creator, c.debt_issued, c.max_interest_rate, 
+		SELECT DISTINCT c.id, c.token, c.amount, c.creator, c.debt_issued, c.max_interest_rate, 
 		                c.total_obligation, c.state, c.fundraising_duration, c.closes_at, c.maturity_at, 
 		                c.created_at, c.updated_at
 		FROM crowdfundings c
@@ -134,6 +138,8 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.C
 	for _, data := range results {
 		crowdfunding := &entity.Crowdfunding{
 			Id:                  uint(data["id"].(int64)),
+			Token:               common.HexToAddress(data["token"].(string)),
+			Amount:              uint256.MustFromHex(data["amount"].(string)),
 			Creator:             common.HexToAddress(data["creator"].(string)),
 			DebtIssued:          uint256.MustFromHex(data["debt_issued"].(string)),
 			MaxInterestRate:     uint256.MustFromHex(data["max_interest_rate"].(string)),
@@ -167,7 +173,6 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.C
 				UpdatedAt:      order["updated_at"].(int64),
 			})
 		}
-
 		crowdfundings = append(crowdfundings, crowdfunding)
 	}
 	return crowdfundings, nil
@@ -176,7 +181,7 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByInvestor(ctx context.C
 func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(ctx context.Context, creator common.Address) ([]*entity.Crowdfunding, error) {
 	var results []map[string]interface{}
 	err := r.Db.WithContext(ctx).Raw(`
-		SELECT id, creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at
+		SELECT id, token, amount, creator, debt_issued, max_interest_rate, total_obligation, state, fundraising_duration, closes_at, maturity_at, created_at, updated_at
 		FROM crowdfundings WHERE creator = ?
 	`, creator.String()).Scan(&results).Error
 	if err != nil {
@@ -187,6 +192,8 @@ func (r *CrowdfundingRepositorySqlite) FindCrowdfundingsByCreator(ctx context.Co
 	for _, result := range results {
 		crowdfundings = append(crowdfundings, &entity.Crowdfunding{
 			Id:                  uint(result["id"].(int64)),
+			Token:               common.HexToAddress(result["token"].(string)),
+			Amount:              uint256.MustFromHex(result["amount"].(string)),
 			Creator:             common.HexToAddress(result["creator"].(string)),
 			DebtIssued:          uint256.MustFromHex(result["debt_issued"].(string)),
 			MaxInterestRate:     uint256.MustFromHex(result["max_interest_rate"].(string)),

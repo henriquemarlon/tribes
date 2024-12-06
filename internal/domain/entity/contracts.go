@@ -17,6 +17,7 @@ type ContractRepository interface {
 	CreateContract(ctx context.Context, contract *Contract) (*Contract, error)
 	FindAllContracts(ctx context.Context) ([]*Contract, error)
 	FindContractBySymbol(ctx context.Context, symbol string) (*Contract, error)
+	FindContractByAddress(ctx context.Context, address common.Address) (*Contract, error)
 	UpdateContract(ctx context.Context, contract *Contract) (*Contract, error)
 	DeleteContract(ctx context.Context, symbol string) error
 }
