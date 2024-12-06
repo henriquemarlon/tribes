@@ -83,33 +83,14 @@ func (a *Crowdfunding) Validate() error {
 	if a.DebtIssued.Sign() == 0 {
 		return fmt.Errorf("%w: debt issued cannot be zero", ErrInvalidCrowdfunding)
 	}
-	if a.DebtIssued.Cmp(uint256.NewInt(15000000)) > 0 {
-		return fmt.Errorf("%w: debt issued exceeds the maximum allowed value", ErrInvalidCrowdfunding)
-	}
 	if a.MaxInterestRate.Sign() == 0 {
 		return fmt.Errorf("%w: max interest rate cannot be zero", ErrInvalidCrowdfunding)
 	}
-	if a.ClosesAt == 0 {
-		return fmt.Errorf("%w: close date is missing", ErrInvalidCrowdfunding)
-	}
-	if a.ClosesAt > a.CreatedAt+15552000 {
-		return fmt.Errorf("%w: close date cannot be greater than 6 months", ErrInvalidCrowdfunding)
-	}
-	if a.ClosesAt > a.MaturityAt {
-		return fmt.Errorf("%w: close data connot be grater than maturity date", ErrInvalidCrowdfunding)
-	}
-	// TODO: Add this when in production
-	// if a.FundraisingDuration < 604800 {
-	// 	return fmt.Errorf("%w: cannot create crowndfunding campaign without at least 7 days for the fundraising", ErrInvalidCrowdfunding)
-	// }
-	// if (a.ClosesAt - a.FundraisingDuration) - a.CreatedAt < 604800 {
-	// 	return fmt.Errorf("%w: cannot create crowndfunding campaign without at least 7 days for the approval process", ErrInvalidCrowdfunding)
-	// }
 	if a.CreatedAt == 0 {
 		return fmt.Errorf("%w: creation date is missing", ErrInvalidCrowdfunding)
 	}
-	if a.CreatedAt >= a.ClosesAt {
-		return fmt.Errorf("%w: creation date cannot be greater than or equal to close date", ErrInvalidCrowdfunding)
+	if a.ClosesAt == 0 {
+		return fmt.Errorf("%w: close date is missing", ErrInvalidCrowdfunding)
 	}
 	if a.MaturityAt == 0 {
 		return fmt.Errorf("%w: maturity date is missing", ErrInvalidCrowdfunding)

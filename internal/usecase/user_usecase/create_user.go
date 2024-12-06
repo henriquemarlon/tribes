@@ -35,14 +35,34 @@ func NewCreateUserUseCase(userRepository entity.UserRepository) *CreateUserUseCa
 }
 
 func (u *CreateUserUseCase) Execute(ctx context.Context, input *CreateUserInputDTO, metadata rollmelette.Metadata) (*CreateUserOutputDTO, error) {
-	user, err := entity.NewUser(input.Role, input.Address, metadata.BlockTimestamp)
+	var investmentLimit, debtIssuanceLimit *uint256.Int
+
+	switch input.Role {
+	case string(entity.UserRoleQualifiedInvestor):
+		investmentLimit = new(uint256.Int).SetAllOne()
+	case string(entity.UserRoleNonQualifiedInvestor):
+		investmentLimit = uint256.NewInt(20000)
+	default:
+		investmentLimit = uint256.NewInt(0)
+	}
+
+	switch input.Role {
+	case string(entity.UserRoleCreator):
+		debtIssuanceLimit = uint256.NewInt(15000000)
+	default:
+		debtIssuanceLimit = uint256.NewInt(0)
+	}
+
+	user, err := entity.NewUser(input.Role, investmentLimit, debtIssuanceLimit, input.Address, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
+
 	res, err := u.UserRepository.CreateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}
+
 	return &CreateUserOutputDTO{
 		Id:                res.Id,
 		Role:              string(res.Role),

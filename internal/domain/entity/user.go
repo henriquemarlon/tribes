@@ -43,11 +43,11 @@ type User struct {
 	SocialAccounts    []*SocialAccount `json:"social_accounts,omitempty" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE"`
 }
 
-func NewUser(role string, address common.Address, created_at int64) (*User, error) {
+func NewUser(role string, investmentLimit *uint256.Int, debtIssuanceLimit *uint256.Int, address common.Address, created_at int64) (*User, error) {
 	user := &User{
 		Role:              UserRole(role),
-		InvestmentLimit:   setInvestimentLimit(role),
-		DebtIssuanceLimit: setDebtIssuanceLimit(role),
+		InvestmentLimit:   investmentLimit,
+		DebtIssuanceLimit: debtIssuanceLimit,
 		Address:           address,
 		CreatedAt:         created_at,
 	}
@@ -61,6 +61,12 @@ func (u *User) Validate() error {
 	if u.Role == "" {
 		return fmt.Errorf("%w: role cannot be empty", ErrInvalidUser)
 	}
+	if u.InvestmentLimit.Sign() < 0 {
+		return fmt.Errorf("%w: investment limit cannot be empty or negative", ErrInvalidUser)
+	}
+	if u.DebtIssuanceLimit.Sign() < 0 {
+		return fmt.Errorf("%w: debt issuance limit cannot be empty or negative", ErrInvalidUser)
+	}
 	if u.Address == (common.Address{}) {
 		return fmt.Errorf("%w: address cannot be empty", ErrInvalidUser)
 	}
@@ -68,24 +74,4 @@ func (u *User) Validate() error {
 		return fmt.Errorf("%w: creation date is missing", ErrInvalidCrowdfunding)
 	}
 	return nil
-}
-
-func setInvestimentLimit(role string) *uint256.Int {
-	switch role {
-	case string(UserRoleQualifiedInvestor):
-		return new(uint256.Int).SetAllOne() //According to CVM Resolution 88
-	case string(UserRoleNonQualifiedInvestor):
-		return uint256.NewInt(20000) //According to CVM Resolution 88
-	default:
-		return uint256.NewInt(0)
-	}
-}
-
-func setDebtIssuanceLimit(role string) *uint256.Int {
-	switch role {
-	case string(UserRoleCreator):
-		return uint256.NewInt(15000000) //According to CVM Resolution 88
-	default:
-		return uint256.NewInt(0)
-	}
 }
