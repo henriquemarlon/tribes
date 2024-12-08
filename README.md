@@ -1,6 +1,7 @@
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/275b9ce4-3a4b-4965-82a3-5b6160ea76a5" align="center" width="30%">
+    <img src="https://github.com/user-attachments/assets/ae3c3bad-d688-4b51-8e0f-93b681a4c986" align="center" width="20%">
 </p>
+</br>
 <div align="center">
     <i>The new frontier of financial services for the creators' economy</i>
 </div>
