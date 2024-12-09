@@ -162,19 +162,18 @@ echo "Creating crowdfunding..."
 current_timestamp=$(date +%s)
 closes_at=$((current_timestamp + 60))
 maturity_at=$((current_timestamp + 120))
-crowdfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","fundraising_duration":10,"closes_at":'"$closes_at"',"maturity_at":'"$maturity_at"'}}'
+crowdfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","fundraising_duration":50,"closes_at":'"$closes_at"',"maturity_at":'"$maturity_at"'}}'
 approveTokens $TOKENIZED_RECEIVABLE_ADDRESS $PORTAL_ADDRESS 10000 $CREATOR_PRIVATE_KEY
 sleep 1
 depositERC20Tokens $TOKENIZED_RECEIVABLE_ADDRESS $DAPP_ADDRESS 10000 "$crowdfundingPayload" $CREATOR_PRIVATE_KEY
 sleep 1
-dfundingPayload='{"path":"createCrowdfunding","payload":{"max_interest_rate":"10","debt_issued":"100000","closes_at":'"$closes_at"',"maturity_at":'"$maturity_at"'}}'
 
 
 # 4. Update crowdfunding to ongoing (sent by admin)
 echo "Updating crowdfunding state to 'ongoing'..."
 updatePayload='{"path":"updateCrowdfunding","payload":{"id":1,"state":"ongoing"}}'
 sendInput "$updatePayload" $ADMIN_PRIVATE_KEY &
-sleep 1
+sleep 11
 wait
 
 # 5. Create orders from investors (sent by each investor)
