@@ -65,7 +65,7 @@ A crowdfunding platform designed for prominent content creators, enabling them t
    │   ├── infra
    │   └── usecase
    ├── pkg
-   │   ├── custom_types
+   │   ├── custom_type
    │   ├── rollups_contracts
    │   └── router
    ├── test
