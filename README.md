@@ -22,6 +22,7 @@
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Running](#running)
+  - [Development](#running)
   - [Testing](#testing)
 
 ##  Overview
@@ -123,25 +124,26 @@ A crowdfunding platform designed for prominent content creators, enabling them t
    ❯ cartesi build --from-image ghcr.io/tribeshq/tribes-machine
    ```
 
-> [!NOTE]
->  To run the system in development mode:
->
->   ```sh
->   ❯ make dev
->   ```
-
 3. Run validator node:
 
    ```sh
    ❯ cartesi run
    ```
 
+###  Development
+
+1. Run development node:
+
+   ```sh
+   ❯ make dev
+   ```
+
 > [!NOTE]
 > To reach the final state of the system, run the command bellow:
 >
->    ```shell
->    ❯ make state
->    ```
+>   ```shell
+>   ❯ make state
+>   ```
 
 ###  Testing
 
