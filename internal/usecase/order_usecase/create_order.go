@@ -69,7 +69,7 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 	}
 
 	if crowdfunding.ClosesAt-crowdfunding.FundraisingDuration > metadata.BlockTimestamp {
-		return nil, fmt.Errorf("crowdfunding campaign not yet open, order cannot be placed")
+		return nil, fmt.Errorf("crowdfunding campaign not open yet, order cannot be placed")
 	}
 
 	if crowdfunding.ClosesAt < metadata.BlockTimestamp {
