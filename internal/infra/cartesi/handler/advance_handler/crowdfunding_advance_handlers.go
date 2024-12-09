@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
@@ -98,9 +99,9 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	for _, order := range res.Orders {
 		if order.State == entity.OrderStateRejected {
 			if err = env.ERC20Transfer(
-				stablecoin.Address,
+				common.Address(stablecoin.Address),
 				appAddress,
-				order.Investor,
+				common.Address(order.Investor),
 				order.Amount.ToBig(),
 			); err != nil {
 				return err
@@ -108,9 +109,9 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 		} else {
 			quotes := new(uint256.Int).Div(new(uint256.Int).Mul(res.Amount, order.Amount), res.DebtIssued)
 			if err = env.ERC20Transfer(
-				res.Token,
+				common.Address(res.Token),
 				appAddress,
-				order.Investor,
+				common.Address(order.Investor),
 				quotes.ToBig(),
 			); err != nil {
 				return err
@@ -119,9 +120,9 @@ func (h *CrowdfundingAdvanceHandlers) CloseCrowdfundingHandler(env rollmelette.E
 	}
 
 	if err = env.ERC20Transfer(
-		stablecoin.Address,
+		common.Address(stablecoin.Address),
 		appAddress,
-		res.Creator,
+		common.Address(res.Creator),
 		res.DebtIssued.ToBig(),
 	); err != nil {
 		return err
@@ -162,9 +163,9 @@ func (h *CrowdfundingAdvanceHandlers) SettleCrowdfundingHandler(env rollmelette.
 			interest := new(uint256.Int).Mul(order.Amount, order.InterestRate)
 			interest.Div(interest, uint256.NewInt(100))
 			if err := env.ERC20Transfer(
-				contract.Address,
-				res.Creator,
-				order.Investor,
+				common.Address(contract.Address),
+				common.Address(res.Creator),
+				common.Address(order.Investor),
 				new(uint256.Int).Add(order.Amount, interest).ToBig(),
 			); err != nil {
 				return err

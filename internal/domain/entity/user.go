@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 var (
@@ -26,24 +26,24 @@ const (
 type UserRepository interface {
 	CreateUser(ctx context.Context, User *User) (*User, error)
 	FindUsersByRole(ctx context.Context, role string) ([]*User, error)
-	FindUserByAddress(ctx context.Context, address common.Address) (*User, error)
+	FindUserByAddress(ctx context.Context, address custom_type.Address) (*User, error)
 	FindAllUsers(ctx context.Context) ([]*User, error)
 	UpdateUser(ctx context.Context, User *User) (*User, error)
-	DeleteUser(ctx context.Context, address common.Address) error
+	DeleteUser(ctx context.Context, address custom_type.Address) error
 }
 
 type User struct {
-	Id                uint             `json:"id" gorm:"primaryKey"`
-	Role              UserRole         `json:"role,omitempty" gorm:"not null"`
-	Address           common.Address   `json:"address,omitempty" gorm:"type:text;uniqueIndex;not null"`
-	InvestmentLimit   *uint256.Int     `json:"investment_limit,omitempty" gorm:"type:text"`
-	DebtIssuanceLimit *uint256.Int     `json:"debt_issuance_limit,omitempty" gorm:"type:text"`
-	CreatedAt         int64            `json:"created_at,omitempty" gorm:"not null"`
-	UpdatedAt         int64            `json:"updated_at,omitempty" gorm:"default:0"`
-	SocialAccounts    []*SocialAccount `json:"social_accounts,omitempty" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE"`
+	Id                uint                `json:"id" gorm:"primaryKey"`
+	Role              UserRole            `json:"role,omitempty" gorm:"not null"`
+	Address           custom_type.Address `json:"address,omitempty" gorm:"type:text;uniqueIndex;not null"`
+	InvestmentLimit   *uint256.Int        `json:"investment_limit,omitempty" gorm:"type:text"`
+	DebtIssuanceLimit *uint256.Int        `json:"debt_issuance_limit,omitempty" gorm:"type:text"`
+	CreatedAt         int64               `json:"created_at,omitempty" gorm:"not null"`
+	UpdatedAt         int64               `json:"updated_at,omitempty" gorm:"default:0"`
+	SocialAccounts    []*SocialAccount    `json:"social_accounts,omitempty" gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE"`
 }
 
-func NewUser(role string, investmentLimit *uint256.Int, debtIssuanceLimit *uint256.Int, address common.Address, created_at int64) (*User, error) {
+func NewUser(role string, investmentLimit *uint256.Int, debtIssuanceLimit *uint256.Int, address custom_type.Address, created_at int64) (*User, error) {
 	user := &User{
 		Role:              UserRole(role),
 		InvestmentLimit:   investmentLimit,
@@ -61,7 +61,7 @@ func (u *User) Validate() error {
 	if u.Role == "" {
 		return fmt.Errorf("%w: role cannot be empty", ErrInvalidUser)
 	}
-	if u.Address == (common.Address{}) {
+	if u.Address == (custom_type.Address{}) {
 		return fmt.Errorf("%w: address cannot be empty", ErrInvalidUser)
 	}
 	if u.CreatedAt == 0 {

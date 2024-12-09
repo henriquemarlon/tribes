@@ -11,6 +11,7 @@ import (
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/contract_usecase"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 	"github.com/tribeshq/tribes/pkg/router"
 )
 
@@ -30,7 +31,7 @@ func (h *UserInspectHandlers) FindUserByAddressHandler(ctx context.Context, env 
 	address := strings.ToLower(router.PathValue(ctx, "address"))
 	findUserByAddress := user_usecase.NewFindUserByAddressUseCase(h.UserRepository)
 	res, err := findUserByAddress.Execute(ctx, &user_usecase.FindUserByAddressInputDTO{
-		Address: common.HexToAddress(address),
+		Address: custom_type.HexToAddress(address),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to find User: %w", err)
@@ -66,7 +67,7 @@ func (h *UserInspectHandlers) BalanceHandler(ctx context.Context, env rollmelett
 
 	findUserbyAddress := user_usecase.NewFindUserByAddressUseCase(h.UserRepository)
 	user, err := findUserbyAddress.Execute(ctx, &user_usecase.FindUserByAddressInputDTO{
-		Address: common.HexToAddress(router.PathValue(ctx, "address")),
+		Address: custom_type.HexToAddress(router.PathValue(ctx, "address")),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to find user: %w", err)
@@ -80,7 +81,7 @@ func (h *UserInspectHandlers) BalanceHandler(ctx context.Context, env rollmelett
 		}
 		balances := make(map[string]string)
 		for _, contract := range contracts {
-			balances[contract.Symbol] = env.ERC20BalanceOf(contract.Address, appAddress).String()
+			balances[contract.Symbol] = env.ERC20BalanceOf(common.Address(contract.Address), appAddress).String()
 		}
 		balanceBytes, err := json.Marshal(balances)
 		if err != nil {
@@ -91,7 +92,7 @@ func (h *UserInspectHandlers) BalanceHandler(ctx context.Context, env rollmelett
 	default:
 		balances := make(map[string]string)
 		for _, contract := range contracts {
-			balances[contract.Symbol] = env.ERC20BalanceOf(contract.Address, common.HexToAddress(router.PathValue(ctx, "address"))).String()
+			balances[contract.Symbol] = env.ERC20BalanceOf(common.Address(contract.Address), common.HexToAddress(router.PathValue(ctx, "address"))).String()
 		}
 		balanceBytes, err := json.Marshal(balances)
 		if err != nil {

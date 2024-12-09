@@ -3,12 +3,12 @@ package user_usecase
 import (
 	"context"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type FindUserByAddressInputDTO struct {
-	Address common.Address `json:"address"`
+	Address custom_type.Address `json:"address"`
 }
 
 type FindUserByAddressUseCase struct {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type CreateOrderInputDTO struct {
@@ -16,13 +16,13 @@ type CreateOrderInputDTO struct {
 }
 
 type CreateOrderOutputDTO struct {
-	Id             uint           `json:"id"`
-	CrowdfundingId uint           `json:"crowdfunding_id"`
-	Investor       common.Address `json:"investor"`
-	Amount         *uint256.Int   `json:"amount"`
-	InterestRate   *uint256.Int   `json:"interest_rate"`
-	State          string         `json:"state"`
-	CreatedAt      int64          `json:"created_at"`
+	Id             uint                `json:"id"`
+	CrowdfundingId uint                `json:"crowdfunding_id"`
+	Investor       custom_type.Address `json:"investor"`
+	Amount         *uint256.Int        `json:"amount"`
+	InterestRate   *uint256.Int        `json:"interest_rate"`
+	State          string              `json:"state"`
+	CreatedAt      int64               `json:"created_at"`
 }
 
 type CreateOrderUseCase struct {
@@ -47,7 +47,7 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 		return nil, fmt.Errorf("invalid deposit type provided for order creation: %T", deposit)
 	}
 
-	user, err := c.UserRepository.FindUserByAddress(ctx, erc20Deposit.Sender)
+	user, err := c.UserRepository.FindUserByAddress(ctx, custom_type.Address(erc20Deposit.Sender))
 	if user == nil {
 		return nil, fmt.Errorf("error finding user: %w", err)
 	}
@@ -68,7 +68,7 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 		return nil, fmt.Errorf("error finding crowdfunding campaigns: %w", err)
 	}
 
-	if crowdfunding.ClosesAt - crowdfunding.FundraisingDuration > metadata.BlockTimestamp {
+	if crowdfunding.ClosesAt-crowdfunding.FundraisingDuration > metadata.BlockTimestamp {
 		return nil, fmt.Errorf("crowdfunding campaign not yet open, order cannot be placed")
 	}
 
@@ -80,7 +80,7 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 	if err != nil {
 		return nil, fmt.Errorf("error finding stablecoin contract: %w", err)
 	}
-	if erc20Deposit.Token != stablecoin.Address {
+	if custom_type.Address(erc20Deposit.Token) != stablecoin.Address {
 		return nil, fmt.Errorf("invalid contract address provided for order creation: %v", erc20Deposit.Token)
 	}
 
@@ -88,7 +88,7 @@ func (c *CreateOrderUseCase) Execute(ctx context.Context, input *CreateOrderInpu
 		return nil, fmt.Errorf("order interest rate exceeds active crowdfunding max interest rate")
 	}
 
-	order, err := entity.NewOrder(crowdfunding.Id, erc20Deposit.Sender, depositAmount, input.InterestRate, metadata.BlockTimestamp)
+	order, err := entity.NewOrder(crowdfunding.Id, custom_type.Address(erc20Deposit.Sender), depositAmount, input.InterestRate, metadata.BlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
