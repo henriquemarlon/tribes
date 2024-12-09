@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/tribeshq/tribes/internal/domain/entity"
-	"github.com/tribeshq/tribes/pkg/datatype"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 	"gorm.io/gorm"
 )
 
@@ -43,7 +43,7 @@ func (r *ContractRepositorySqlite) FindContractBySymbol(ctx context.Context, sym
 	return &contract, nil
 }
 
-func (r *ContractRepositorySqlite) FindContractByAddress(ctx context.Context, address datatype.Address) (*entity.Contract, error) {
+func (r *ContractRepositorySqlite) FindContractByAddress(ctx context.Context, address custom_type.Address) (*entity.Contract, error) {
 	var contract entity.Contract
 	if err := r.Db.WithContext(ctx).Where("address = ?", address).First(&contract).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -55,23 +55,14 @@ func (r *ContractRepositorySqlite) FindContractByAddress(ctx context.Context, ad
 }
 
 func (r *ContractRepositorySqlite) UpdateContract(ctx context.Context, input *entity.Contract) (*entity.Contract, error) {
-	var contract entity.Contract
-	if err := r.Db.WithContext(ctx).Where("symbol = ?", input.Symbol).First(&contract).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, entity.ErrContractNotFound
-		}
-		return nil, fmt.Errorf("failed to find contract for update: %w", err)
-	}
-
-	if input.Address != (datatype.Address{}) {
-		contract.Address = input.Address
-	}
-	contract.UpdatedAt = input.UpdatedAt
-
-	if err := r.Db.WithContext(ctx).Save(&contract).Error; err != nil {
+	if err := r.Db.WithContext(ctx).Updates(&input).Error; err != nil {
 		return nil, fmt.Errorf("failed to update contract: %w", err)
 	}
-	return &contract, nil
+	contract, err := r.FindContractBySymbol(ctx, input.Symbol)
+	if err != nil {
+		return nil, err
+	}
+	return contract, nil
 }
 
 func (r *ContractRepositorySqlite) DeleteContract(ctx context.Context, symbol string) error {

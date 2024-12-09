@@ -3,12 +3,12 @@ package crowdfunding_usecase
 import (
 	"context"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type FindCrowdfundingsByCreatorInputDTO struct {
-	Creator common.Address `json:"creator"`
+	Creator custom_type.Address `json:"creator"`
 }
 
 type FindCrowdfundingsByCreatorOutputDTO []*FindCrowdfundingOutputDTO

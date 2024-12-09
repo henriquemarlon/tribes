@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type CancelOrderInputDTO struct {
@@ -17,7 +17,7 @@ type CancelOrderInputDTO struct {
 type CancelOrderOutputDTO struct {
 	Id             uint
 	CrowdfundingId uint
-	Investor       common.Address
+	Investor       custom_type.Address
 	Amount         *uint256.Int
 	InterestRate   *uint256.Int
 	State          string
@@ -44,7 +44,7 @@ func (c *CancelOrderUseCase) Execute(ctx context.Context, input *CancelOrderInpu
 	if err != nil {
 		return nil, err
 	}
-	if order.Investor != metadata.MsgSender {
+	if order.Investor != custom_type.Address(metadata.MsgSender) {
 		return nil, errors.New("only the investor can cancel the order")
 	}
 	crowdfunding, err := c.CrowdfundingRepository.FindCrowdfundingById(ctx, order.CrowdfundingId)

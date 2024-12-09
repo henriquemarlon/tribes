@@ -5,31 +5,31 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type CloseCrowdfundingInputDTO struct {
-	Creator common.Address `json:"creator"`
+	Creator custom_type.Address `json:"creator"`
 }
 
 type CloseCrowdfundingOutputDTO struct {
-	Id                  uint            `json:"id"`
-	Token               common.Address  `json:"token,omitempty"`
-	Amount              *uint256.Int    `json:"amount,omitempty"`
-	Creator             common.Address  `json:"creator,omitempty"`
-	DebtIssued          *uint256.Int    `json:"debt_issued,omitempty"`
-	MaxInterestRate     *uint256.Int    `json:"max_interest_rate,omitempty"`
-	TotalObligation     *uint256.Int    `json:"total_obligation,omitempty"`
-	Orders              []*entity.Order `json:"orders,omitempty"`
-	State               string          `json:"state,omitempty"`
-	FundraisingDuration int64           `json:"fundraising_duration,omitempty"`
-	ClosesAt            int64           `json:"closes_at,omitempty"`
-	MaturityAt          int64           `json:"maturity_at,omitempty"`
-	CreatedAt           int64           `json:"created_at,omitempty"`
-	UpdatedAt           int64           `json:"updated_at,omitempty"`
+	Id                  uint                `json:"id"`
+	Token               custom_type.Address `json:"token,omitempty"`
+	Amount              *uint256.Int        `json:"amount,omitempty"`
+	Creator             custom_type.Address `json:"creator,omitempty"`
+	DebtIssued          *uint256.Int        `json:"debt_issued,omitempty"`
+	MaxInterestRate     *uint256.Int        `json:"max_interest_rate,omitempty"`
+	TotalObligation     *uint256.Int        `json:"total_obligation,omitempty"`
+	Orders              []*entity.Order     `json:"orders,omitempty"`
+	State               string              `json:"state,omitempty"`
+	FundraisingDuration int64               `json:"fundraising_duration,omitempty"`
+	ClosesAt            int64               `json:"closes_at,omitempty"`
+	MaturityAt          int64               `json:"maturity_at,omitempty"`
+	CreatedAt           int64               `json:"created_at,omitempty"`
+	UpdatedAt           int64               `json:"updated_at,omitempty"`
 }
 
 type CloseCrowdfundingUseCase struct {

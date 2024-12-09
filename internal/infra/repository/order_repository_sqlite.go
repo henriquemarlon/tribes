@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/tribeshq/tribes/internal/domain/entity"
-	"github.com/tribeshq/tribes/pkg/datatype"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 	"gorm.io/gorm"
 )
 
@@ -53,7 +53,7 @@ func (r *OrderRepositorySqlite) FindOrdersByState(ctx context.Context, crowdfund
 	return orders, nil
 }
 
-func (r *OrderRepositorySqlite) FindOrdersByInvestor(ctx context.Context, investor datatype.Address) ([]*entity.Order, error) {
+func (r *OrderRepositorySqlite) FindOrdersByInvestor(ctx context.Context, investor custom_type.Address) ([]*entity.Order, error) {
 	var orders []*entity.Order
 	if err := r.Db.WithContext(ctx).Where("investor = ?", investor).Find(&orders).Error; err != nil {
 		return nil, fmt.Errorf("failed to find orders by investor: %w", err)
@@ -67,19 +67,15 @@ func (r *OrderRepositorySqlite) FindAllOrders(ctx context.Context) ([]*entity.Or
 		return nil, fmt.Errorf("failed to find all orders: %w", err)
 	}
 	return orders, nil
-}code .
+}
 
-	}
-	if && input.InterestRate.Sign() > 0 {
-		order.InterestRate = input.InterestRate
-	}
-	if input.State != "" {
-		order.State = input.State
-	}
-	order.UpdatedAt = input.UpdatedAt
-
-	if err := r.Db.WithContext(ctx).Save(order).Error; err != nil {
+func (r *OrderRepositorySqlite) UpdateOrder(ctx context.Context, input *entity.Order) (*entity.Order, error) {
+	if err := r.Db.WithContext(ctx).Updates(&input).Error; err != nil {
 		return nil, fmt.Errorf("failed to update order: %w", err)
+	}
+	order, err := r.FindOrderById(ctx, input.Id)
+	if err != nil {
+		return nil, err
 	}
 	return order, nil
 }

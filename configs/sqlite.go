@@ -46,8 +46,8 @@ func SetupSQlite(path string) (*gorm.DB, error) {
 			{
 				"role":                "admin",
 				"address":             common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
-				"investment_limit":    uint256.NewInt(0).Hex(),
-				"debt_issuance_limit": uint256.NewInt(0).Hex(),
+				"investment_limit":    uint256.NewInt(0),
+				"debt_issuance_limit": uint256.NewInt(0),
 				"created_at":          0,
 			},
 		}
@@ -56,8 +56,8 @@ func SetupSQlite(path string) (*gorm.DB, error) {
 			{
 				"role":                "admin",
 				"address":             common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").String(),
-				"investment_limit":    uint256.NewInt(0).Hex(),
-				"debt_issuance_limit": uint256.NewInt(0).Hex(),
+				"investment_limit":    uint256.NewInt(0),
+				"debt_issuance_limit": uint256.NewInt(0),
 				"created_at":          0,
 			},
 		}

@@ -3,12 +3,12 @@ package order_usecase
 import (
 	"context"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/tribeshq/tribes/internal/domain/entity"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type FinsOrdersByInvestorInputDTO struct {
-	Investor common.Address `json:"investor"`
+	Investor custom_type.Address `json:"investor"`
 }
 
 type FindOrdersByInvestorOutputDTO []*FindOrderOutputDTO

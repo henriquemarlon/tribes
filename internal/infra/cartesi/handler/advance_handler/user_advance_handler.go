@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/user_usecase"
+	"github.com/tribeshq/tribes/pkg/custom_type"
 )
 
 type UserAdvanceHandlers struct {
@@ -92,7 +94,7 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 	ctx := context.Background()
 	findUserByAddress := user_usecase.NewCreateUserUseCase(h.UserRepository)
 	res, err := findUserByAddress.Execute(ctx, &user_usecase.CreateUserInputDTO{
-		Address: metadata.MsgSender,
+		Address: custom_type.Address(metadata.MsgSender),
 	}, metadata)
 	if err != nil {
 		return err
@@ -102,7 +104,7 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 	case entity.UserRoleAdmin:
 		// The Admin role can withdraw the entire Application Balance if wanted
 		err := env.ERC20Transfer(
-			input.Token,
+			common.Address(input.Token),
 			appAddress,
 			metadata.MsgSender,
 			input.Amount.ToBig(),
@@ -111,7 +113,7 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 			return err
 		}
 		_, err = env.ERC20Withdraw(
-			input.Token,
+			common.Address(input.Token),
 			metadata.MsgSender,
 			input.Amount.ToBig(),
 		)
@@ -120,7 +122,7 @@ func (h *UserAdvanceHandlers) WithdrawHandler(env rollmelette.Env, metadata roll
 		}
 	default:
 		_, err := env.ERC20Withdraw(
-			input.Token,
+			common.Address(input.Token),
 			metadata.MsgSender,
 			input.Amount.ToBig(),
 		)

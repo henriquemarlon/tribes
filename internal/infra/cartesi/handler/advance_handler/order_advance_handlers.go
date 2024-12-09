@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rollmelette/rollmelette"
 	"github.com/tribeshq/tribes/internal/domain/entity"
 	"github.com/tribeshq/tribes/internal/usecase/order_usecase"
@@ -79,7 +80,7 @@ func (h *OrderAdvanceHandlers) CancelOrderHandler(env rollmelette.Env, metadata 
 		return err
 	}
 	if err := env.ERC20Transfer(
-		contract.Address,
+		common.Address(contract.Address),
 		appAddress,
 		metadata.MsgSender,
 		res.Amount.ToBig(),
