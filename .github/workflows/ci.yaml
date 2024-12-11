@@ -2,8 +2,9 @@ name: Build Workflow
 
 on:
   push:
-    branches:
-      - 'main'
+    # branches:
+    #   - 'main'
+    
     paths-ignore:
       - 'website/**'
     tags:
@@ -12,6 +13,30 @@ on:
   workflow_dispatch:
 
 jobs:
+  releases-matrix:
+    name: Build binaries for release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64, riscv64]
+        exclude:
+          - goarch: arm64
+            goos: windows
+          - goarch: riscv64
+            goos: windows
+          - goarch: riscv64
+            goos: darwin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: wangyoucao577/go-release-action@v1
+        with:
+          overwrite: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          extra_files: CHANGELOG.md LICENSE README.md
   build:
     runs-on: ubuntu-latest
     permissions:
